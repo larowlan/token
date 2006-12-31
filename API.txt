@@ -1,0 +1,63 @@
+$Id$
+
+Overview
+========
+In many cases, it's useful to allow users to define patterns or large
+chunks of text that contain programmatically derived values. For example,
+form email messages addressed to a given user, or url path aliases
+containing the title of a given node. Both examples require bits of data
+that vary each time the text is generated -- node titles, user ids, and
+so on. Rather than forcing users to embed ugly snippets of PHP, or creating
+elaborate and bizarre UIs for configuring the patterns via the browser,
+it's most useful to give users a set of 'placeholder' tokens to place in
+their text 
+
+
+
+Providing Placeholder Tokens
+============================
+Token.module provides a small set of default placeholders for global values
+like the name of the currently logged in user, the site's URL, and so on.
+Any module can provide additional tokens by implementing two hooks.
+
+  hook_token_values($type, $object = NULL)
+
+  hook_token_list($type = 'all')
+
+Detailed docs coming shortly. Read the code comments for the time being.
+
+
+
+Using Token Replacement
+=======================
+To apply token replacement to a chunk of text, you have two options. The
+first, and simplest, is:
+
+  token_replace($original, $type = 'global', $object = NULL)
+
+$original is the source text to perform substitutions on: it can be either
+a simple string, or an array of multiple strings.
+
+$type and $object are to be used when performing substitution based on a
+particular Drupal object. Replacing tokens in an email with values from
+a particular user account, or replacing tokens in a path alias pattern with
+values from the node being aliased, are two examples.
+
+$type should contain the general object type (node, comment, user, etc.)
+while $object should contain the object itself.
+
+
+
+Altering The Replacement Values
+===============================
+If your module needs to perform additional cleanup work on the replacement
+values before doing the actual substitutions (cleaning replacement values
+to make them appropriate for path aliasing, truncating them to a particular
+length, etc.) you can manually retrieve the list of tokens and replacement
+values, then call str_replace() yourself.
+
+  token_get_values($type = 'global', $object = NULL)
+
+Pass in the $type and $object as you would with the simpler token_replace()
+function. The return value will be an array with tokens as keys to their own
+replacement values.

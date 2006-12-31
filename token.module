@@ -1,0 +1,151 @@
+<?php
+// $Id$
+
+/**
+ * Return the value of $original, with all instances of placeholder
+ * tokens replaced by their proper values.
+ *
+ * @param original
+ *  A string, or an array of strings, to perform token substitutions
+ *  on.
+ * @param type
+ *   A flag indicating the class of substitution tokens to use. If an
+ *   object is passed in the second param, 'type' should contain the
+ *   object's type. For example, 'node', 'comment', or 'user'. If no
+ *   type is specified, only 'global' site-wide substitution tokens are
+ *   built.
+ * @param object
+ *   Optionally, the object to use for building substitution values.
+ *   A node, comment, user, etc.
+ * @return The modified version of $original, with all substitutions
+ *   made.
+ **/
+function token_replace($original, $type = 'global', $object = NULL) {
+  $full = token_get_values($type, $object);
+  $tokens = $full->tokens;
+  $values = $full->values;
+  $result = str_replace($tokens, $values, $original);
+  return $result;
+}
+
+/**
+ * Return a list of valid substitution tokens and their values for
+ * the specified type.
+ *
+ * @param type
+ *   A flag indicating the class of substitution tokens to use. If an
+ *   object is passed in the second param, 'type' should contain the
+ *   object's type. For example, 'node', 'comment', or 'user'. If no
+ *   type is specified, only 'global' site-wide substitution tokens are
+ *   built.
+ * @param object
+ *   Optionally, the object to use for building substitution values.
+ *   A node, comment, user, etc.
+ * @return
+ *   A keyed array containing the substitution tokens and the substition
+ *   values for the passed-in type and object.
+ */
+function token_get_values($type = 'global', $object = NULL) {
+  static $tokens;
+
+  if (!isset($tokens)) {
+    $tokens = array();
+  }
+
+  $id = _token_get_id($object);
+  if (isset($tokens[$type][$id])) {
+    return $tokens[$type][$id];
+  }
+  else {
+    $tokens[$type][$id] = module_invoke_all('token_values', $type, $object);
+  }
+
+  // Special-case global tokens, as we always want to be able to process
+  // those substitutions.
+  if (!isset($tokens['global']['default'])) {
+    $tokens['global']['default'] = module_invoke_all('token_values', 'global');
+  }
+
+  $all = array_merge($tokens['global']['default'], $tokens[$type][$id]);
+  $result->tokens = array_keys($all);
+  $result->values = array_values($all);
+
+  return $result;
+}
+
+/**
+ * Sample implementation of hook_token_values(). 
+ *
+ * @param type
+ *   A flag indicating the class of substitution tokens to use. If an
+ *   object is passed in the second param, 'type' should contain the
+ *   object's type. For example, 'node', 'comment', or 'user'. If your
+ *   implemention of the hook inserts globally applicable tokens that
+ *   do not depend on a particular object, it should only return values
+ *   when $type is 'global'.
+ * @param object
+ *   Optionally, the object to use for building substitution values.
+ *   A node, comment, user, etc.
+ * @return
+ *   A keyed array containing the substitution tokens and the substition
+ *   values for the passed-in type and object.
+ */
+function token_token_values($type, $object = NULL) {
+  global $user;
+  global $base_url;
+
+  switch ($type) {
+    case 'global':
+      $values['[user_name]']    = $user->uid ? $user->name : variable_get('anonymous', t('Anonymous'));
+      $values['[user_uid]']     = $user->uid ? $user->uid : 0;
+      $values['[user_mail]']    = $user->uid ? $user->mail : '';
+      $values['[site_url]']     = $base_url;
+      $values['[site_name]']    = variable_get('site_name', t('Drupal'));
+      $values['[site_slogan]']  = variable_get('site_slogan', '');
+      $values['[site_mail]']    = variable_get('site_mail', '');
+      break;
+  }
+  return $values;
+}
+
+/**
+ * Sample implementation of hook_token_list(). Documents the individual
+ * tokens handled by your module.
+ *
+ * @param type
+ *   A flag indicating the class of substitution tokens to return
+ *   information on. If this is set to 'all', a complete list is being
+ *   built and your module should return its full list, regardless of
+ *   type. Global tokens should always be returned, regardless of the
+ *   $type passed in.
+ * @return
+ *   A keyed array listing the substitution tokens. Elements should be
+ *   in the form of: $list[$type][$token] = $description
+ */
+function token_token_list($type = 'all') {
+  $tokens['global']['[user_name]']    = t('The name of the currently logged in user.');
+  $tokens['global']['[user_nid]']     = t('The user ID of the currently logged in user.');
+  $tokens['global']['[user_mail]']    = t('The email address of the currently logged in user.');
+  $tokens['global']['[site_url]']     = t('The url of the current Drupal website.');
+  $tokens['global']['[site_name]']    = t('The name of the current Drupal website.');
+  $tokens['global']['[site_slogan]']  = t('The slogan of the current Drupal website.');
+  $tokens['global']['[site_mail]']    = t('The contact email address for the current Drupal website.');
+  return $tokens;
+}
+
+// Internal utility function used for static caching.
+function _token_get_id($type = 'global', $object = NULL) {
+  if (!isset($object)) {
+    return "default";
+  }
+  switch ($type) {
+    case 'node':
+      return $object->nid;
+    case 'comment':
+      return $object->cid;
+    case 'user':
+      return $user->uid;
+    default:
+      return md5(serialize($object));
+  }
+}
