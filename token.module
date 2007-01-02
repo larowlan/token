@@ -54,12 +54,13 @@ function token_get_values($type = 'global', $object = NULL) {
     $tokens = array();
   }
 
-  $id = _token_get_id($object);
+  $id = _token_get_id($type, $object);
   if (isset($tokens[$type][$id])) {
-    return $tokens[$type][$id];
+    $tmp_tokens = $tokens[$type][$id];
   }
   else {
-    $tokens[$type][$id] = module_invoke_all('token_values', $type, $object);
+    $tmp_tokens = module_invoke_all('token_values', $type, $object);
+    $tokens[$type][$id] = $tmp_tokens;
   }
 
   // Special-case global tokens, as we always want to be able to process
