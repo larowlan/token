@@ -1,6 +1,8 @@
 <?php
 // $Id$
 
+include_once('token_node.inc');
+
 /**
  * Return the value of $original, with all instances of placeholder
  * tokens replaced by their proper values.
@@ -71,6 +73,32 @@ function token_get_values($type = 'global', $object = NULL) {
   $result->values = array_values($all);
 
   return $result;
+}
+
+/**
+ * For a given context, builds a formatted list of tokens and descriptions
+ * of their replacement values.
+ *
+ * @param type
+ *    The token types to display documentation for. Defaults to 'all'.
+ * @return An HTML table containing the formatting docs.
+ **/
+function theme_token_help($type = 'all') {
+  $full_list = module_invoke_all('token_list', $type);
+  
+  $headers = array(t('Token'), t('Replacement value'));
+  $rows = array();
+  foreach ($full_list as $key => $category) {
+    foreach ($category as $token => $description) {
+      $row = array();
+      $row[] = $token;
+      $row[] = $description;
+      $rows[] = $row;
+    }
+  }
+
+  $output = theme('table', $headers, $rows, array('class' => 'description'));
+  return $output;
 }
 
 /**
