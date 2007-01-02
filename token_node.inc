@@ -12,6 +12,7 @@ function node_token_values($type, $object = NULL) {
       $values['[nid]']            = $node->nid;
       $values['[type]']           = $node->type;
       $values['[type-name]']      = node_get_types('name', $node->type);
+      $values['[title]']          = check_plain($node->title);
 
       $values['[author-uid]']     = $node->uid;
       $values['[author-name]']    = $node->name;

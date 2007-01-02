@@ -124,13 +124,13 @@ function token_token_values($type, $object = NULL) {
 
   switch ($type) {
     case 'global':
-      $values['[user_name]']    = $user->uid ? $user->name : variable_get('anonymous', t('Anonymous'));
-      $values['[user_uid]']     = $user->uid ? $user->uid : 0;
-      $values['[user_mail]']    = $user->uid ? $user->mail : '';
-      $values['[site_url]']     = $base_url;
-      $values['[site_name]']    = variable_get('site_name', t('Drupal'));
-      $values['[site_slogan]']  = variable_get('site_slogan', '');
-      $values['[site_mail]']    = variable_get('site_mail', '');
+      $values['[user-name]']    = $user->uid ? $user->name : variable_get('anonymous', t('Anonymous'));
+      $values['[user-id]']      = $user->uid ? $user->uid : 0;
+      $values['[user-mail]']    = $user->uid ? $user->mail : '';
+      $values['[site-url]']     = $base_url;
+      $values['[site-name]']    = variable_get('site_name', t('Drupal'));
+      $values['[site-slogan]']  = variable_get('site_slogan', '');
+      $values['[site-mail]']    = variable_get('site_mail', '');
       break;
   }
   return $values;
@@ -151,13 +151,13 @@ function token_token_values($type, $object = NULL) {
  *   in the form of: $list[$type][$token] = $description
  */
 function token_token_list($type = 'all') {
-  $tokens['global']['[user_name]']    = t('The name of the currently logged in user.');
-  $tokens['global']['[user_nid]']     = t('The user ID of the currently logged in user.');
-  $tokens['global']['[user_mail]']    = t('The email address of the currently logged in user.');
-  $tokens['global']['[site_url]']     = t('The url of the current Drupal website.');
-  $tokens['global']['[site_name]']    = t('The name of the current Drupal website.');
-  $tokens['global']['[site_slogan]']  = t('The slogan of the current Drupal website.');
-  $tokens['global']['[site_mail]']    = t('The contact email address for the current Drupal website.');
+  $tokens['global']['[user-name]']    = t('The name of the currently logged in user.');
+  $tokens['global']['[user-id]']      = t('The user ID of the currently logged in user.');
+  $tokens['global']['[user-mail]']    = t('The email address of the currently logged in user.');
+  $tokens['global']['[site-url]']     = t('The url of the current Drupal website.');
+  $tokens['global']['[site-name]']    = t('The name of the current Drupal website.');
+  $tokens['global']['[site-slogan]']  = t('The slogan of the current Drupal website.');
+  $tokens['global']['[site-mail]']    = t('The contact email address for the current Drupal website.');
   return $tokens;
 }
 
