@@ -84,32 +84,34 @@ function node_token_values($type, $object = NULL) {
  * Implementation of hook_token_list()
  */
 function node_token_list($type = 'all') {
-  $tokens['node']['[nid]']            = t('Node ID');
-  $tokens['node']['[type]']           = t('Node type');
-  $tokens['node']['[type-name]']      = t('Node type (user-friendly version)');
+  if ($type == 'node' || $type == 'all') {
+    $tokens['node']['[nid]']            = t('Node ID');
+    $tokens['node']['[type]']           = t('Node type');
+    $tokens['node']['[type-name]']      = t('Node type (user-friendly version)');
 
-  $tokens['node']['[author-uid]']     = t("Node author's user id");
-  $tokens['node']['[author-name]']    = t("Node author's user name");
+    $tokens['node']['[author-uid]']     = t("Node author's user id");
+    $tokens['node']['[author-name]']    = t("Node author's user name");
 
-  $tokens['node']['[term]']           = t("Name of top taxonomy term");
-  $tokens['node']['[term-id]']        = t("ID of top taxonomy term");
-  $tokens['node']['[vocab]']          = t("Name of top term's vocabulary");
-  $tokens['node']['[vocab-id]']       = t("ID of top term's vocabulary");
-  $tokens['node']['[catpath]']        = t("Full taxonomy tree for the topmost term");
+    $tokens['node']['[term]']           = t("Name of top taxonomy term");
+    $tokens['node']['[term-id]']        = t("ID of top taxonomy term");
+    $tokens['node']['[vocab]']          = t("Name of top term's vocabulary");
+    $tokens['node']['[vocab-id]']       = t("ID of top term's vocabulary");
+    $tokens['node']['[catpath]']        = t("Full taxonomy tree for the topmost term");
 
-  $tokens['node']['[yyyy]']           = t("Node creation year (four digit)");
-  $tokens['node']['[yy]']             = t("Node creation year (two digit)");
-  $tokens['node']['[month]']          = t("Node creation month (full word)");
-  $tokens['node']['[mon]']            = t("Node creation month (abbreviated)");
-  $tokens['node']['[mm]']             = t("Node creation month (two digit, zero padded)");
-  $tokens['node']['[m]']              = t("Node creation month (one or two digit)");
-  $tokens['node']['[ww]']             = t("Node creation week (two digit)");
-  $tokens['node']['[date]']           = t("Node creation date (day of month)");
-  $tokens['node']['[day]']            = t("Node creation day (full word)");
-  $tokens['node']['[ddd]']            = t("Node creation day (abbreviation)");
-  $tokens['node']['[dd]']             = t("Node creation day (two digit, zero-padded)");
-  $tokens['node']['[d]']              = t("Node creation day (one or two digit)");
-  $tokens['node']['[mod-????] etc.']  = t('All tokens for node creation dates can also be used with with the "mod-" prefix; doing so will use the modification date rather than the creation date.');
+    $tokens['node']['[yyyy]']           = t("Node creation year (four digit)");
+    $tokens['node']['[yy]']             = t("Node creation year (two digit)");
+    $tokens['node']['[month]']          = t("Node creation month (full word)");
+    $tokens['node']['[mon]']            = t("Node creation month (abbreviated)");
+    $tokens['node']['[mm]']             = t("Node creation month (two digit, zero padded)");
+    $tokens['node']['[m]']              = t("Node creation month (one or two digit)");
+    $tokens['node']['[ww]']             = t("Node creation week (two digit)");
+    $tokens['node']['[date]']           = t("Node creation date (day of month)");
+    $tokens['node']['[day]']            = t("Node creation day (full word)");
+    $tokens['node']['[ddd]']            = t("Node creation day (abbreviation)");
+    $tokens['node']['[dd]']             = t("Node creation day (two digit, zero-padded)");
+    $tokens['node']['[d]']              = t("Node creation day (one or two digit)");
+    $tokens['node']['[mod-????] etc.']  = t('All tokens for node creation dates can also be used with with the "mod-" prefix; doing so will use the modification date rather than the creation date.');
 
-  return $tokens;
+    return $tokens;
+  }
 }
