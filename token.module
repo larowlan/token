@@ -2,6 +2,7 @@
 // $Id$
 
 include_once('token_node.inc');
+include_once('token_user.inc');
 
 /**
  * Return the value of $original, with all instances of placeholder
