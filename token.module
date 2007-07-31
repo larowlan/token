@@ -1,80 +1,29 @@
 <?php
 // $Id$
 
-include_once('token_node.inc');
-include_once('token_user.inc');
-
 /**
- * Return the value of $original, with all instances of placeholder
- * tokens replaced by their proper values.
- *
- * @param original
- *  A string, or an array of strings, to perform token substitutions
- *  on.
- * @param type
- *   A flag indicating the class of substitution tokens to use. If an
- *   object is passed in the second param, 'type' should contain the
- *   object's type. For example, 'node', 'comment', or 'user'. If no
- *   type is specified, only 'global' site-wide substitution tokens are
- *   built.
- * @param object
- *   Optionally, the object to use for building substitution values.
- *   A node, comment, user, etc.
- * @return The modified version of $original, with all substitutions
- *   made.
- **/
-function token_replace($original, $type = 'global', $object = NULL) {
-  $full = token_get_values($type, $object);
-  $tokens = $full->tokens;
-  $values = $full->values;
-  $result = str_replace($tokens, $values, $original);
-  return $result;
+ * Implementation of hook_init().
+ * Note that this will cause Drupal to post a warning on the admin screen
+ * when agressive caching is activated. Like CCK, Token's use of hook_init
+ * IS compatible with agressive caching, we just need a way to annouce that.
+ */
+function token_init() {
+  // Ensure we are not serving a cached page
+  if (function_exists('drupal_set_content')) {
+    // we don't do this in hook_menu to ensure the files are already included when
+    require_once(drupal_get_path('module', 'token') .'/token.inc');
+  }
 }
 
 /**
- * Return a list of valid substitution tokens and their values for
- * the specified type.
- *
- * @param type
- *   A flag indicating the class of substitution tokens to use. If an
- *   object is passed in the second param, 'type' should contain the
- *   object's type. For example, 'node', 'comment', or 'user'. If no
- *   type is specified, only 'global' site-wide substitution tokens are
- *   built.
- * @param object
- *   Optionally, the object to use for building substitution values.
- *   A node, comment, user, etc.
- * @return
- *   A keyed array containing the substitution tokens and the substition
- *   values for the passed-in type and object.
+ * Implementation of hook_theme().
  */
-function token_get_values($type = 'global', $object = NULL) {
-  static $tokens;
-
-  if (!isset($tokens)) {
-    $tokens = array();
-  }
-
-  $id = _token_get_id($type, $object);
-  if (isset($tokens[$type][$id])) {
-    $tmp_tokens = $tokens[$type][$id];
-  }
-  else {
-    $tmp_tokens = module_invoke_all('token_values', $type, $object);
-    $tokens[$type][$id] = $tmp_tokens;
-  }
-
-  // Special-case global tokens, as we always want to be able to process
-  // those substitutions.
-  if (!isset($tokens['global']['default'])) {
-    $tokens['global']['default'] = module_invoke_all('token_values', 'global');
-  }
-
-  $all = array_merge($tokens['global']['default'], $tokens[$type][$id]);
-  $result->tokens = array_keys($all);
-  $result->values = array_values($all);
-
-  return $result;
+function token_theme() {
+  return array(
+    'token_help' => array(
+      'arguments' => array('type' => 'all', 'prefix' => '[', 'suffix' => ']'),
+    ),
+  );
 }
 
 /**
@@ -83,17 +32,22 @@ function token_get_values($type = 'global', $object = NULL) {
  *
  * @param type
  *    The token types to display documentation for. Defaults to 'all'.
+ * @param prefix
+ *    The prefix your module will use when parsing tokens. Defaults to '['
+ * @param suffix
+ *    The suffix your module will use when parsing tokens. Defaults to ']'
  * @return An HTML table containing the formatting docs.
  **/
-function theme_token_help($type = 'all') {
-  $full_list = module_invoke_all('token_list', $type);
-  
+function theme_token_help($type = 'all', $prefix = '[', $suffix = ']') {
+  $full_list = token_get_list($type);
+
   $headers = array(t('Token'), t('Replacement value'));
   $rows = array();
   foreach ($full_list as $key => $category) {
+    $rows[] = array(array('data' => drupal_ucfirst($key) .' '. t('tokens'), 'class' => 'region', 'colspan' => 2));
     foreach ($category as $token => $description) {
       $row = array();
-      $row[] = $token;
+      $row[] = $prefix . $token . $suffix;
       $row[] = $description;
       $rows[] = $row;
     }
@@ -104,7 +58,7 @@ function theme_token_help($type = 'all') {
 }
 
 /**
- * Sample implementation of hook_token_values(). 
+ * Sample implementation of hook_token_values().
  *
  * @param type
  *   A flag indicating the class of substitution tokens to use. If an
@@ -126,13 +80,14 @@ function token_token_values($type, $object = NULL) {
 
   switch ($type) {
     case 'global':
-      $values['[user-name]']    = $user->uid ? $user->name : variable_get('anonymous', t('Anonymous'));
-      $values['[user-id]']      = $user->uid ? $user->uid : 0;
-      $values['[user-mail]']    = $user->uid ? $user->mail : '';
-      $values['[site-url]']     = $base_url;
-      $values['[site-name]']    = variable_get('site_name', t('Drupal'));
-      $values['[site-slogan]']  = variable_get('site_slogan', '');
-      $values['[site-mail]']    = variable_get('site_mail', '');
+      $values['user-name']    = $user->uid ? $user->name : variable_get('anonymous', t('Anonymous'));
+      $values['user-id']      = $user->uid ? $user->uid : 0;
+      $values['user-mail']    = $user->uid ? $user->mail : '';
+      $values['site-url']     = $base_url;
+      $values['site-name']    = variable_get('site_name', t('Drupal'));
+      $values['site-slogan']  = variable_get('site_slogan', '');
+      $values['site-mail']    = variable_get('site_mail', '');
+      $values['site-date']    = format_date(time(), 'short', '', variable_get('date_default_timezone', 0));
       break;
   }
   return $values;
@@ -153,29 +108,13 @@ function token_token_values($type, $object = NULL) {
  *   in the form of: $list[$type][$token] = $description
  */
 function token_token_list($type = 'all') {
-  $tokens['global']['[user-name]']    = t('The name of the currently logged in user.');
-  $tokens['global']['[user-id]']      = t('The user ID of the currently logged in user.');
-  $tokens['global']['[user-mail]']    = t('The email address of the currently logged in user.');
-  $tokens['global']['[site-url]']     = t('The url of the current Drupal website.');
-  $tokens['global']['[site-name]']    = t('The name of the current Drupal website.');
-  $tokens['global']['[site-slogan]']  = t('The slogan of the current Drupal website.');
-  $tokens['global']['[site-mail]']    = t('The contact email address for the current Drupal website.');
+  $tokens['global']['user-name']    = t('The name of the currently logged in user.');
+  $tokens['global']['user-id']      = t('The user ID of the currently logged in user.');
+  $tokens['global']['user-mail']    = t('The email address of the currently logged in user.');
+  $tokens['global']['site-url']     = t('The url of the current Drupal website.');
+  $tokens['global']['site-name']    = t('The name of the current Drupal website.');
+  $tokens['global']['site-slogan']  = t('The slogan of the current Drupal website.');
+  $tokens['global']['site-mail']    = t('The contact email address for the current Drupal website.');
+  $tokens['global']['site-date']    = t("The current date on the site's server.");
   return $tokens;
-}
-
-// Internal utility function used for static caching.
-function _token_get_id($type = 'global', $object = NULL) {
-  if (!isset($object)) {
-    return "default";
-  }
-  switch ($type) {
-    case 'node':
-      return $object->nid;
-    case 'comment':
-      return $object->cid;
-    case 'user':
-      return $user->uid;
-    default:
-      return md5(serialize($object));
-  }
 }
