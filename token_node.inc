@@ -5,6 +5,7 @@
  * Implementation of hook_token_values()
  */
 function node_token_values($type, $object = NULL) {
+  $values = array();
   switch ($type) {
     case 'node':
       $node = $object;
@@ -65,7 +66,7 @@ function node_token_values($type, $object = NULL) {
 
       // And now taxonomy, which is a bit more work. This code is adapted from
       // pathauto's handling code; it's intended for compatability with it.
-      if (module_exists('taxonomy') && is_array($node->taxonomy) && count($node->taxonomy) > 0) {
+      if (module_exists('taxonomy') && !empty($node->taxonomy) && is_array($node->taxonomy)) {
         foreach ($node->taxonomy as $term) {
           if ((object)$term) {
             // With freetagging it's somewhat hard to get the tid, vid, name values

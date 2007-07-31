@@ -77,6 +77,7 @@ function theme_token_help($type = 'all', $prefix = '[', $suffix = ']') {
 function token_token_values($type, $object = NULL) {
   global $user;
   global $base_url;
+  $values = array();
 
   switch ($type) {
     case 'global':

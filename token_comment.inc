@@ -5,9 +5,10 @@
  * Implementation of hook_token_values()
  */
 function comment_token_values($type, $object = NULL) {
+  $values = array();
   switch ($type) {
     case 'comment':
-      
+
       // cast to an object just in case fussy drupal gave us an array
       $comment = (object)$object;
 
@@ -33,7 +34,7 @@ function comment_token_values($type, $object = NULL) {
       $values['comment-d']              = date('j', $comment->timestamp);
       break;
   }
-  
+
   return $values;
 }
 

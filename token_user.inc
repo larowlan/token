@@ -5,6 +5,7 @@
  * Implementation of hook_token_values()
  */
 function user_token_values($type, $object = NULL) {
+  $values = array();
   switch ($type) {
     case 'user':
       if (isset($object)) {
@@ -39,7 +40,7 @@ function user_token_list($type = 'all') {
     $tokens['user']['user']           = t("User's name");
     $tokens['user']['uid']            = t("User's ID");
     $tokens['user']['mail']           = t("User's email address");
- 
+
     $tokens['user']['reg-date']       = t("User's registration date");
     $tokens['user']['reg-since']      = t("Days since the user registered");
     $tokens['user']['log-date']       = t("User's last login date");

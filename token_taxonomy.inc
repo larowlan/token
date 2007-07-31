@@ -5,17 +5,18 @@
  * Implementation of hook_token_values()
  */
 function taxonomy_token_values($type, $object = NULL) {
+  $values = array();
   switch ($type) {
     case 'taxonomy':
       $category = $object;
-      
+
       $vid = $category->vid;
       $vocabulary = taxonomy_get_vocabulary($vid);
       $values['vid'] = $vid;
       $values['vocab'] = $vocabulary->name;
       $values['cat'] = $category->name;
       $values['tid'] = $category->tid;
-      
+
       break;
   }
   return $values;
