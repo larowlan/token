@@ -101,15 +101,6 @@ function token_actions_send_email_action_form($context) {
   return $form;
 }
 
-function token_actions_send_email_action_validate($form, $form_state) {
-  $form_values = $form_state['values'];
-  // Validate the configuration form.
-  if (!valid_email_address($form_values['recipient']) && $form_values['recipient'] != '%author') {
-    // We want the literal %author placeholder to be emphasized in the error message.
-    form_set_error('recipient', t('Please enter a valid email address or %author.', array('%author' => '%author')));
-   }
-}
-
 function token_actions_send_email_action_submit($form, $form_state) {
   $form_values = $form_state['values'];
   // Process the HTML form to store configuration. The keyed array that
