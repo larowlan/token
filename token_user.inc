@@ -16,7 +16,8 @@ function user_token_values($type, $object = NULL) {
         $account = user_load(array('uid' => $user->uid));
       }
 
-      $values['user']           = $account->uid ? $account->name : variable_get('anonymous', 'Anonymous');
+      $values['user']           = $account->uid ? check_plain($account->name) : variable_get('anonymous', 'Anonymous');
+      $values['user-raw']       = $account->uid ? $account->name : variable_get('anonymous', 'Anonymous');
       $values['uid']            = $account->uid;
       $values['mail']           = $account->uid ? $account->mail : '';
       $values['reg-date']       = $account->uid ? format_date($account->created, 'short') : '';
@@ -38,6 +39,7 @@ function user_token_values($type, $object = NULL) {
 function user_token_list($type = 'all') {
   if ($type == 'user' || $type == 'all') {
     $tokens['user']['user']           = t("User's name");
+    $tokens['user']['user-raw']       = t("User's unfiltered name. WARNING - raw user input.");
     $tokens['user']['uid']            = t("User's ID");
     $tokens['user']['mail']           = t("User's email address");
 
