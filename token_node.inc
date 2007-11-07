@@ -96,7 +96,7 @@ function node_token_values($type, $object = NULL) {
             $vid = $term->vid;
 
             if (!empty($vid)) {
-              $vocabulary = taxonomy_get_vocabulary($vid);
+              $vocabulary = taxonomy_vocabulary_load($vid);
               $values['vocab'] = check_plain($vocabulary->name);
               $values['vocab-raw'] = $vocabulary->name;
               $values['vocab-id'] = $vocabulary->name;

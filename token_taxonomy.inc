@@ -11,7 +11,7 @@ function taxonomy_token_values($type, $object = NULL) {
       $category = $object;
 
       $vid = $category->vid;
-      $vocabulary = taxonomy_get_vocabulary($vid);
+      $vocabulary = taxonomy_vocabulary_load($vid);
       $values['vid']       = $vid;
       $values['vocab']     = check_plain($vocabulary->name);
       $values['cat']       = check_plain($category->name);
