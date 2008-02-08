@@ -1,0 +1,401 @@
+# translation of token-module.po to Hungarian
+#
+# Hungarian translation of Drupal (modules/token/token.module)
+# Copyright Drupal.hu Fordítói Csapat <forditas [at] drupal.hu>
+# Generated from file:
+# 	token.info,v 1.1.2.1 2007/03/10 22:17:48 eaton Exp $
+# 	token.module,v 1.5.2.6 2007/04/14 12:39:58 eaton Exp $
+# 	token.inc,v 1.1.2.7 2007/04/14 12:39:58 eaton Exp $
+# 	token_cck.inc,v 1.1.2.6 2007/04/14 12:39:59 eaton Exp $
+# 	token_node.inc,v 1.3.2.12 2007/04/14 12:39:59 eaton Exp $
+# 	token_taxonomy.inc,v 1.1.2.1 2007/04/14 12:39:59 eaton Exp $
+# 	token_user.inc,v 1.1.2.6 2007/04/14 12:39:59 eaton Exp $
+#
+# Domokos Endre János <domokos.endrejanos@chello.hu>, 2007.
+# FEHÉR János <feher.janos _at- mindworks.hu>, 2007.
+msgid ""
+msgstr ""
+"Project-Id-Version: token-module\n"
+"POT-Creation-Date: 2007-01-10 22:16+0100\n"
+"PO-Revision-Date: 2007-05-18 21:37+0200\n"
+"Last-Translator: FEHÉR János <feher.janos _at- mindworks.hu>\n"
+"Language-Team: Hungarian <Drupal.hu Fordítási Csapat <forditas [at] drupal.hu>>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#: modules/token/token.info:0;2
+#: modules/token/token.module:43
+msgid "Token"
+msgstr "Vezérjel"
+
+#: modules/token/token.info:3
+msgid "Provides a shared API for replacement of textual placeholders with actual data."
+msgstr "Gondoskodik egy megosztott API-ról (alkalmazói program interfész) a szöveges helykitöltő felváltására aktuális adattal."
+
+#: modules/token/token.module:43
+msgid "Replacement value"
+msgstr "Kicserélt érték"
+
+#: modules/token/token.module:46
+msgid "tokens"
+msgstr "vezérjelek"
+
+#: modules/token/token.module:82
+msgid "Anonymous"
+msgstr "Névtelen"
+
+#: modules/token/token.module:86
+msgid "Drupal"
+msgstr "Drupal"
+
+#: modules/token/token.module:110
+msgid "The name of the currently logged in user."
+msgstr "A jelenleg bejelentkezett felhasználó neve."
+
+#: modules/token/token.module:111
+msgid "The user ID of the currently logged in user."
+msgstr "A jelenleg bejelentkezett felhasználó azonosítója."
+
+#: modules/token/token.module:112
+msgid "The email address of the currently logged in user."
+msgstr "A jelenleg bejelentkezett felhasználó e-mail címe."
+
+#: modules/token/token.module:113
+msgid "The url of the current Drupal website."
+msgstr "A webhely url-je."
+
+#: modules/token/token.module:114
+msgid "The name of the current Drupal website."
+msgstr "A webhely neve."
+
+#: modules/token/token.module:115
+msgid "The slogan of the current Drupal website."
+msgstr "A webhely jelmondata."
+
+#: modules/token/token.module:116
+msgid "The contact email address for the current Drupal website."
+msgstr "A webhely kapcsolattartó e-mail címe."
+
+#: modules/token/token.module:117
+msgid "The current date on the site's server."
+msgstr "Az aktuális rendszeridő a webhely kiszolgálóján."
+
+#: modules/token/token_cck.inc:60
+msgid "Referenced node ID."
+msgstr "Hivatkozott tartalom azonosítója."
+
+#: modules/token/token_cck.inc:61
+msgid "Referenced node title."
+msgstr "Hivatkozott tartalom címe."
+
+#: modules/token/token_cck.inc:62
+msgid "Formatted html link to the node."
+msgstr "Formázott html link a tartalomhoz."
+
+#: modules/token/token_cck.inc:88
+msgid "Raw number value."
+msgstr "Nyers számérték."
+
+#: modules/token/token_cck.inc:89
+msgid "Formatted number value."
+msgstr "Formázott számérték."
+
+#: modules/token/token_cck.inc:114
+msgid "Raw, unfiltered text."
+msgstr "Nyers, szűretlen szöveg."
+
+#: modules/token/token_cck.inc:115
+msgid "Formatted and filtered text."
+msgstr "Formázott, szűrt szöveg."
+
+#: modules/token/token_cck.inc:137
+msgid "Referenced user ID"
+msgstr "Hivatkozott felhasználói azonosító."
+
+#: modules/token/token_cck.inc:138
+msgid "Referenced user name"
+msgstr "Hivatkozott felhasználónév."
+
+#: modules/token/token_cck.inc:139
+msgid "Formatted html link to referenced user"
+msgstr "Formázott html link a hivatkozott felhasználóhoz."
+
+#: modules/token/token_cck.inc:164
+msgid "Link URL"
+msgstr "Link URL"
+
+#: modules/token/token_cck.inc:165
+msgid "Link title"
+msgstr "Link címe"
+
+#: modules/token/token_cck.inc:166
+msgid "Formatted html link"
+msgstr "Formázott html link"
+
+#: modules/token/token_cck.inc:192
+msgid "Image file ID"
+msgstr "Képállomány azonosító"
+
+#: modules/token/token_cck.inc:193
+msgid "Image title"
+msgstr "Kép címe"
+
+#: modules/token/token_cck.inc:194
+msgid "Image alt text"
+msgstr "Kép alternatív szöveg"
+
+#: modules/token/token_cck.inc:195
+msgid "Image file name"
+msgstr "Képállomány neve"
+
+#: modules/token/token_cck.inc:196
+msgid "Image path"
+msgstr "Kép elérési útja"
+
+#: modules/token/token_cck.inc:197
+msgid "Image MIME type"
+msgstr "Kép MIME-típusa"
+
+#: modules/token/token_cck.inc:198
+msgid "Image file size"
+msgstr "Kép állomány mérete"
+
+#: modules/token/token_cck.inc:199
+msgid "Fully formatted HTML image tag"
+msgstr "Teljesen megformázott HTML kép elem"
+
+#: modules/token/token_cck.inc:230
+msgid "The raw date value."
+msgstr "Nyers adat értéke."
+
+#: modules/token/token_cck.inc:231
+msgid "The formatted date."
+msgstr "Formázott adat."
+
+#: modules/token/token_cck.inc:232
+msgid "The raw date timestamp."
+msgstr "A nyers adat időbélyege."
+
+#: modules/token/token_cck.inc:233
+msgid "Date year (four digit)"
+msgstr "Dátum év (négy számjegy)"
+
+#: modules/token/token_cck.inc:234
+msgid "Date year (two digit)"
+msgstr "Dátum év (két számjegy)"
+
+#: modules/token/token_cck.inc:235
+msgid "Date month (full word)"
+msgstr "Dátum hónap (teljes szó)"
+
+#: modules/token/token_cck.inc:236
+msgid "Date month (abbreviated)"
+msgstr "Dátum hónap (rövidített)"
+
+#: modules/token/token_cck.inc:237
+msgid "Date month (two digit, zero padded)"
+msgstr "Dátum hónap (két számjegy, kitöltés nélkül)"
+
+#: modules/token/token_cck.inc:238
+msgid "Date month (one or two digit)"
+msgstr "Dátum hónap (egy vagy két számjegy)"
+
+#: modules/token/token_cck.inc:239
+msgid "Date week (two digit)"
+msgstr "Dátum hét (két számjegy)"
+
+#: modules/token/token_cck.inc:240
+msgid "Date date (day of month)"
+msgstr "Dátum dátum (a hónap napja)"
+
+#: modules/token/token_cck.inc:241
+msgid "Date day (full word)"
+msgstr "Dátum nap (teljes szó)"
+
+#: modules/token/token_cck.inc:242
+msgid "Date day (abbreviation)"
+msgstr "Dátum nap (rövidített)"
+
+#: modules/token/token_cck.inc:243
+msgid "Date day (two digit, zero-padded)"
+msgstr "Dátum nap (két számjegy, kitöltés nélkül)"
+
+#: modules/token/token_cck.inc:244
+msgid "Date day (one or two digit)"
+msgstr "Dátum nap (egy vagy két számjegy)"
+
+#: modules/token/token_cck.inc:246
+msgid "If the field has a to-date defined, the same tokens exist in the form: [to-????], where ???? is the normal token."
+msgstr "Ha a mező keltezése meg van adva, ugyanazok a vezérjelek lesznek a formban: [to-????], ahol a ???? a normál vezérjel."
+
+#: modules/token/token_node.inc:130
+msgid "Node ID"
+msgstr "Tartalom azonosító"
+
+#: modules/token/token_node.inc:131
+msgid "Node type"
+msgstr "Tartalom tipus"
+
+#: modules/token/token_node.inc:132
+msgid "Node type (user-friendly version)"
+msgstr "Tartalom tipus (felhasználóbarát változat)"
+
+#: modules/token/token_node.inc:133
+msgid "Node title"
+msgstr "Tartalom címe"
+
+#: modules/token/token_node.inc:135
+msgid "Node author's user id"
+msgstr "Tartalom szerzőjének azonosítója"
+
+#: modules/token/token_node.inc:136
+msgid "Node author's user name"
+msgstr "Tartalom szerzője"
+
+#: modules/token/token_node.inc:138
+msgid "Name of top taxonomy term"
+msgstr "A taxonómia kifejezés neve"
+
+#: modules/token/token_node.inc:139
+msgid "ID of top taxonomy term"
+msgstr "Taxonómia kifejezés azonosítója"
+
+#: modules/token/token_node.inc:140
+msgid "Name of top term's vocabulary"
+msgstr "A vezető kifejezések szótárának neve"
+
+#: modules/token/token_node.inc:141
+msgid "ID of top term's vocabulary"
+msgstr "A kifejezés-szótár azonosítója"
+
+#: modules/token/token_node.inc:146
+msgid "Node creation year (four digit)"
+msgstr "Tartalom keletkezési éve (négy számjegy)"
+
+#: modules/token/token_node.inc:147
+msgid "Node creation year (two digit)"
+msgstr "Tartalom keletkezési éve (két számjegy)"
+
+#: modules/token/token_node.inc:148
+msgid "Node creation month (full word)"
+msgstr "Tartalom keletkezési hónapja (teljes szó)"
+
+#: modules/token/token_node.inc:149
+msgid "Node creation month (abbreviated)"
+msgstr "Tartalom keletkezési hónapja (rövidítve)"
+
+#: modules/token/token_node.inc:150
+msgid "Node creation month (two digit, zero padded)"
+msgstr "Tartalom keletkezési hónapja (két számjegy, kitöltés nélkül)"
+
+#: modules/token/token_node.inc:151
+msgid "Node creation month (one or two digit)"
+msgstr "Tartalom keletkezési hónapja (egy vagy két számjegy)"
+
+#: modules/token/token_node.inc:152
+msgid "Node creation week (two digit)"
+msgstr "Tartalom keletkezési hete (két számjegy)"
+
+#: modules/token/token_node.inc:153
+msgid "Node creation date (day of month)"
+msgstr "Tartalom keletkezési hete (a hónap napja)"
+
+#: modules/token/token_node.inc:154
+msgid "Node creation day (full word)"
+msgstr "Tartalom keletkezési napja (teljes szó)"
+
+#: modules/token/token_node.inc:155
+msgid "Node creation day (abbreviation)"
+msgstr "Tartalom keletkezési napja (rövidített)"
+
+#: modules/token/token_node.inc:156
+msgid "Node creation day (two digit, zero-padded)"
+msgstr "Tartalom keletkezési napja (két számjegy, kitöltés nélkül)"
+
+#: modules/token/token_node.inc:157
+msgid "Node creation day (one or two digit)"
+msgstr "Tartalom keletkezési napja (egy vagy két számjegy)"
+
+#: modules/token/token_node.inc:158
+msgid "All tokens for node creation dates can also be used with with the \"mod-\" prefix; doing so will use the modification date rather than the creation date."
+msgstr "Minden vezérjel a tartalom keletkezési dátumhoz a \"mod-\" előtaggal lesz használatos; így a módosítás dátumát használva a keletkezési dátum helyett."
+
+#: modules/token/token_node.inc:160
+msgid "The name of the menu the node belongs to."
+msgstr "A menü neve, amelyhez a tartalom tartozik."
+
+#: modules/token/token_node.inc:161
+msgid "The menu path (as reflected in the breadcrumb), not including Home or [menu]. Separated by /."
+msgstr "A menü elérési útvonala (visszatükrözve a morzsában), nem beleértve a Home vagy [menu]. Az egyes elemek / jellel legyenek elválasztva."
+
+#: modules/token/token_node.inc:201
+msgid "The title of the node's book parent."
+msgstr "A könyv típusú tartalom szülő oldalának címe."
+
+#: modules/token/token_node.inc:202
+msgid "The id of the node's book parent."
+msgstr "A könyv típusú tartalom szülő oldalának azonosítója."
+
+#: modules/token/token_node.inc:203
+msgid "The titles of all parents in the node's book hierarchy."
+msgstr "A könyv típusú tartalmak neve a hierarchiában."
+
+#: modules/token/token_taxonomy.inc:29
+msgid "The id number of the category's parent vocabulary."
+msgstr "A kategória szülő szótárának azonosítószáma."
+
+#: modules/token/token_taxonomy.inc:30
+msgid "The vocabulary that the page's first category belongs to."
+msgstr "A szótár, amihez az oldal első kategóriája tartozik."
+
+#: modules/token/token_taxonomy.inc:31
+msgid "The name of the category."
+msgstr "A kategória neve."
+
+#: modules/token/token_taxonomy.inc:32
+msgid "The id number of the category."
+msgstr "A kategória azonosító száma."
+
+#: modules/token/token_user.inc:39
+msgid "User's name"
+msgstr "A felhasználó neve"
+
+#: modules/token/token_user.inc:40
+msgid "User's ID"
+msgstr "A felhasználó azonosítója"
+
+#: modules/token/token_user.inc:41
+msgid "User's email address"
+msgstr "A felhasználó e-mail címe"
+
+#: modules/token/token_user.inc:43
+msgid "User's registration date"
+msgstr "A felhasználó regisztrációjának dátuma"
+
+#: modules/token/token_user.inc:44
+msgid "Days since the user registered"
+msgstr "A felhasználó regisztrációjától eltelt napok száma"
+
+#: modules/token/token_user.inc:45
+msgid "User's last login date"
+msgstr "A felhasználó utolsó bejelentkezésének dátuma"
+
+#: modules/token/token_user.inc:46
+msgid "Days since the user's last login"
+msgstr "A felhasználó utolsó bejelentkezésétől eltelt napok száma"
+
+#: modules/token/token_user.inc:47
+msgid "The current date in the user's timezone"
+msgstr "A helyes idő a felhasználó időzónájában."
+
+#: modules/token/token_user.inc:48
+msgid "The URL of the user's profile page."
+msgstr "URL a felhasználó profil oldalához."
+
+#: modules/token/token_user.inc:49
+msgid "The URL the user's account editing page."
+msgstr "URL a felhasználó adatainak szerkesztéséhez."
+
