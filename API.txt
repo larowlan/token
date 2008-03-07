@@ -76,6 +76,9 @@ Token.module provides a small set of default placeholders for global values
 like the name of the currently logged in user, the site's URL, and so on.
 Any module can provide additional tokens by implementing two hooks.
 
+Security note: For tokens which include user input, users and modules
+expect to see both a ['token-name'] and a ['token-name-raw'] value.
+
 
 hook_token_values($type, $object = NULL)
 ========================================
@@ -85,9 +88,12 @@ replacement values. $type contains the current context -- 'node', 'user',
 should be used as the basis for the replacements. *Only* generate and
 return replacement tokens when $type is something that your module can
 really deal with. That helps keep things speedy and avoid needlessly
-searching for jillions of replacement tokens. For example:
+searching for jillions of replacement tokens. The $options array can 
+contain additional options (exact use is dynamic and not easily documented).
 
-function my_user_token_values($type, $object = NULL) {
+For example:
+
+function my_user_token_values($type, $object = NULL, $options = array()) {
   if ($type == 'user') {
     $user = $object;
     $tokens['name']      = $user->name;
@@ -118,3 +124,10 @@ function my_user_token_list($type = 'all') {
 
 Examples of more elaborate token replacement setups can be found in the
 token_node.inc file that's bundled with token.module.
+
+Security Note
+========
+If  use any of the tokens in the ['raw'] sub-array then please note that these 
+are unfiltered values which could conceivably contain XSS attacks or other 
+malicious data.  Your module should then provide it's own filtering to ensure the 
+safety of site users.
