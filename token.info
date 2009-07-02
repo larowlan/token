@@ -1,4 +1,10 @@
 ; $Id$
 name = Token
-description = Provides a shared API for replacement of textual placeholders with actual data.
-core = 6.x
+description = Handles token-based text substitution.
+core = 7.x
+
+files[] = token.module
+files[] = modules/node.tokens.inc
+files[] = modules/taxonomy.tokens.inc
+files[] = modules/user.tokens.inc
+files[] = modules/system.tokens.inc

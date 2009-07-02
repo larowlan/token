@@ -1,121 +1,94 @@
 <?php
 // $Id$
 
-/**
- * Implementation of hook_init().
- * Note that this will cause Drupal to post a warning on the admin screen
- * when agressive caching is activated. Like CCK, Token's use of hook_init
- * IS compatible with agressive caching, we just need a way to annouce that.
- */
-function token_init() {
-  // Ensure we are not serving a cached page
-  if (function_exists('drupal_set_content')) {
-    // we don't do this in hook_menu to ensure the files are already included when
-    require_once(drupal_get_path('module', 'token') .'/token.inc');
-  }
-}
-
-/**
- * Implementation of hook_theme().
- */
-function token_theme() {
-  return array(
-    'token_help' => array(
-      'arguments' => array('type' => 'all', 'prefix' => '[', 'suffix' => ']'),
-    ),
-  );
-}
-
-/**
- * For a given context, builds a formatted list of tokens and descriptions
- * of their replacement values.
+/*
+ * Load all fields for the most current version of each of a set of
+ * objects of a single object type.
  *
- * @param type
- *    The token types to display documentation for. Defaults to 'all'.
- * @param prefix
- *    The prefix your module will use when parsing tokens. Defaults to '['
- * @param suffix
- *    The suffix your module will use when parsing tokens. Defaults to ']'
- * @return An HTML table containing the formatting docs.
- **/
-function theme_token_help($type = 'all', $prefix = '[', $suffix = ']') {
-  $full_list = token_get_list($type);
+ * @param $text
+ *   The text containing replacable tokens.
+ * @param $data
+ *   An array of keyed objects. For simple replacement scenarios 'node', 'user',
+ *   and others are common keys, with an accompanying node or user object being
+ *   the value. Some tokens types, like 'site', do not require any explicit
+ *   information from $data and can be replaced even if $data is empty.
+ * @returns
+ *   Text with tokens replaced.
+ */
+function token_replace($text, array $data = array(), $safe_for_html = TRUE) {
+  $token_list = token_scan($text);
+  $replacements = token_generate($token_list, $data);
+  
+  $tokens = array_keys($replacements);
+  $values = array_values($replacements);
+  
+  return str_replace($tokens, $values, $text);
+}
 
-  $headers = array(t('Token'), t('Replacement value'));
-  $rows = array();
-  foreach ($full_list as $key => $category) {
-    $rows[] = array(array('data' => drupal_ucfirst($key) .' '. t('tokens'), 'class' => 'region', 'colspan' => 2));
-    foreach ($category as $token => $description) {
-      $row = array();
-      $row[] = $prefix . $token . $suffix;
-      $row[] = $description;
-      $rows[] = $row;
+/*
+ * Build a list of all token-like patterns that appear in the text.
+ *
+ * @param $text
+ *   The text to be scanned for possible tokens.
+ * @returns
+ *   An associative array of discovered tokens, grouped by type.
+ */
+function token_scan($text) {  
+  preg_match_all('/\[(.*?)\:(.*?)\]/', $text, $matches);
+
+  $tokens = array();
+  
+  $raw = $matches[0];
+  $type = $matches[1];
+  $token = $matches[2];
+
+  for ($i = 0; $i < count($raw); $i++) {
+    $tokens[$type[$i]][$token[$i]] = $raw[$i];
+  }
+  
+  return $tokens;
+}
+
+/*
+ * Generate repalcement values for a list of tokens.
+ *
+ * @param $raw_tokens
+ *   A keyed array of tokens, and their original raw form in the source text.
+ * @param $data
+ *   An array of keyed objects. For simple replacement scenarios 'node', 'user',
+ *   and others are common keys, with an accompanying node or user object being
+ *   the value. Some tokens types, like 'site', do not require any explicit
+ *   information from $data and can be replaced even if $data is empty.
+ * @returns
+ *   An associative array of discovered tokens, grouped by type.
+ */
+function token_generate(array $raw_tokens, array $data = array(), $safe_for_html = TRUE) {
+  $results = array();
+  foreach ($raw_tokens as $type => $tokens) {
+    foreach (module_invoke_all('tokens', $type, $tokens, $data) as $original => $replacement) {
+      $results[$original] = $replacement;
     }
   }
-
-  $output = theme('table', $headers, $rows, array('class' => 'description'));
-  return $output;
+  return $results;
 }
 
-/**
- * Sample implementation of hook_token_values().
+/*
+ * Implement hook_registry_files_alter().
  *
- * @param type
- *   A flag indicating the class of substitution tokens to use. If an
- *   object is passed in the second param, 'type' should contain the
- *   object's type. For example, 'node', 'comment', or 'user'. If your
- *   implemention of the hook inserts globally applicable tokens that
- *   do not depend on a particular object, it should only return values
- *   when $type is 'global'.
- * @param object
- *   Optionally, the object to use for building substitution values.
- *   A node, comment, user, etc.
- * @return
- *   A keyed array containing the substitution tokens and the substition
- *   values for the passed-in type and object.
+ * The files in Token module's /modules directory implement hooks on behalf
+ * of other modules. This hook iterates through them and switches the 'owning'
+ * module from token to the real one.
+ *
+ * We loves us drupal_alter().
  */
-function token_token_values($type, $object = NULL) {
-  global $user;
-  global $base_url;
-  $values = array();
-
-  switch ($type) {
-    case 'global':
-      $values['user-name']    = $user->uid ? $user->name : variable_get('anonymous', t('Anonymous'));
-      $values['user-id']      = $user->uid ? $user->uid : 0;
-      $values['user-mail']    = $user->uid ? $user->mail : '';
-      $values['site-url']     = $base_url;
-      $values['site-name']    = variable_get('site_name', t('Drupal'));
-      $values['site-slogan']  = variable_get('site_slogan', '');
-      $values['site-mail']    = variable_get('site_mail', '');
-      $values['site-date']    = format_date(time(), 'short', '', variable_get('date_default_timezone', 0));
-      break;
+function token_registry_files_alter(&$files, $modules) {
+  $dir = $modules['token']->dir;
+  foreach ($modules['token']->info['files'] as $file) {
+    $path = split('/', $file);
+    $inc_file = array_pop($path);
+    $pieces = explode('.', $inc_file, 2);
+    if ($pieces[1] == 'tokens.inc') {
+      $files["$dir/$file"]['module'] = $pieces[0];
+    }
   }
-  return $values;
-}
-
-/**
- * Sample implementation of hook_token_list(). Documents the individual
- * tokens handled by your module.
- *
- * @param type
- *   A flag indicating the class of substitution tokens to return
- *   information on. If this is set to 'all', a complete list is being
- *   built and your module should return its full list, regardless of
- *   type. Global tokens should always be returned, regardless of the
- *   $type passed in.
- * @return
- *   A keyed array listing the substitution tokens. Elements should be
- *   in the form of: $list[$type][$token] = $description
- */
-function token_token_list($type = 'all') {
-  $tokens['global']['user-name']    = t('The name of the currently logged in user.');
-  $tokens['global']['user-id']      = t('The user ID of the currently logged in user.');
-  $tokens['global']['user-mail']    = t('The email address of the currently logged in user.');
-  $tokens['global']['site-url']     = t('The url of the current Drupal website.');
-  $tokens['global']['site-name']    = t('The name of the current Drupal website.');
-  $tokens['global']['site-slogan']  = t('The slogan of the current Drupal website.');
-  $tokens['global']['site-mail']    = t('The contact email address for the current Drupal website.');
-  $tokens['global']['site-date']    = t("The current date on the site's server.");
-  return $tokens;
 }
