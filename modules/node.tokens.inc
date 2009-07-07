@@ -16,6 +16,11 @@ function node_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
       elseif ($name == 'uid') $replacements[$original] = $node->uid;
       elseif ($name == 'name') $replacements[$original] = check_plain($node->name);
       elseif ($name == 'title') $replacements[$original] = check_plain($node->title);
+      elseif ($name == 'type') $replacements[$original] = $node->type;
+      elseif ($name == 'type-name') $replacements[$original] = node_get_types('name', $node->type);
+      elseif ($name == 'language') $replacements[$original] = filter_xss_admin($node->language);
+      elseif ($name == 'url') $replacements[$original] = url('node/' . $node->nid);
+      elseif ($name == 'edit-url') $replacements[$original] = url('node/' . $node->nid . '/edit');
     }
     
     if ($author_tokens = token_match_prefix($tokens, 'author')) {

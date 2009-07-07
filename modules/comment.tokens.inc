@@ -10,18 +10,20 @@ function comment_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
       $comment = $data['comment'];
     }
     foreach($tokens as $name => $original) {
-      if ($name == 'subject') $replacements[$original] = check_plain($comment->subject);
+      if ($name == 'title') $replacements[$original] = check_plain($comment->subject);
       elseif ($name == 'nid') $replacements[$original] = $comment->nid;
       elseif ($name == 'uid') $replacements[$original] = $comment->uid;
       elseif ($name == 'pid') $replacements[$original] = $comment->pid;
       elseif ($name == 'hostname') $replacements[$original] = check_plain($comment->hostname);
       elseif ($name == 'name') $replacements[$original] = check_plain($comment->name);
       elseif ($name == 'mail') $replacements[$original] = check_plain($comment->mail);
-      elseif ($name == 'homepage') $replacements[$original] = check_plain($comment->homepage);
+      elseif ($name == 'homepage') $replacements[$original] = check_url($comment->homepage);
       elseif ($name == 'body') {
         if ($safe_for_html) $replacements[$original] = check_markup($comment->comment, $comment->format);
         else $replacements[$original] = $comment->comment;
       }
+      elseif ($name == 'url') $replacements[$original] = url('comment/' . $comment->cid, array('fragment' => 'comment-' . $comment->cid));
+      elseif ($name == 'edit-url') $replacements[$original] = url('comment/edit/' . $comment->cid);
     }
     
     if ($node_tokens = token_match_prefix($tokens, 'node')) {
