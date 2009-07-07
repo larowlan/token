@@ -4,12 +4,8 @@
 function node_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
   $replacements = array();
 
-  if ($type == 'node') {
-    if (empty($data['node'])) {
-      return;
-    } else {
-      $node = $data['node'];
-    }
+  if ($type == 'node' && !empty($data['node'])) {
+    $node = $data['node'];
 
     foreach($tokens as $name => $original) {
       if ($name == 'nid') $replacements[$original] = $node->nid;

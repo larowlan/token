@@ -4,12 +4,8 @@
 function taxonomy_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
   $replacements = array();
 
-  if ($type == 'term') {
-    if (empty($data['term'])) {
-      return;
-    } else {
-      $term = $data['term'];
-    }
+  if ($type == 'term' && !empty($data['term'])) {
+    $term = $data['term'];
 
     foreach($tokens as $name => $original) {
       if ($name == 'tid') $replacements[$original] = $term->tid;
@@ -29,12 +25,8 @@ function taxonomy_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
     }
   }
 
-  elseif ($type == 'vocabulary') {
-    if (empty($data['vocabulary'])) {
-      return;
-    } else {
-      $vocabulary = $data['vocabulary'];
-    }
+  elseif ($type == 'vocabulary' && !empty($data['vocabulary'])) {
+    $vocabulary = $data['vocabulary'];
 
     foreach($tokens as $name => $original) {
       if ($name == 'vid') $replacements[$original] = $vocabulary->vid;

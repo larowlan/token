@@ -8,4 +8,5 @@ files[] = modules/node.tokens.inc
 files[] = modules/comment.tokens.inc
 files[] = modules/taxonomy.tokens.inc
 files[] = modules/user.tokens.inc
+files[] = modules/poll.tokens.inc
 files[] = modules/system.tokens.inc

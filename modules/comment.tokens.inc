@@ -1,17 +1,16 @@
 <?php
+// $Id$
 
 function comment_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
   $replacements = array();
 
-  if ($type == 'comment') {
-    if (empty($data['comment'])) {
-      return;
-    } else {
-      $comment = $data['comment'];
-    }
+  if ($type == 'comment' && !empty($data['comment'])) {
+    $comment = $data['comment'];
+
     foreach($tokens as $name => $original) {
       if ($name == 'title') $replacements[$original] = check_plain($comment->subject);
       elseif ($name == 'nid') $replacements[$original] = $comment->nid;
+      elseif ($name == 'tnid') $replacements[$original] = $comment->nid;
       elseif ($name == 'uid') $replacements[$original] = $comment->uid;
       elseif ($name == 'pid') $replacements[$original] = $comment->pid;
       elseif ($name == 'hostname') $replacements[$original] = check_plain($comment->hostname);
@@ -39,6 +38,13 @@ function comment_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
       $replacements += module_invoke_all('tokens', 'comment', $parent_tokens, array('comment' => $parent));
     }
   }
-  
+  elseif ($type == 'node' & !empty($data['node'])) {
+    $node = $data['node'];
+
+    foreach($tokens as $name => $original) {
+      if ($name == 'comment-count') $replacements[$original] = $node->comment_count;
+    }
+  }
+
   return $replacements;
 }
