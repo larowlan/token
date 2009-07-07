@@ -1,20 +1,22 @@
 <?php
+// $Id$
 
 function user_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
+  global $user;
+
   $replacements = array();
 
-  foreach($tokens as $token => $raw) {
-    switch ($type) {
-      case 'user':
-        if (empty($data['user'])) {
-          return;
-        } else {
-          $account = $data['user'];
-        }
-        if ($token == 'uid') $replacements[$raw] = $account->uid;
-        if ($token == 'name') $replacements[$raw] = check_plain($account->name);
-        if ($token == 'email') $replacements[$raw] = check_plain($account->email);
-        break;
+  if ($type == 'user') {
+    if (empty($data['user'])) {
+      $account = $data['user'];
+    } else {
+      $account = $user;
+    }
+
+    foreach($tokens as $token => $raw) {
+      if ($token == 'uid') $replacements[$raw] = $account->uid;
+      elseif ($token == 'name') $replacements[$raw] = check_plain($account->name);
+      elseif ($token == 'mail') $replacements[$raw] = check_plain($account->mail);
     }
   }
   

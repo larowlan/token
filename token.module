@@ -72,6 +72,32 @@ function token_generate(array $raw_tokens, array $data = array(), $safe_for_html
   return $results;
 }
 
+
+/*
+ * Given a list of tokens, return those that begin with a specific prefix.
+ *
+ * @param $tokens
+ *   A keyed array of tokens, and their original raw form in the source text.
+ * @param $prefix
+ *   A textual string to be matched at the beginning of the token.
+ * @param $delimiter
+ *   An optional string containing the character that separates the prefix from
+ *   the rest of the token. Defaults to ':'.
+ * @returns
+ *   An associative array of discovered tokens, with the prefix and delimiter
+ *   stripped from the key.
+ */
+function token_match_prefix(array $tokens, $prefix, $delimiter = ':') {
+  $results = array();
+  foreach ($tokens as $token => $raw) {
+    $parts = split($delimiter, $token, 2);
+    if (count($parts) == 2) {
+      $results[$parts[1]] = $raw;
+    }
+  }
+  return $results;
+}
+
 /*
  * Implement hook_registry_files_alter().
  *
