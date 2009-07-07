@@ -5,9 +5,9 @@ function system_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
   $replacements = array();
   
   if ($type == 'site') {
-    foreach($tokens as $token => $raw) {
-      if ($token == 'name') $replacements[$raw] = variable_get('site_name');
-      elseif ($token == 'mission') $replacements[$raw] = variable_get('mission_statement');
+    foreach($tokens as $name => $original) {
+      if ($name == 'name') $replacements[$original] = variable_get('site_name');
+      elseif ($name == 'mission') $replacements[$original] = variable_get('mission_statement');
     }
   }
   
@@ -18,10 +18,10 @@ function system_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
       $date = $data['date'];
     }
 
-    foreach($tokens as $token => $raw) {
-      if ($token == 'small') $replacements[$raw] = format_date($date, 'small');
-      elseif ($token == 'medium') $replacements[$raw] = format_date($date, 'medium');
-      elseif ($token == 'large') $replacements[$raw] = format_date($date, 'large');
+    foreach($tokens as $name => $raw) {
+      if ($name == 'small') $replacements[$original] = format_date($date, 'small');
+      elseif ($name == 'medium') $replacements[$original] = format_date($date, 'medium');
+      elseif ($name == 'large') $replacements[$original] = format_date($date, 'large');
     }
   }
 

@@ -5,6 +5,7 @@ core = 7.x
 
 files[] = token.module
 files[] = modules/node.tokens.inc
+files[] = modules/comment.tokens.inc
 files[] = modules/taxonomy.tokens.inc
 files[] = modules/user.tokens.inc
 files[] = modules/system.tokens.inc

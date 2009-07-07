@@ -13,10 +13,10 @@ function user_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
       $account = $user;
     }
 
-    foreach($tokens as $token => $raw) {
-      if ($token == 'uid') $replacements[$raw] = $account->uid;
-      elseif ($token == 'name') $replacements[$raw] = check_plain($account->name);
-      elseif ($token == 'mail') $replacements[$raw] = check_plain($account->mail);
+    foreach($tokens as $name => $original) {
+      if ($name == 'uid') $replacements[$original] = $account->uid;
+      elseif ($name == 'name') $replacements[$original] = check_plain($account->name);
+      elseif ($name == 'mail') $replacements[$original] = check_plain($account->mail);
     }
   }
   

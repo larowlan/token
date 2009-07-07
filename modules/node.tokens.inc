@@ -11,11 +11,11 @@ function node_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
       $node = $data['node'];
     }
 
-    foreach($tokens as $token => $raw) {
-      if ($token == 'nid') $replacements[$raw] = $node->nid;
-      elseif ($token == 'uid') $replacements[$raw] = $node->uid;
-      elseif ($token == 'name') $replacements[$raw] = check_plain($node->name);
-      elseif ($token == 'title') $replacements[$raw] = check_plain($node->title);
+    foreach($tokens as $name => $original) {
+      if ($name == 'nid') $replacements[$original] = $node->nid;
+      elseif ($name == 'uid') $replacements[$original] = $node->uid;
+      elseif ($name == 'name') $replacements[$original] = check_plain($node->name);
+      elseif ($name == 'title') $replacements[$original] = check_plain($node->title);
     }
     
     if ($author_tokens = token_match_prefix($tokens, 'author')) {
