@@ -19,3 +19,13 @@ function statistics_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
 
   return $replacements;
 }
+
+
+function statistics_token_info() {
+  $data = array();
+
+  $data['node']['views']['name'] = t('Number of views');
+  $data['node']['views']['description'] = t('The number of visitors who have read the node.');
+
+  return $data;
+}
