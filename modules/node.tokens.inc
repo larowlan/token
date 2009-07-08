@@ -9,6 +9,7 @@ function node_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
 
     foreach($tokens as $name => $original) {
       if ($name == 'nid') $replacements[$original] = $node->nid;
+      elseif ($name == 'tnid') $replacements[$original] = $comment->tnid;
       elseif ($name == 'uid') $replacements[$original] = $node->uid;
       elseif ($name == 'name') $replacements[$original] = check_plain($node->name);
       elseif ($name == 'title') $replacements[$original] = check_plain($node->title);

@@ -98,6 +98,38 @@ function token_match_prefix(array $tokens, $prefix, $delimiter = ':') {
   return $results;
 }
 
+
+/*
+ * Returns metadata describing supported tokens.
+ *
+ * The metadata array contains token type, name, and description data as well as
+ * an optional pointer indicating that the token chains to another set of tokens.
+ * For example:
+ * 
+ *   $data['node']['title'] = array(
+ *     'name' => t('Title'),
+ *     'description' => t('The title of the current node.'),
+ *   );
+ *   $data['node']['author'] = array(
+ *     'name' => t('Author'),
+ *     'description' => t('The author of the current node.'),
+ *     'references' => 'user',
+ *   );
+ *
+ * @param $reset
+ *   Rebuild the internal cache of Token metadata. Defaults to FALSE.
+ * @returns
+ *   An associative array of token information, grouped by token type.
+ */
+function token_info($reset = FALSE) {
+  $data = &drupal_static(__FUNCTION__, array(), $reset);
+  if (empty($data)) {
+    $data = module_invoke_all('token_info');
+    drupal_alter('token_info', $data);
+  }
+  return $data;
+}
+
 /*
  * Implement hook_registry_files_alter().
  *
