@@ -37,31 +37,35 @@ function user_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
 function user_token_info() {
   $data = array();
 
+  // Metadata for token types.
+  $data['types']['user']['name'] = t('Users');
+  $data['types']['user']['description'] = t('Tokens related to individual user accounts.');
+
   // Basic data for users
-  $data['node']['uid']['name'] = t('User ID');
-  $data['node']['uid']['description'] = t('The unique ID of the user account.');
+  $data['tokens']['user']['uid']['name'] = t('User ID');
+  $data['tokens']['user']['uid']['description'] = t('The unique ID of the user account.');
 
-  $data['node']['name']['name'] = t('Name');
-  $data['node']['name']['description'] = t("The login name of the user account.");
+  $data['tokens']['user']['name']['name'] = t('Name');
+  $data['tokens']['user']['name']['description'] = t("The login name of the user account.");
 
-  $data['node']['mail']['name'] = t('Email');
-  $data['node']['mail']['description'] = t('The email address of the user account.');
+  $data['tokens']['user']['mail']['name'] = t('Email');
+  $data['tokens']['user']['mail']['description'] = t('The email address of the user account.');
 
-  $data['node']['url']['name'] = t('URL');
-  $data['node']['url']['description'] = t('The url of the account profile page.');
+  $data['tokens']['user']['url']['name'] = t('URL');
+  $data['tokens']['user']['url']['description'] = t('The url of the account profile page.');
 
-  $data['node']['edit-url']['name'] = t('Edit URL');
-  $data['node']['edit-url']['description'] = t('The url of the account edit page.');
+  $data['tokens']['user']['edit-url']['name'] = t('Edit URL');
+  $data['tokens']['user']['edit-url']['description'] = t('The url of the account edit page.');
 
 
   // Chained tokens for users
-  $data['comment']['last-login']['name'] = t('Last login');
-  $data['comment']['last-login']['description'] = t('The date the user last logged in to the site.');
-  $data['comment']['last-login']['references'] = 'date';
+  $data['tokens']['user']['last-login']['name'] = t('Last login');
+  $data['tokens']['user']['last-login']['description'] = t('The date the user last logged in to the site.');
+  $data['tokens']['user']['last-login']['references'] = 'date';
 
-  $data['comment']['created']['name'] = t('Created');
-  $data['comment']['created']['description'] = t('The date the user account was created.');
-  $data['comment']['created']['references'] = 'date';
+  $data['tokens']['user']['created']['name'] = t('Created');
+  $data['tokens']['user']['created']['description'] = t('The date the user account was created.');
+  $data['tokens']['user']['created']['references'] = 'date';
 
 
   return $data;
