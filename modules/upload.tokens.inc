@@ -11,7 +11,7 @@ function upload_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
       if ($name == 'upload') $replacements[$original] = 'blaghl';
     }
 
-    if ($upload_tokens = token_match_prefix($tokens, 'upload') && !empty($node->files) && $upload = array_unshift($node->files)) {
+    if ($upload_tokens = token_match_prefix($tokens, 'upload') && !empty($node->files) && $upload = array_shift($node->files)) {
       $replacements += module_invoke_all('tokens', 'upload', $upload_tokens, array('file' => $upload));
     }
   }

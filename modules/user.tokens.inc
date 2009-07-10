@@ -22,11 +22,11 @@ function user_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
     }
     
     if ($login_tokens = token_match_prefix($tokens, 'last-login')) {
-      $replacements += module_invoke_all('tokens', 'date', $login_tokens, array('date' => $node->created));
+      $replacements += module_invoke_all('tokens', 'date', $login_tokens, array('date' => $account->login));
     }
 
     if ($registered_tokens = token_match_prefix($tokens, 'created')) {
-      $replacements += module_invoke_all('tokens', 'date', $registered_tokens, array('date' => $node->created));
+      $replacements += module_invoke_all('tokens', 'date', $registered_tokens, array('date' => $account->created));
     }
   }
   
