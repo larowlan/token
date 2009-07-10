@@ -60,7 +60,7 @@ function system_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
       $replacements += module_invoke_all('tokens', 'date', $date_tokens, array('date' => $file->timestamp));
     }
 
-    if ($owner_tokens = token_match_prefix($tokens, 'owner') && $account = user_load($file->uid)) {
+    if (($owner_tokens = token_match_prefix($tokens, 'owner')) && $account = user_load($file->uid)) {
       $replacements += module_invoke_all('tokens', 'user', $owner_tokens, array('user' => $account));
     }
   }

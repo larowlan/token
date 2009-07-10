@@ -91,13 +91,12 @@ function token_match_prefix(array $tokens, $prefix, $delimiter = ':') {
   $results = array();
   foreach ($tokens as $token => $raw) {
     $parts = split($delimiter, $token, 2);
-    if (count($parts) == 2) {
+    if (count($parts) == 2 && $parts[0] == $prefix) {
       $results[$parts[1]] = $raw;
     }
   }
   return $results;
 }
-
 
 /*
  * Returns metadata describing supported tokens.
