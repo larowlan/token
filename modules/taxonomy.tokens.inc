@@ -17,6 +17,10 @@ function taxonomy_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
         $count = db_result(db_query($sql, array(':tid' => $term->tid)));
         $replacements[$original] = check_plain($count);
       }
+      elseif ($name == 'vocabulary') {
+        $vocabulary = taxonomy_vocabulary_load($term->vid);
+        $replacements[$original] = check_plain($vocabulary->name);
+      }
     }
     
     if ($vocabulary_tokens = token_match_prefix($tokens, 'vocabulary')) {

@@ -19,6 +19,10 @@ function user_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
       elseif ($name == 'mail') $replacements[$original] = check_plain($account->mail);
       elseif ($name == 'url') $replacements[$original] = url("user/$account->uid");
       elseif ($name == 'edit-url') $replacements[$original] = url("user/$account->uid/edit");
+
+      // These tokens are default variations on the chained tokens handled below.
+      elseif ($name == 'last-login') $replacements[$original] = format_date($account->login);
+      elseif ($name == 'created') $replacements[$original] = format_date($account->created);
     }
     
     if ($login_tokens = token_match_prefix($tokens, 'last-login')) {

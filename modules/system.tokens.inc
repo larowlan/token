@@ -49,6 +49,12 @@ function system_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
       elseif ($name == 'path') $replacements[$original] = check_plain($file->filepath);
       elseif ($name == 'mime') $replacements[$original] = check_plain($file->filemime);
       elseif ($name == 'size') $replacements[$original] = format_size($file->filesize);
+      elseif ($name == 'url') $replacements[$original] = file_create_url($file->filepath);
+      
+      // These tokens are default variations on the chained tokens handled below.
+      elseif ($name == 'node') $replacements[$original] = $file->filepath;
+      elseif ($name == 'timestamp') $replacements[$original] = $file->filepath;
+      elseif ($name == 'owner') $replacements[$original] = $file->filepath;
     }
 
     if ($node_tokens = token_match_prefix($tokens, 'node')) {
@@ -148,6 +154,9 @@ function system_token_info() {
   
   $data['tokens']['file']['size']['name'] = t("File size");
   $data['tokens']['file']['size']['description'] = t("The size of the file, in kilobytes.");
+
+  $data['tokens']['file']['path']['name'] = t("URL");
+  $data['tokens']['file']['path']['description'] = t("The web-accessible URL for the file.");
 
 
   // Chained tokens for files

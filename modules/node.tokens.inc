@@ -23,6 +23,11 @@ function node_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
         if ($safe_for_html) $replacements[$original] = check_markup($node->body, $node->format);
         else $replacements[$original] = $node->body;
       }
+      
+      // These tokens are default variations on the chained tokens handled below.
+      elseif ($name == 'author') $replacements[$original] = check_plain($node->name);
+      elseif ($name == 'created') $replacements[$original] = format_date($node->created);
+      elseif ($name == 'changed') $replacements[$original] = format_date($node->changed);
     }
     
     if ($author_tokens = token_match_prefix($tokens, 'author')) {
