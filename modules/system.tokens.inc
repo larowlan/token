@@ -37,6 +37,34 @@ function system_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
     }
   }
 
+  elseif ($type == 'file' && !empty($data['file'])) {
+    $file = $data['file'];
+
+    foreach($tokens as $name => $raw) {
+      if ($name == 'fid') $replacements[$original] = $file->fid;
+      elseif ($name == 'uid') $replacements[$original] = $file->uid;
+      elseif ($name == 'nid') $replacements[$original] = $file->nid;
+      elseif ($name == 'name') $replacements[$original] = check_plain($file->filename);
+      elseif ($name == 'description') $replacements[$original] = check_plain($file->description);
+      elseif ($name == 'path') $replacements[$original] = check_plain($file->filepath);
+      elseif ($name == 'mime') $replacements[$original] = check_plain($file->filemime);
+      elseif ($name == 'size') $replacements[$original] = format_size($file->filesize);
+    }
+
+    if ($node_tokens = token_match_prefix($tokens, 'node')) {
+      $node = node_load($file->nid);
+      $replacements += module_invoke_all('tokens', 'node', $node_tokens, array('node' => $node));
+    }
+
+    if ($date_tokens = token_match_prefix($tokens, 'timestamp')) {
+      $replacements += module_invoke_all('tokens', 'date', $date_tokens, array('date' => $file->timestamp));
+    }
+
+    if ($owner_tokens = token_match_prefix($tokens, 'owner') && $account = user_load($file->uid)) {
+      $replacements += module_invoke_all('tokens', 'user', $owner_tokens, array('user' => $account));
+    }
+  }
+
   return $replacements;
 }
 
@@ -51,6 +79,9 @@ function system_token_info() {
 
   $data['types']['date']['name'] = t('Dates');
   $data['types']['date']['description'] = t('Tokens related to times and dates.');
+
+  $data['types']['file']['name'] = t('Files');
+  $data['types']['file']['description'] = t('Tokens related to uploaded files.');
 
 
   // Sitewide variables and metadata.
@@ -91,6 +122,46 @@ function system_token_info() {
 
   $data['tokens']['date']['raw']['name'] = t("Raw timestamp");
   $data['tokens']['date']['raw']['description'] = t("A date in UNIX timestamp format (%date)", array('%date' => REQUEST_TIME));
+
+
+  // File related tokens.
+  $data['tokens']['file']['fid']['name'] = t("File ID");
+  $data['tokens']['file']['fid']['description'] = t("The unique ID of the uploaded file.");
+  
+  $data['tokens']['file']['uid']['name'] = t("User ID");
+  $data['tokens']['file']['uid']['description'] = t("The unique ID of the user who owns the file.");
+
+  $data['tokens']['file']['nid']['name'] = t("Node ID");
+  $data['tokens']['file']['nid']['description'] = t("The unique ID of the node the file is attached to.");
+  
+  $data['tokens']['file']['name']['name'] = t("File name");
+  $data['tokens']['file']['name']['description'] = t("The name of the file on disk.");
+
+  $data['tokens']['file']['description']['name'] = t("Description");
+  $data['tokens']['file']['description']['description'] = t("An optional human-readable description of the file.");
+  
+  $data['tokens']['file']['path']['name'] = t("Path");
+  $data['tokens']['file']['path']['description'] = t("The location of the file on disk.");
+  
+  $data['tokens']['file']['mime']['name'] = t("MIME type");
+  $data['tokens']['file']['mime']['description'] = t("The MIME type of the file.");
+  
+  $data['tokens']['file']['size']['name'] = t("File size");
+  $data['tokens']['file']['size']['description'] = t("The size of the file, in kilobytes.");
+
+
+  // Chained tokens for files
+  $data['tokens']['file']['timestamp']['name'] = t('Timestamp');
+  $data['tokens']['file']['timestamp']['description'] = t('The date the file was most recently changed.');
+  $data['tokens']['file']['timestamp']['references'] = 'date';
+
+  $data['tokens']['file']['node']['name'] = t('Node');
+  $data['tokens']['file']['node']['description'] = t('The node the file is attached to.');
+  $data['tokens']['file']['node']['references'] = 'date';
+
+  $data['tokens']['file']['owner']['name'] = t('Owner');
+  $data['tokens']['file']['owner']['description'] = t('The user who originally uploaded the file.');
+  $data['tokens']['file']['owner']['references'] = 'user';
 
   return $data;
 }

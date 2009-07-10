@@ -11,3 +11,4 @@ files[] = modules/user.tokens.inc
 files[] = modules/poll.tokens.inc
 files[] = modules/system.tokens.inc
 files[] = modules/statistics.tokens.inc
+files[] = modules/upload.tokens.inc
