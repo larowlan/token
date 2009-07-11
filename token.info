@@ -4,6 +4,8 @@ description = Handles token-based text substitution.
 core = 7.x
 
 files[] = token.module
+files[] = token.dev.inc
+files[] = token.install
 files[] = modules/node.tokens.inc
 files[] = modules/comment.tokens.inc
 files[] = modules/taxonomy.tokens.inc

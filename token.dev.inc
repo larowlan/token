@@ -25,7 +25,7 @@ function token_test_form(&$form_state) {
   $results = db_query($sql);
   $comments = array('' => t('-None-'));
   while ($comment = db_fetch_object($results)) {
-    $comments[$comment->nid] = check_plain($comment->subject);
+    $comments[$comment->cid] = check_plain($comment->subject);
   }
   $form['comment'] = array(
     '#type' => 'select',
@@ -61,9 +61,6 @@ function token_test_form(&$form_state) {
       '#title' => t('Results'),
       '#markup' => token_replace($form_state['input']['text'], $data),
     );
-  }
-  else {
-    dsm('wait what?');
   }
 
   return $form;
