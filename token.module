@@ -26,12 +26,15 @@ function token_menu() {
  *   and others are common keys, with an accompanying node or user object being
  *   the value. Some tokens types, like 'site', do not require any explicit
  *   information from $data and can be replaced even if $data is empty.
+ * @param $language
+ *   An optional language object to be used when generating locale-sensitive
+ *   tokens like dates.
  * @returns
  *   Text with tokens replaced.
  */
-function token_replace($text, array $data = array()) {
+function token_replace($text, array $data = array(), $language = NULL) {
   $token_list = token_scan($text);
-  $replacements = token_generate($token_list, $data, TRUE);
+  $replacements = token_generate($token_list, $data, $language, TRUE);
 
   $tokens = array_keys($replacements);
   $values = array_values($replacements);
@@ -76,10 +79,13 @@ function token_scan($text) {
  * @param $sanitize
  *   A boolean flag indicating whether the replacement values should be sanitized
  *   for display on an HTML page. Defaults to TRUE.
+ * @param $language
+ *   An optional language object to be used when generating locale-sensitive
+ *   tokens like dates.
  * @returns
  *   An associative array of discovered tokens, grouped by type.
  */
-function token_generate(array $raw_tokens, array $data = array(), $sanitize = TRUE) {
+function token_generate(array $raw_tokens, array $data = array(), $language = NULL, $sanitize = TRUE) {
   $results = array();
   foreach ($raw_tokens as $type => $tokens) {
     foreach (module_invoke_all('tokens', $type, $tokens, $data, $sanitize) as $original => $replacement) {

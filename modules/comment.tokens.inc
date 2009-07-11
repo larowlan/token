@@ -9,7 +9,12 @@
 /**
  * Implement hook_tokens().
  */
-function comment_tokens($type, $tokens, $data, $sanitize = TRUE) {
+function comment_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) {
+  $url_options = array('absolute' => TRUE);
+  if (isset($language)) {
+    $url_options['language'] = $language;
+  }
+
   $replacements = array();
 
   if ($type == 'comment' && !empty($data['comment'])) {
@@ -71,7 +76,12 @@ function comment_tokens($type, $tokens, $data, $sanitize = TRUE) {
           }
           break;
         case 'created':
-          $replacements[$original] = date_format($comment->timestamp);
+          if (isset($language)) {
+            $replacements[$original] = date_format($comment->timestamp, '', NULL, $language->language);
+          }
+          else {
+            $replacements[$original] = date_format($comment->timestamp);
+          }
           break;
         case 'node':
           $node = node_load($comment->nid);
@@ -83,19 +93,19 @@ function comment_tokens($type, $tokens, $data, $sanitize = TRUE) {
     // Chained token relationships.
     if ($node_tokens = token_match_prefix($tokens, 'node')) {
       $node = node_load($comment->nid);
-      $replacements += module_invoke_all('tokens', 'node', $node_tokens, array('node' => $node));
+      $replacements += module_invoke_all('tokens', 'node', $node_tokens, array('node' => $node), $language, $sanitize);
     }
 
     if ($date_tokens = token_match_prefix($tokens, 'created')) {
-      $replacements += module_invoke_all('tokens', 'date', $date_tokens, array('date' => $comment->timestamp));
+      $replacements += module_invoke_all('tokens', 'date', $date_tokens, array('date' => $comment->timestamp), $language, $sanitize);
     }
 
     if (($parent_tokens = token_match_prefix($tokens, 'parent')) && $parent = comment_load($comment->pid)) {
-      $replacements += module_invoke_all('tokens', 'comment', $parent_tokens, array('comment' => $parent));
+      $replacements += module_invoke_all('tokens', 'comment', $parent_tokens, array('comment' => $parent), $language, $sanitize);
     }
 
     if (($author_tokens = token_match_prefix($tokens, 'author')) && $account = user_load($comment->uid)) {
-      $replacements += module_invoke_all('tokens', 'user', $author_tokens, array('user' => $account));
+      $replacements += module_invoke_all('tokens', 'user', $author_tokens, array('user' => $account), $language, $sanitize);
     }
   }
   elseif ($type == 'node' & !empty($data['node'])) {

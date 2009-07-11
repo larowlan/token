@@ -9,7 +9,12 @@
 /**
  * Implement hook_tokens().
  */
-function node_tokens($type, $tokens, $data, $sanitize = TRUE) {
+function node_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) {
+  $url_options = array('absolute' => TRUE);
+  if (isset($language)) {
+    $url_options['language'] = $language;
+  }
+
   $replacements = array();
 
   if ($type == 'node' && !empty($data['node'])) {
@@ -73,25 +78,35 @@ function node_tokens($type, $tokens, $data, $sanitize = TRUE) {
           $replacements[$original] = $sanitize ? filter_xss($node->name) : $node->name;
           break;
         case 'created':
-          $replacements[$original] = format_date($node->created);
+          if (isset($language)) {
+            $replacements[$original] = date_format($node->created, '', NULL, $language->language);
+          }
+          else {
+            $replacements[$original] = date_format($node->created);
+          }
           break;
         case 'changed':
-          $replacements[$original] = format_date($node->changed);
+          if (isset($language)) {
+            $replacements[$original] = date_format($node->changed, '', NULL, $language->language);
+          }
+          else {
+            $replacements[$original] = date_format($node->changed);
+          }
           break;
       }
     }
 
     if ($author_tokens = token_match_prefix($tokens, 'author')) {
       $author = user_load($node->uid);
-      $replacements += module_invoke_all('tokens', 'user', $author_tokens, array('user' => $author));
+      $replacements += module_invoke_all('tokens', 'user', $author_tokens, array('user' => $author), $language, $sanitize);
     }
 
     if ($created_tokens = token_match_prefix($tokens, 'created')) {
-      $replacements += module_invoke_all('tokens', 'date', $created_tokens, array('date' => $node->created));
+      $replacements += module_invoke_all('tokens', 'date', $created_tokens, array('date' => $node->created), $language, $sanitize);
     }
 
     if ($changed_tokens = token_match_prefix($tokens, 'changed')) {
-      $replacements += module_invoke_all('tokens', 'date', $changed_tokens, array('date' => $node->changed));
+      $replacements += module_invoke_all('tokens', 'date', $changed_tokens, array('date' => $node->changed), $language, $sanitize);
     }
   }
 

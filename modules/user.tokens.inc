@@ -9,8 +9,12 @@
 /**
  * Implement hook_tokens().
  */
-function user_tokens($type, $tokens, $data, $sanitize = TRUE) {
+function user_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) {
   global $user;
+  $url_options = array('absolute' => TRUE);
+  if (isset($language)) {
+    $url_options['language'] = $language;
+  }
 
   $replacements = array();
 
@@ -35,29 +39,48 @@ function user_tokens($type, $tokens, $data, $sanitize = TRUE) {
         case 'mail':
           $replacements[$original] = $sanitize ? filter_xss($account->mail) : $account->mail;
           break;
+        case 'new-password':
+          $replacements[$original] = $account->password;
+          break;
         case 'url':
-          $replacements[$original] = url("user/$account->uid", array('absolute' => TRUE));
+          $replacements[$original] = url("user/$account->uid", $url_options);
           break;
         case 'edit-url':
-          $replacements[$original] = url("user/$account->uid/edit", array('absolute' => TRUE));
+          $replacements[$original] = url("user/$account->uid/edit", $url_options);
+          break;
+        case 'cancel-url':
+          $replacements[$original] = user_cancel_url($account);
+          break;
+        case 'reset-url':
+          $replacements[$original] = user_pass_reset_url($account);
           break;
 
         // These tokens are default variations on the chained tokens handled below.
         case 'last-login':
-          $replacements[$original] = format_date($account->login);
+          if (isset($language)) {
+            $replacements[$original] = format_date($account->login, 'medium', '', NULL, $language->language);
+          }
+          else {
+            $replacements[$original] = format_date($account->login);
+          }
           break;
         case 'created':
-          $replacements[$original] = format_date($account->created);
+          if (isset($language)) {
+            $replacements[$original] = format_date($account->created, 'medium', '', NULL, $language->language);
+          }
+          else {
+            $replacements[$original] = format_date($account->created);
+          }
           break;
       }
     }
 
     if ($login_tokens = token_match_prefix($tokens, 'last-login')) {
-      $replacements += module_invoke_all('tokens', 'date', $login_tokens, array('date' => $account->login));
+      $replacements += module_invoke_all('tokens', 'date', $login_tokens, array('date' => $account->login), $language, $sanitize);
     }
 
     if ($registered_tokens = token_match_prefix($tokens, 'created')) {
-      $replacements += module_invoke_all('tokens', 'date', $registered_tokens, array('date' => $account->created));
+      $replacements += module_invoke_all('tokens', 'date', $registered_tokens, array('date' => $account->created), $language, $sanitize);
     }
   }
 
@@ -82,11 +105,20 @@ function user_token_info() {
   $data['tokens']['user']['mail']['name'] = t('Email');
   $data['tokens']['user']['mail']['description'] = t('The email address of the user account.');
 
+  $data['tokens']['user']['new-password']['name'] = t('New password');
+  $data['tokens']['user']['new-password']['description'] = t("A newly-assigned password given to the user account on creation.");
+
   $data['tokens']['user']['url']['name'] = t('URL');
   $data['tokens']['user']['url']['description'] = t('The url of the account profile page.');
 
   $data['tokens']['user']['edit-url']['name'] = t('Edit URL');
   $data['tokens']['user']['edit-url']['description'] = t('The url of the account edit page.');
+
+  $data['tokens']['user']['cancel-url']['name'] = t('Account cancellation URL');
+  $data['tokens']['user']['cancel-url']['description'] = t("The account cancellation URL for the user account. Visiting this URL will automatically cancel a user account: it cannot be undone.");
+
+  $data['tokens']['user']['reset-url']['name'] = t('Password reset URL');
+  $data['tokens']['user']['reset-url']['description'] = t('A single-use password reset URL for the user account.');
 
 
   // Chained tokens for users

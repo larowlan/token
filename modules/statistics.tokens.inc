@@ -9,7 +9,7 @@
 /**
  * Implement hook_tokens().
  */
-function statistics_tokens($type, $tokens, $data, $sanitize = TRUE) {
+function statistics_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) {
   $replacements = array();
 
   if ($type == 'node' & !empty($data['node'])) {
@@ -32,7 +32,7 @@ function statistics_tokens($type, $tokens, $data, $sanitize = TRUE) {
 
     if ($created_tokens = token_match_prefix($tokens, 'last-view')) {
       $statistics = statistics_get($node->nid);
-      $replacements += module_invoke_all('tokens', 'date', $created_tokens, array('date' => $statistics['timestamp']));
+      $replacements += module_invoke_all('tokens', 'date', $created_tokens, array('date' => $statistics['timestamp']), $language, $sanitize);
     }
   }
 

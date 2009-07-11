@@ -9,7 +9,7 @@
 /**
  * Implement hook_tokens().
  */
-function taxonomy_tokens($type, $tokens, $data, $sanitize = TRUE) {
+function taxonomy_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) {
   $replacements = array();
 
   if ($type == 'term' && !empty($data['term'])) {
@@ -43,7 +43,7 @@ function taxonomy_tokens($type, $tokens, $data, $sanitize = TRUE) {
 
     if ($vocabulary_tokens = token_match_prefix($tokens, 'vocabulary')) {
       $vocabulary = taxonomy_vocabulary_load($term->vid);
-      $replacements += module_invoke_all('tokens', 'vocabulary', $vocabulary_tokens, array('vocabulary' => $vocabulary));
+      $replacements += module_invoke_all('tokens', 'vocabulary', $vocabulary_tokens, array('vocabulary' => $vocabulary), $language, $sanitize);
     }
   }
 

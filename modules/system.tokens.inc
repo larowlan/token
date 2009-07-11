@@ -12,14 +12,19 @@
 /**
  * Implement hook_tokens().
  */
-function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
+function system_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) {
+  $url_options = array('absolute' => TRUE);
+  if (isset($language)) {
+    $url_options['language'] = $language;
+  }
+
   $replacements = array();
 
   if ($type == 'site') {
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'name':
-          $site_name = variable_get('site_name');
+          $site_name = variable_get('site_name', 'Drupal');
           $replacements[$original] = $sanitize ? filter_xss($site_name) : $site_name;
           break;
         case 'slogan':
@@ -35,10 +40,10 @@ function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
           $replacements[$original] = variable_get('site_mail');
           break;
         case 'url':
-          $replacements[$original] = url('<front>', array('absolute' => TRUE));
+          $replacements[$original] = url('<front>', $url_options);
           break;
         case 'login-url':
-          $replacements[$original] = url('user', array('absolute' => TRUE));
+          $replacements[$original] = url('user', $url_options);
           break;
       }
     }
@@ -53,28 +58,51 @@ function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
     }
 
     foreach ($tokens as $name => $original) {
-      switch ($name) {
-        case 'small':
-          $replacements[$original] = format_date($date, 'small');
-          break;
-        case 'medium':
-          $replacements[$original] = format_date($date, 'medium');
-          break;
-        case 'large':
-          $replacements[$original] = format_date($date, 'large');
-          break;
-        case 'since':
-          $replacements[$original] = format_interval((REQUEST_TIME - $date), 2);
-          break;
-        case 'raw':
-          $replacements[$original] = filter_xss($date);
-          break;
+      if ($name == 'raw') {
+        $replacements[$original] = filter_xss($date);
+      }
+      elseif (isset($language)) {
+        switch ($name) {
+          case 'small':
+            $replacements[$original] = format_date($date, 'small');
+            break;
+          case 'medium':
+            $replacements[$original] = format_date($date, 'medium');
+            break;
+          case 'large':
+            $replacements[$original] = format_date($date, 'large');
+            break;
+          case 'since':
+            $replacements[$original] = format_interval((REQUEST_TIME - $date), 2);
+            break;
+        }
+      }
+      else {
+        switch ($name) {
+          case 'small':
+            $replacements[$original] = format_date($date, 'small', '', NULL, $language->language);
+            break;
+          case 'medium':
+            $replacements[$original] = format_date($date, 'medium', '', NULL, $language->language);
+            break;
+          case 'large':
+            $replacements[$original] = format_date($date, 'large', '', NULL, $language->language);
+            break;
+          case 'since':
+            $replacements[$original] = format_interval((REQUEST_TIME - $date), 2, $language->language);
+            break;
+        }        
       }
     }
 
     if ($created_tokens = token_match_prefix($tokens, 'custom')) {
       foreach ($created_tokens as $name => $original) {
-        $replacements[$original] = format_date($date, 'custom', $name);
+        if (isset($language)) {
+          $replacements[$original] = format_date($date, 'custom', $name, NULL, $language->language);
+        }
+        else {
+          $replacements[$original] = format_date($date, 'custom', $name);
+        }
       }
     }
   }
@@ -113,7 +141,7 @@ function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
           $replacements[$original] = format_size($file->filesize);
           break;
         case 'url':
-          $replacements[$original] = url(file_create_url($file->filepath), array('absolute' => TRUE));
+          $replacements[$original] = url(file_create_url($file->filepath), $url_options);
           break;
 
         // These tokens are default variations on the chained tokens handled below.
@@ -124,7 +152,12 @@ function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
           }
           break;
         case 'timestamp':
-          $replacements[$original] = format_date($file->timestamp);
+          if (isset($language)) {
+            $replacements[$original] = format_date($file->timestamp, 'medium', '', NULL, $language->language);
+          }
+          else {
+            $replacements[$original] = format_date($file->timestamp);
+          }
           break;
         case 'owner':
           $account = user_load($file->uid);
@@ -135,15 +168,15 @@ function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
 
     if ($node_tokens = token_match_prefix($tokens, 'node')) {
       $node = node_load($file->nid);
-      $replacements += module_invoke_all('tokens', 'node', $node_tokens, array('node' => $node));
+      $replacements += module_invoke_all('tokens', 'node', $node_tokens, array('node' => $node), $language, $sanitize);
     }
 
     if ($date_tokens = token_match_prefix($tokens, 'timestamp')) {
-      $replacements += module_invoke_all('tokens', 'date', $date_tokens, array('date' => $file->timestamp));
+      $replacements += module_invoke_all('tokens', 'date', $date_tokens, array('date' => $file->timestamp), $language, $sanitize);
     }
 
     if (($owner_tokens = token_match_prefix($tokens, 'owner')) && $account = user_load($file->uid)) {
-      $replacements += module_invoke_all('tokens', 'user', $owner_tokens, array('user' => $account));
+      $replacements += module_invoke_all('tokens', 'user', $owner_tokens, array('user' => $account), $language, $sanitize);
     }
   }
 

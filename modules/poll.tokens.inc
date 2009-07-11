@@ -9,7 +9,7 @@
 /**
  * Implement hook_tokens().
  */
-function poll_tokens($type, $tokens, $data, $sanitize = TRUE) {
+function poll_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) {
   $replacements = array();
 
   if ($type == 'node' && !empty($data['node']) && $data['node']->type == 'poll') {
@@ -46,7 +46,12 @@ function poll_tokens($type, $tokens, $data, $sanitize = TRUE) {
           }
           break;
         case 'poll-duration':
-          $replacements[$original] = format_interval($node->runtime, 1);
+          if (isset($language)) {
+            $replacements[$original] = format_interval($node->runtime, 1, $language->language);
+          }
+          else {
+            $replacements[$original] = format_interval($node->runtime, 1);
+          }
           break;
       }
     }

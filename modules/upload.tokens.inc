@@ -9,7 +9,7 @@
 /**
  * Implement hook_tokens().
  */
-function upload_tokens($type, $tokens, $data, $sanitize = TRUE) {
+function upload_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) {
   $replacements = array();
 
   if ($type == 'node' && !empty($data['node'])) {
@@ -23,7 +23,7 @@ function upload_tokens($type, $tokens, $data, $sanitize = TRUE) {
     }
 
     if (($upload_tokens = token_match_prefix($tokens, 'upload')) && !empty($node->files) && $upload = array_shift($node->files)) {
-      $replacements += module_invoke_all('tokens', 'file', $upload_tokens, array('file' => $upload));
+      $replacements += module_invoke_all('tokens', 'file', $upload_tokens, array('file' => $upload), $language, $sanitize);
     }
   }
 
