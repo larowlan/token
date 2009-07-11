@@ -1,33 +1,66 @@
 <?php
 // $Id$
 
-function node_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
+function node_tokens($type, $tokens, $data, $sanitize = TRUE) {
   $replacements = array();
 
   if ($type == 'node' && !empty($data['node'])) {
     $node = $data['node'];
 
     foreach($tokens as $name => $original) {
-      if ($name == 'nid') $replacements[$original] = $node->nid;
-      elseif ($name == 'vid') $replacements[$original] = $node->vid;
-      elseif ($name == 'tnid') $replacements[$original] = $node->tnid;
-      elseif ($name == 'uid') $replacements[$original] = $node->uid;
-      elseif ($name == 'name') $replacements[$original] = check_plain($node->name);
-      elseif ($name == 'title') $replacements[$original] = check_plain($node->title);
-      elseif ($name == 'type') $replacements[$original] = $node->type;
-      elseif ($name == 'type-name') $replacements[$original] = node_get_types('name', $node->type);
-      elseif ($name == 'language') $replacements[$original] = filter_xss_admin($node->language);
-      elseif ($name == 'url') $replacements[$original] = url('node/' . $node->nid);
-      elseif ($name == 'edit-url') $replacements[$original] = url('node/' . $node->nid . '/edit');
-      elseif ($name == 'body') {
-        if ($safe_for_html) $replacements[$original] = check_markup($node->body, $node->format);
-        else $replacements[$original] = $node->body;
+      switch ($name) {
+
+        // Simple key values on the node. 
+        case 'nid':
+          $replacements[$original] = $node->nid;
+          break;
+        case 'vid':
+          $replacements[$original] = $node->vid;
+          break;
+        case 'tnid':
+          $replacements[$original] = $node->tnid;
+          break;
+        case 'uid':
+          $replacements[$original] = $node->uid;
+          break;
+  
+        // Poster identity and basic node content information.
+        case 'name':
+          $replacements[$original] = $sanitize ? check_plain($node->name) : $node->name;
+          break;
+        case 'title':
+          $replacements[$original] = $sanitize ? check_plain($node->title) : $node->title;
+          break;
+        case 'type':
+          $replacements[$original] = $sanitize ? check_plain($node->type) : $node->type;
+          break;
+        case 'type-name':
+          $type_name = node_get_types('name', $node->type);
+          $replacements[$original] = $sanitize ? check_plain($type_name) : $type_name;
+          break;
+        case 'language':
+          $replacements[$original] = $sanitize ? filter_xss_admin($node->language) : $node->language;
+          break;
+  
+        // Comment related URLs.
+        case 'url':
+          $replacements[$original] = url('node/' . $node->nid, array('absolute' => TRUE));
+          break;
+        case 'edit-url':
+          $replacements[$original] = url('node/' . $node->nid . '/edit', array('absolute' => TRUE));
+          break;
+        
+        // Default values for the chained tokens handled below.
+        case 'author':
+          $replacements[$original] = $sanitize ? check_plain($node->name) : $node->name;
+          break;
+        case 'created':
+          $replacements[$original] = format_date($node->created);
+          break;
+        case 'changed':
+          $replacements[$original] = format_date($node->changed);
+          break;
       }
-      
-      // These tokens are default variations on the chained tokens handled below.
-      elseif ($name == 'author') $replacements[$original] = check_plain($node->name);
-      elseif ($name == 'created') $replacements[$original] = format_date($node->created);
-      elseif ($name == 'changed') $replacements[$original] = format_date($node->changed);
     }
     
     if ($author_tokens = token_match_prefix($tokens, 'author')) {
@@ -79,9 +112,6 @@ function node_token_info() {
   // Content tokens for the node
   $data['tokens']['node']['title']['name'] = t('Title');
   $data['tokens']['node']['title']['description'] = t('The title of the node.');
-  
-  $data['tokens']['node']['body']['name'] = t('Content');
-  $data['tokens']['node']['body']['description'] = t('The formatted content of the node itself.');
 
   $data['tokens']['node']['language']['name'] = t('Language');
   $data['tokens']['node']['language']['description'] = t('The language the node is written in.');

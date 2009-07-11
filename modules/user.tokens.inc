@@ -1,7 +1,7 @@
 <?php
 // $Id$
 
-function user_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
+function user_tokens($type, $tokens, $data, $sanitize = TRUE) {
   global $user;
 
   $replacements = array();
@@ -14,15 +14,33 @@ function user_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
     }
 
     foreach($tokens as $name => $original) {
-      if ($name == 'uid') $replacements[$original] = $account->uid;
-      elseif ($name == 'name') $replacements[$original] = check_plain($account->name);
-      elseif ($name == 'mail') $replacements[$original] = check_plain($account->mail);
-      elseif ($name == 'url') $replacements[$original] = url("user/$account->uid");
-      elseif ($name == 'edit-url') $replacements[$original] = url("user/$account->uid/edit");
-
-      // These tokens are default variations on the chained tokens handled below.
-      elseif ($name == 'last-login') $replacements[$original] = format_date($account->login);
-      elseif ($name == 'created') $replacements[$original] = format_date($account->created);
+      switch ($name) {
+        
+        // Basic user account information.
+        case 'uid':
+          $replacements[$original] = $account->uid;
+          break;
+        case 'name':
+          $replacements[$original] = $sanitize ? check_plain($account->name) : $account->name;
+          break;
+        case 'mail':
+          $replacements[$original] = $sanitize ? check_plain($account->mail) : $account->mail;
+          break;
+        case 'url':
+          $replacements[$original] = url("user/$account->uid", array('absolute' => TRUE));
+          break;
+        case 'edit-url':
+          $replacements[$original] = url("user/$account->uid/edit", array('absolute' => TRUE));
+          break;
+  
+        // These tokens are default variations on the chained tokens handled below.
+        case 'last-login':
+          $replacements[$original] = format_date($account->login);
+          break;
+        case 'created':
+          $replacements[$original] = format_date($account->created);
+          break;
+      }
     }
     
     if ($login_tokens = token_match_prefix($tokens, 'last-login')) {

@@ -1,30 +1,78 @@
 <?php
 // $Id$
 
-function comment_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
+function comment_tokens($type, $tokens, $data, $sanitize = TRUE) {
   $replacements = array();
 
   if ($type == 'comment' && !empty($data['comment'])) {
     $comment = $data['comment'];
 
     foreach($tokens as $name => $original) {
-      if ($name == 'cid') $replacements[$original] = $comment->cid;
-      elseif ($name == 'nid') $replacements[$original] = $comment->nid;
-      elseif ($name == 'uid') $replacements[$original] = $comment->uid;
-      elseif ($name == 'pid') $replacements[$original] = $comment->pid;
-      elseif ($name == 'hostname') $replacements[$original] = check_plain($comment->hostname);
-      elseif ($name == 'name') $replacements[$original] = check_plain($comment->name);
-      elseif ($name == 'mail') $replacements[$original] = check_plain($comment->mail);
-      elseif ($name == 'homepage') $replacements[$original] = check_url($comment->homepage);
-      elseif ($name == 'title') $replacements[$original] = check_plain($comment->subject);
-      elseif ($name == 'body') {
-        if ($safe_for_html) $replacements[$original] = check_markup($comment->comment, $comment->format);
-        else $replacements[$original] = $comment->comment;
+      switch ($name) {
+
+        // Simple key values on the comment.
+        case 'cid':
+          $replacements[$original] = $comment->cid;
+          break;
+        case 'nid':
+          $replacements[$original] = $comment->nid;
+          break;
+        case 'uid':
+          $replacements[$original] = $comment->uid;
+          break;
+        case 'pid':
+          $replacements[$original] = $comment->pid;
+          break;
+
+        // Poster identity information for comments
+        case 'hostname':
+          $replacements[$original] = $sanitize ? check_plain($comment->hostname) : $comment->hostname;
+          break;
+        case 'name':
+          $replacements[$original] = $sanitize ? check_plain($comment->name) : $comment->name;
+          break;
+        case 'mail':
+          $replacements[$original] = $sanitize ? check_plain($comment->email) : $comment->email;
+          break;
+        case 'homepage':
+          $replacements[$original] = $sanitize ? check_plain($comment->homepage) : $comment->homepage;
+          break;
+        case 'title':
+          $replacements[$original] = $sanitize ? check_plain($comment->subject) : $comment->subject;
+          break;
+        case 'body':
+          $replacements[$original] = $sanitize ? check_markup($comment->comment, $comment->format) : $replacements[$original] = $comment->comment;
+          break;
+
+        // Comment related URLs.
+        case 'url':
+          $replacements[$original] = url('comment/' . $comment->cid, array('absolute' => TRUE, 'fragment' => 'comment-' . $comment->cid));
+          break;
+        case 'edit-url':
+          $replacements[$original] = url('comment/edit/' . $comment->cid, array('absolute' => TRUE));
+          break;
+
+        // Default values for the chained tokens handled below.
+        case 'author':
+          $replacements[$original] = $sanitize ? check_plain($comment->name) : $comment->name;
+          break;
+        case 'parent':
+          if (!empty($comment->pid)) {
+            $parent = comment_load($comment->pid);
+            $replacements[$original] = $sanitize ? check_plain($parent->subject) : $parent->subject;
+          }
+          break;
+        case 'created':
+          $replacements[$original] = date_format($comment->timestamp);
+          break;
+        case 'node':
+          $node = node_load($comment->nid);
+          $replacements[$original] = $sanitize ? check_plain($node->title) : $node->title;
+          break;
       }
-      elseif ($name == 'url') $replacements[$original] = url('comment/' . $comment->cid, array('fragment' => 'comment-' . $comment->cid));
-      elseif ($name == 'edit-url') $replacements[$original] = url('comment/edit/' . $comment->cid);
     }
     
+    // Chained token relationships.
     if ($node_tokens = token_match_prefix($tokens, 'node')) {
       $node = node_load($comment->nid);
       $replacements += module_invoke_all('tokens', 'node', $node_tokens, array('node' => $node));
@@ -34,11 +82,11 @@ function comment_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
       $replacements += module_invoke_all('tokens', 'date', $date_tokens, array('date' => $comment->timestamp));
     }
 
-    if ($parent_tokens = token_match_prefix($tokens, 'parent') && $parent = comment_load($comment->pid)) {
+    if (($parent_tokens = token_match_prefix($tokens, 'parent')) && $parent = comment_load($comment->pid)) {
       $replacements += module_invoke_all('tokens', 'comment', $parent_tokens, array('comment' => $parent));
     }
 
-    if ($author_tokens = token_match_prefix($tokens, 'author') && $account = user_load($comment->uid)) {
+    if (($author_tokens = token_match_prefix($tokens, 'author')) && $account = user_load($comment->uid)) {
       $replacements += module_invoke_all('tokens', 'user', $author_tokens, array('user' => $account));
     }
   }
@@ -46,7 +94,9 @@ function comment_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
     $node = $data['node'];
 
     foreach($tokens as $name => $original) {
-      if ($name == 'comment-count') $replacements[$original] = $node->comment_count;
+      if ($name == 'comment-count') {
+        $replacements[$original] = $node->comment_count;
+      }
     }
   }
 

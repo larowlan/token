@@ -1,9 +1,23 @@
 <?php
 // $Id$
 
-/*
- * Load all fields for the most current version of each of a set of
- * objects of a single object type.
+/**
+ * Implement hook_menu().
+ */
+function token_menu() {
+  $items['admin/settings/token'] = array(
+    'title' => 'Token testing',
+    'description' => "Test replacement tokens in real time.",
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('token_test_form'),
+    'access arguments' => array('administer site'),
+    'file' => 'token.dev.inc',
+  );
+  return $items;
+}
+
+/**
+ * Find all tokens in a given string and replace them with appropriate values.
  *
  * @param $text
  *   The text containing replacable tokens.
@@ -15,9 +29,9 @@
  * @returns
  *   Text with tokens replaced.
  */
-function token_replace($text, array $data = array(), $safe_for_html = TRUE) {
+function token_replace($text, array $data = array()) {
   $token_list = token_scan($text);
-  $replacements = token_generate($token_list, $data);
+  $replacements = token_generate($token_list, $data, TRUE);
   
   $tokens = array_keys($replacements);
   $values = array_values($replacements);
@@ -25,7 +39,7 @@ function token_replace($text, array $data = array(), $safe_for_html = TRUE) {
   return str_replace($tokens, $values, $text);
 }
 
-/*
+/**
  * Build a list of all token-like patterns that appear in the text.
  *
  * @param $text
@@ -34,7 +48,7 @@ function token_replace($text, array $data = array(), $safe_for_html = TRUE) {
  *   An associative array of discovered tokens, grouped by type.
  */
 function token_scan($text) {  
-  preg_match_all('/\[(.*?)\:(.*?)\]/', $text, $matches);
+  preg_match_all('/\[([^\]:\ ]*):([^\]\ ]*)\]/', $text, $matches);
 
   $tokens = array();
   
@@ -49,8 +63,8 @@ function token_scan($text) {
   return $tokens;
 }
 
-/*
- * Generate repalcement values for a list of tokens.
+/**
+ * Generate replacement values for a list of tokens.
  *
  * @param $raw_tokens
  *   A keyed array of tokens, and their original raw form in the source text.
@@ -59,21 +73,23 @@ function token_scan($text) {
  *   and others are common keys, with an accompanying node or user object being
  *   the value. Some tokens types, like 'site', do not require any explicit
  *   information from $data and can be replaced even if $data is empty.
+ * @param $sanitize
+ *   A boolean flag indicating whether the replacement values should be sanitized
+ *   for display on an HTML page. Defaults to TRUE.
  * @returns
  *   An associative array of discovered tokens, grouped by type.
  */
-function token_generate(array $raw_tokens, array $data = array(), $safe_for_html = TRUE) {
+function token_generate(array $raw_tokens, array $data = array(), $sanitize = TRUE) {
   $results = array();
   foreach ($raw_tokens as $type => $tokens) {
-    foreach (module_invoke_all('tokens', $type, $tokens, $data) as $original => $replacement) {
+    foreach (module_invoke_all('tokens', $type, $tokens, $data, $sanitize) as $original => $replacement) {
       $results[$original] = $replacement;
     }
   }
   return $results;
 }
 
-
-/*
+/**
  * Given a list of tokens, return those that begin with a specific prefix.
  *
  * @param $tokens
@@ -98,18 +114,22 @@ function token_match_prefix(array $tokens, $prefix, $delimiter = ':') {
   return $results;
 }
 
-/*
+/**
  * Returns metadata describing supported tokens.
  *
  * The metadata array contains token type, name, and description data as well as
  * an optional pointer indicating that the token chains to another set of tokens.
  * For example:
- * 
- *   $data['node']['title'] = array(
+ *
+ *   $data['types']['node'] = array(
+ *     'name' => t('Nodes'),
+ *     'description' => t('Tokens related to node objects.'),
+ *   );
+ *   $data['tokens']['node']['title'] = array(
  *     'name' => t('Title'),
  *     'description' => t('The title of the current node.'),
  *   );
- *   $data['node']['author'] = array(
+ *   $data['tokens']['node']['author'] = array(
  *     'name' => t('Author'),
  *     'description' => t('The author of the current node.'),
  *     'references' => 'user',

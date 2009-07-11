@@ -1,25 +1,35 @@
 <?php
 // $Id$
 
-function taxonomy_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
+function taxonomy_tokens($type, $tokens, $data, $sanitize = TRUE) {
   $replacements = array();
 
   if ($type == 'term' && !empty($data['term'])) {
     $term = $data['term'];
 
     foreach($tokens as $name => $original) {
-      if ($name == 'tid') $replacements[$original] = $term->tid;
-      elseif ($name == 'vid') $replacements[$original] = $term->vid;
-      elseif ($name == 'name') $replacements[$original] = check_plain($term->name);
-      elseif ($name == 'description') $replacements[$original] = check_plain($term->description);
-      elseif ($name == 'node-count') {
-        $sql = "SELECT COUNT (1) FROM {taxonomy_term_node} tn WHERE tn.tid = :tid";
-        $count = db_result(db_query($sql, array(':tid' => $term->tid)));
-        $replacements[$original] = check_plain($count);
-      }
-      elseif ($name == 'vocabulary') {
-        $vocabulary = taxonomy_vocabulary_load($term->vid);
-        $replacements[$original] = check_plain($vocabulary->name);
+      switch ($name) {
+        case 'tid':
+          $replacements[$original] = $term->tid;
+          break;
+        case 'vid':
+          $replacements[$original] = $term->vid;
+          break;
+        case 'name':
+          $replacements[$original] = $sanitize ? check_plain($term->name) : $term->name;
+          break;
+        case 'description':
+          $replacements[$original] = $sanitize ? check_plain($term->description) : $term->description;
+          break;
+        case 'node-count':
+          $sql = "SELECT COUNT (1) FROM {taxonomy_term_node} tn WHERE tn.tid = :tid";
+          $count = db_result(db_query($sql, array(':tid' => $term->tid)));
+          $replacements[$original] = check_plain($count);
+          break;
+        case 'vocabulary':
+          $vocabulary = taxonomy_vocabulary_load($term->vid);
+          $replacements[$original] = check_plain($vocabulary->name);
+          break;
       }
     }
     
@@ -33,18 +43,26 @@ function taxonomy_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
     $vocabulary = $data['vocabulary'];
 
     foreach($tokens as $name => $original) {
-      if ($name == 'vid') $replacements[$original] = $vocabulary->vid;
-      elseif ($name == 'name') $replacements[$original] = check_plain($vocabulary->name);
-      elseif ($name == 'description') $replacements[$original] = check_plain($vocabulary->description);
-      elseif ($name == 'term-count') {
-        $sql = "SELECT COUNT (1) FROM {taxonomy_term_data} td WHERE td.vid = :vid";
-        $count = db_result(db_query($sql, array(':vid' => $vocabulary->vid)));
-        $replacements[$original] = check_plain($count);
-      }
-      elseif ($name == 'node-count') {
-        $sql = "SELECT COUNT (1) FROM {taxonomy_term_node} tn LEFT JOIN {taxonomy_term_data} td ON tn.tid = td.tid WHERE td.vid = :vid";
-        $count = db_result(db_query($sql, array(':vid' => $vocabulary->vid)));
-        $replacements[$original] = check_plain($count);
+      switch ($name) {
+        case 'vid':
+          $replacements[$original] = $vocabulary->vid;
+          break;
+        case 'name':
+          $replacements[$original] = $sanitize ? check_plain($vocabulary->name) : $vocabulary->name;
+          break;
+        case 'description':
+          $replacements[$original] = $sanitize ? check_plain($vocabulary->description) : $vocabulary->description;
+          break;
+        case 'term-count':
+          $sql = "SELECT COUNT (1) FROM {taxonomy_term_data} td WHERE td.vid = :vid";
+          $count = db_result(db_query($sql, array(':vid' => $vocabulary->vid)));
+          $replacements[$original] = check_plain($count);
+          break;
+        case 'node-count':
+          $sql = "SELECT COUNT (1) FROM {taxonomy_term_node} tn LEFT JOIN {taxonomy_term_data} td ON tn.tid = td.tid WHERE td.vid = :vid";
+          $count = db_result(db_query($sql, array(':vid' => $vocabulary->vid)));
+          $replacements[$original] = check_plain($count);
+          break;
       }
     }
   }

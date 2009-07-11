@@ -2,4 +2,5 @@
 name = Token actions
 description = Provides enhanced versions of core Drupal actions using the Token module.
 requirements[] = token
-core = 6.x
+files[] = token_actions.module
+core = 7.x

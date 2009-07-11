@@ -1,7 +1,7 @@
 <?php
 // $Id$
 
-function upload_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
+function upload_tokens($type, $tokens, $data, $sanitize = TRUE) {
   $replacements = array();
 
   if ($type == 'node' && !empty($data['node'])) {

@@ -1,33 +1,63 @@
 <?php
 // $Id$
 
-function system_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
+function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
   $replacements = array();
   
   if ($type == 'site') {
     foreach($tokens as $name => $original) {
-      if ($name == 'name') $replacements[$original] = variable_get('site_name');
-      elseif ($name == 'slogan') $replacements[$original] = variable_get('site_slogan');
-      elseif ($name == 'mission') $replacements[$original] = variable_get('mission_statement');
-      elseif ($name == 'mail') $replacements[$original] = variable_get('site_mail');
-      elseif ($name == 'url') $replacements[$original] = url('front');
-      elseif ($name == 'login-url') $replacements[$original] = url('user');
+      switch ($name) {
+        case 'name':
+          $site_name = variable_get('site_name');
+          $replacements[$original] = $sanitize ? check_plain($site_name) : $site_name;
+          break;
+        case 'slogan':
+          $slogan = variable_get('site_slogan');
+          $replacements[$original] = $sanitize ? check_plain($slogan) : $slogan;
+          break;
+        case 'mission':
+          $mission = variable_get('site_name');
+          $replacements[$original] = $sanitize ? check_plain($mission) : $mission;
+          break;
+        case 'mail':
+          $mail = variable_get('site_name');
+          $replacements[$original] = variable_get('site_mail');
+          break;
+        case 'url':
+          $replacements[$original] = url('<front>', array('absolute' => TRUE));
+          break;
+        case 'login-url':
+          $replacements[$original] = url('user', array('absolute' => TRUE));
+          break;
+      }
     }
   }
   
   elseif ($type == 'date') {
-    if (!empty($data['date'])) {
+    if (empty($data['date'])) {
       $date = REQUEST_TIME;
     } else {
       $date = $data['date'];
     }
 
-    foreach($tokens as $name => $raw) {
-      if ($name == 'small') $replacements[$original] = format_date($date, 'small');
-      elseif ($name == 'medium') $replacements[$original] = format_date($date, 'medium');
-      elseif ($name == 'large') $replacements[$original] = format_date($date, 'large');
-      elseif ($name == 'since') $replacements[$original] = format_interval($date, 2);
-      elseif ($name == 'raw') $replacements[$original] = check_plain($date);
+    foreach($tokens as $name => $original) {
+      switch ($name) {
+        case 'small':
+          $replacements[$original] = format_date($date, 'small');
+          break;
+        case 'medium':
+          $replacements[$original] = format_date($date, 'medium');
+          break;
+        case 'large':
+          $replacements[$original] = format_date($date, 'large');
+          break;
+        case 'since':
+          $replacements[$original] = format_interval((REQUEST_TIME - $date), 2);
+          break;
+        case 'raw':
+          $replacements[$original] = check_plain($date);
+          break;
+      }
     }
 
     if ($created_tokens = token_match_prefix($tokens, 'custom')) {
@@ -40,21 +70,55 @@ function system_tokens($type, $tokens, $data, $safe_for_html = TRUE) {
   elseif ($type == 'file' && !empty($data['file'])) {
     $file = $data['file'];
 
-    foreach($tokens as $name => $raw) {
-      if ($name == 'fid') $replacements[$original] = $file->fid;
-      elseif ($name == 'uid') $replacements[$original] = $file->uid;
-      elseif ($name == 'nid') $replacements[$original] = $file->nid;
-      elseif ($name == 'name') $replacements[$original] = check_plain($file->filename);
-      elseif ($name == 'description') $replacements[$original] = check_plain($file->description);
-      elseif ($name == 'path') $replacements[$original] = check_plain($file->filepath);
-      elseif ($name == 'mime') $replacements[$original] = check_plain($file->filemime);
-      elseif ($name == 'size') $replacements[$original] = format_size($file->filesize);
-      elseif ($name == 'url') $replacements[$original] = file_create_url($file->filepath);
-      
-      // These tokens are default variations on the chained tokens handled below.
-      elseif ($name == 'node') $replacements[$original] = $file->filepath;
-      elseif ($name == 'timestamp') $replacements[$original] = $file->filepath;
-      elseif ($name == 'owner') $replacements[$original] = $file->filepath;
+    foreach($tokens as $name => $original) {
+      switch ($name) {
+        
+        // Basic keys and values.
+        case 'fid':
+          $replacements[$original] = $file->fid;
+          break;
+        case 'uid':
+          $replacements[$original] = $file->uid;
+          break;
+        case 'nid':
+          $replacements[$original] = $file->nid;
+          break;
+        
+        // Essential file data
+        case 'name':
+          $replacements[$original] = $sanitize ? check_plain($file->filename) : $file->filename;
+          break;
+        case 'description':
+          $replacements[$original] = $sanitize ? check_plain($file->description) : $file->description;
+          break;
+        case 'path':
+          $replacements[$original] = $sanitize ? check_plain($file->filepath) : $file->filepath;
+          break;
+        case 'mime':
+          $replacements[$original] = $sanitize ? check_plain($file->filemime) : $file->filemime;
+          break;
+        case 'size':
+          $replacements[$original] = format_size($file->filesize);
+          break;
+        case 'url':
+          $replacements[$original] = url(file_create_url($file->filepath), array('absolute' => TRUE));
+          break;
+        
+        // These tokens are default variations on the chained tokens handled below.
+        case 'node':
+          if ($nid = $file->nid) {
+            $node = node_load($file->nid);
+            $replacements[$original] = $sanitize ? check_plain($node->title) : $node->title;
+          }
+          break;
+        case 'timestamp':
+          $replacements[$original] = format_date($file->timestamp);
+          break;
+        case 'owner':
+          $account = user_load($file->uid);
+          $replacements[$original] = $sanitize ? check_plain($user->name) : $user->name;
+          break;
+      }
     }
 
     if ($node_tokens = token_match_prefix($tokens, 'node')) {

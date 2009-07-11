@@ -95,14 +95,14 @@ function token_actions_send_email_action_form($context) {
   );
 
   $form['help']['tokens'] = array(
-    '#value' => theme('token_help', 'all'),
+    '#markup' => '<strong>' . t('Token help is not yet available.') . '</strong>',
   );
 
   return $form;
 }
 
 function token_actions_send_email_action_submit($form, $form_state) {
-  $form_values = $form_state['values'];
+  $form_values = $form_state['input'];
   // Process the HTML form to store configuration. The keyed array that
   // we return will be serialized to the database.
   $params = array(
@@ -118,19 +118,16 @@ function token_actions_send_email_action_submit($form, $form_state) {
  * Sends an email.
  */
 function token_actions_send_email_action($object, $context) {
-  $context['global'] = NULL;
-  if (!empty($context['node']) && empty($context['user'])) {
-    $context['user'] = user_load(array('uid' => $context['node']->uid));
-  }
   $from = variable_get('site_mail', ini_get('sendmail_from'));
   $recipient = token_replace_all($context['recipient'], $context);
 
-  $subject = token_replace_all($context['subject'], $context);
+  $subject = token_replace($context['subject'], $context);
   $subject = str_replace(array("\r", "\n"), '', $subject);
-  $message = token_replace_all($context['message'], $context);
+  $message = token_replace($context['message'], $context);
+
   $body = drupal_html_to_text($message);
 
-  if (drupal_mail('action_send_email', $recipient, $subject, $body, $from )) {
+  if (drupal_mail('action_send_email', $recipient, $subject, $body, $from)) {
     watchdog('action', 'Sent email to %recipient', array('%recipient' => $recipient));
   }
   else {
@@ -157,14 +154,14 @@ function token_actions_message_action_form($context) {
   );
 
   $form['help']['tokens'] = array(
-    '#value' => theme('token_help', 'all'),
+    '#markup' => '<strong>' . t('Token help is not yet available.') . '</strong>',
   );
 
   return $form;
 }
 
 function token_actions_message_action_submit($form, $form_state) {
-  return array('message' => $form_state['values']['message']);
+  return array('message' => $form_state['input']['message']);
 }
 
 /**
@@ -172,11 +169,7 @@ function token_actions_message_action_submit($form, $form_state) {
  * Sends a configurable message to the current user's screen.
  */
 function token_actions_message_action(&$object, $context = array()) {
-  $context['global'] = NULL;
-  if (!empty($context['node']) && empty($context['user'])) {
-    $context['user'] = user_load(array('uid' => $context['node']->uid));
-  }
-  $context['message'] = token_replace_multiple($context['message'], $context);
+  $context['message'] = token_replace($context['message'], $context);
   drupal_set_message($context['message']);
 }
 
@@ -201,7 +194,7 @@ function token_actions_goto_action_form($context) {
   );
 
   $form['help']['tokens'] = array(
-    '#value' => theme('token_help', 'all'),
+    '#markup' => '<strong>' . t('Token help is not yet available.') . '</strong>',
   );
 
   return $form;
@@ -214,9 +207,5 @@ function token_actions_goto_action_submit($form, $form_state) {
 }
 
 function token_actions_goto_action($object, $context) {
-  $context['global'] = NULL;
-  if (!empty($context['node']) && empty($context['user'])) {
-    $context['user'] = user_load(array('uid' => $context['node']->uid));
-  }
   drupal_goto(token_replace_multiple($context['url'], $context));
 }
