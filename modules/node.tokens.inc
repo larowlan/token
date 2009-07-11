@@ -39,6 +39,16 @@ function node_tokens($type, $tokens, $data, $sanitize = TRUE) {
         case 'title':
           $replacements[$original] = $sanitize ? filter_xss($node->title) : $node->title;
           break;
+        case 'body':
+          if (!empty($node->body)) {
+            $replacements[$original] = $sanitize ? $node->body[0]['safe'] : $node->body[0]['value'];
+          }
+          break;
+        case 'summary':
+          if (!empty($node->body)) {
+            $replacements[$original] = $sanitize ? $node->body[0]['safe_summary'] : $node->body[0]['summary'];
+          }
+          break;
         case 'type':
           $replacements[$original] = $sanitize ? check_plain($node->type) : $node->type;
           break;
@@ -122,6 +132,12 @@ function node_token_info() {
   // Content tokens for the node
   $data['tokens']['node']['title']['name'] = t('Title');
   $data['tokens']['node']['title']['description'] = t('The title of the node.');
+
+  $data['tokens']['node']['body']['name'] = t('Body');
+  $data['tokens']['node']['body']['description'] = t('The main body text of the node.');
+
+  $data['tokens']['node']['summary']['name'] = t('Summary');
+  $data['tokens']['node']['summary']['description'] = t("The summary of the node's main body text.");
 
   $data['tokens']['node']['language']['name'] = t('Language');
   $data['tokens']['node']['language']['description'] = t('The language the node is written in.');
