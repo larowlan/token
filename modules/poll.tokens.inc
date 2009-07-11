@@ -1,6 +1,14 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Builds placeholder replacement tokens for values specific to Poll nodes.
+ */
+
+/**
+ * Implement hook_tokens().
+ */
 function poll_tokens($type, $tokens, $data, $sanitize = TRUE) {
   $replacements = array();
 
@@ -16,7 +24,7 @@ function poll_tokens($type, $tokens, $data, $sanitize = TRUE) {
       }
       $total_votes = $total_votes + $choice['chvotes'];
     }
-    foreach($tokens as $name => $original) {
+    foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'poll-votes':
           $replacements[$original] = $total_votes;
@@ -47,7 +55,9 @@ function poll_tokens($type, $tokens, $data, $sanitize = TRUE) {
   return $replacements;
 }
 
-
+/**
+ * Implement hook_token_info().
+ */
 function poll_token_info() {
   $data = array();
 
@@ -63,7 +73,7 @@ function poll_token_info() {
 
   $data['tokens']['node']['poll-winner-percent']['name'] = t('Poll winner percent');
   $data['tokens']['node']['poll-winner-percent']['description'] = t('The percentage of votes received by the winning poll answer.');
-  
+
   $data['tokens']['node']['poll-duration']['name'] = t('Poll duration');
   $data['tokens']['node']['poll-duration']['description'] = t('The length of time the poll node is set to run.');
 

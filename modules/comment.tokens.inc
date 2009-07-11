@@ -1,13 +1,21 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Builds placeholder replacement tokens for comment-related data.
+ */
+
+/**
+ * Implement hook_tokens().
+ */
 function comment_tokens($type, $tokens, $data, $sanitize = TRUE) {
   $replacements = array();
 
   if ($type == 'comment' && !empty($data['comment'])) {
     $comment = $data['comment'];
 
-    foreach($tokens as $name => $original) {
+    foreach ($tokens as $name => $original) {
       switch ($name) {
 
         // Simple key values on the comment.
@@ -71,7 +79,7 @@ function comment_tokens($type, $tokens, $data, $sanitize = TRUE) {
           break;
       }
     }
-    
+
     // Chained token relationships.
     if ($node_tokens = token_match_prefix($tokens, 'node')) {
       $node = node_load($comment->nid);
@@ -93,7 +101,7 @@ function comment_tokens($type, $tokens, $data, $sanitize = TRUE) {
   elseif ($type == 'node' & !empty($data['node'])) {
     $node = $data['node'];
 
-    foreach($tokens as $name => $original) {
+    foreach ($tokens as $name => $original) {
       if ($name == 'comment-count') {
         $replacements[$original] = $node->comment_count;
       }
@@ -103,6 +111,9 @@ function comment_tokens($type, $tokens, $data, $sanitize = TRUE) {
   return $replacements;
 }
 
+/**
+ * Implement hook_token_info().
+ */
 function comment_token_info() {
   $data = array();
 
@@ -142,12 +153,12 @@ function comment_token_info() {
 
   $data['tokens']['comment']['homepage']['name'] = t('Home page');
   $data['tokens']['comment']['homepage']['description'] = t("The home page URL left by the comment author.");
-  
-  
+
+
   // Content tokens for the comment
   $data['tokens']['comment']['title']['name'] = t('Title');
   $data['tokens']['comment']['title']['description'] = t('The title of the comment.');
-  
+
   $data['tokens']['comment']['body']['name'] = t('Content');
   $data['tokens']['comment']['body']['description'] = t('The formatted content of the comment itself.');
 

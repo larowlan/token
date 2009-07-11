@@ -1,6 +1,14 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Builds placeholder replacement tokens for user-related data.
+ */
+
+/**
+ * Implement hook_tokens().
+ */
 function user_tokens($type, $tokens, $data, $sanitize = TRUE) {
   global $user;
 
@@ -9,13 +17,14 @@ function user_tokens($type, $tokens, $data, $sanitize = TRUE) {
   if ($type == 'user') {
     if (!empty($data['user'])) {
       $account = $data['user'];
-    } else {
+    }
+    else {
       $account = $user;
     }
 
-    foreach($tokens as $name => $original) {
+    foreach ($tokens as $name => $original) {
       switch ($name) {
-        
+
         // Basic user account information.
         case 'uid':
           $replacements[$original] = $account->uid;
@@ -32,7 +41,7 @@ function user_tokens($type, $tokens, $data, $sanitize = TRUE) {
         case 'edit-url':
           $replacements[$original] = url("user/$account->uid/edit", array('absolute' => TRUE));
           break;
-  
+
         // These tokens are default variations on the chained tokens handled below.
         case 'last-login':
           $replacements[$original] = format_date($account->login);
@@ -42,7 +51,7 @@ function user_tokens($type, $tokens, $data, $sanitize = TRUE) {
           break;
       }
     }
-    
+
     if ($login_tokens = token_match_prefix($tokens, 'last-login')) {
       $replacements += module_invoke_all('tokens', 'date', $login_tokens, array('date' => $account->login));
     }
@@ -51,7 +60,7 @@ function user_tokens($type, $tokens, $data, $sanitize = TRUE) {
       $replacements += module_invoke_all('tokens', 'date', $registered_tokens, array('date' => $account->created));
     }
   }
-  
+
   return $replacements;
 }
 

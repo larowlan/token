@@ -1,5 +1,10 @@
 <?php
-// $Id $
+// $Id$
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Token module.
+ */
 
 function token_install() {
   db_query("UPDATE {system} SET weight = 10 WHERE name = 'token'");

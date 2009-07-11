@@ -32,10 +32,10 @@ function token_menu() {
 function token_replace($text, array $data = array()) {
   $token_list = token_scan($text);
   $replacements = token_generate($token_list, $data, TRUE);
-  
+
   $tokens = array_keys($replacements);
   $values = array_values($replacements);
-  
+
   return str_replace($tokens, $values, $text);
 }
 
@@ -47,11 +47,11 @@ function token_replace($text, array $data = array()) {
  * @returns
  *   An associative array of discovered tokens, grouped by type.
  */
-function token_scan($text) {  
+function token_scan($text) {
   preg_match_all('/\[([^\]:\ ]*):([^\]\ ]*)\]/', $text, $matches);
 
   $tokens = array();
-  
+
   $raw = $matches[0];
   $type = $matches[1];
   $token = $matches[2];
@@ -59,7 +59,7 @@ function token_scan($text) {
   for ($i = 0; $i < count($raw); $i++) {
     $tokens[$type[$i]][$token[$i]] = $raw[$i];
   }
-  
+
   return $tokens;
 }
 

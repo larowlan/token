@@ -1,16 +1,24 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Builds placeholder replacement tokens for node-related data.
+ */
+
+/**
+ * Implement hook_tokens().
+ */
 function node_tokens($type, $tokens, $data, $sanitize = TRUE) {
   $replacements = array();
 
   if ($type == 'node' && !empty($data['node'])) {
     $node = $data['node'];
 
-    foreach($tokens as $name => $original) {
+    foreach ($tokens as $name => $original) {
       switch ($name) {
 
-        // Simple key values on the node. 
+        // Simple key values on the node.
         case 'nid':
           $replacements[$original] = $node->nid;
           break;
@@ -23,7 +31,7 @@ function node_tokens($type, $tokens, $data, $sanitize = TRUE) {
         case 'uid':
           $replacements[$original] = $node->uid;
           break;
-  
+
         // Poster identity and basic node content information.
         case 'name':
           $replacements[$original] = $sanitize ? filter_xss($node->name) : $node->name;
@@ -41,7 +49,7 @@ function node_tokens($type, $tokens, $data, $sanitize = TRUE) {
         case 'language':
           $replacements[$original] = $sanitize ? check_plain($node->language) : $node->language;
           break;
-  
+
         // Comment related URLs.
         case 'url':
           $replacements[$original] = url('node/' . $node->nid, array('absolute' => TRUE));
@@ -49,7 +57,7 @@ function node_tokens($type, $tokens, $data, $sanitize = TRUE) {
         case 'edit-url':
           $replacements[$original] = url('node/' . $node->nid . '/edit', array('absolute' => TRUE));
           break;
-        
+
         // Default values for the chained tokens handled below.
         case 'author':
           $replacements[$original] = $sanitize ? filter_xss($node->name) : $node->name;
@@ -62,7 +70,7 @@ function node_tokens($type, $tokens, $data, $sanitize = TRUE) {
           break;
       }
     }
-    
+
     if ($author_tokens = token_match_prefix($tokens, 'author')) {
       $author = user_load($node->uid);
       $replacements += module_invoke_all('tokens', 'user', $author_tokens, array('user' => $author));
@@ -76,14 +84,16 @@ function node_tokens($type, $tokens, $data, $sanitize = TRUE) {
       $replacements += module_invoke_all('tokens', 'date', $changed_tokens, array('date' => $node->changed));
     }
   }
-  
+
   return $replacements;
 }
 
-
+/**
+ * Implement hook_token_info().
+ */
 function node_token_info() {
   $data = array();
-  
+
   // Metadata for token types.
   $data['types']['node']['name'] = t('Nodes');
   $data['types']['node']['description'] = t('Tokens related to individual nodes.');
@@ -100,15 +110,15 @@ function node_token_info() {
 
   $data['tokens']['node']['uid']['name'] = t('User ID');
   $data['tokens']['node']['uid']['description'] = t('The unique ID of the user who posted the node.');
-  
+
   $data['tokens']['node']['type']['name'] = t('Content type');
   $data['tokens']['node']['type']['description'] = t('The type of the node.');
 
   $data['tokens']['node']['type-name']['name'] = t('Content type name');
   $data['tokens']['node']['type-name']['description'] = t('The human-readable name of the node type.');
 
-  
-  
+
+
   // Content tokens for the node
   $data['tokens']['node']['title']['name'] = t('Title');
   $data['tokens']['node']['title']['description'] = t('The title of the node.');

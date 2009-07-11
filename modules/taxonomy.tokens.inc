@@ -1,13 +1,21 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Builds placeholder replacement tokens for taxonomy terms and vocabularies.
+ */
+
+/**
+ * Implement hook_tokens().
+ */
 function taxonomy_tokens($type, $tokens, $data, $sanitize = TRUE) {
   $replacements = array();
 
   if ($type == 'term' && !empty($data['term'])) {
     $term = $data['term'];
 
-    foreach($tokens as $name => $original) {
+    foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'tid':
           $replacements[$original] = $term->tid;
@@ -32,7 +40,7 @@ function taxonomy_tokens($type, $tokens, $data, $sanitize = TRUE) {
           break;
       }
     }
-    
+
     if ($vocabulary_tokens = token_match_prefix($tokens, 'vocabulary')) {
       $vocabulary = taxonomy_vocabulary_load($term->vid);
       $replacements += module_invoke_all('tokens', 'vocabulary', $vocabulary_tokens, array('vocabulary' => $vocabulary));
@@ -42,7 +50,7 @@ function taxonomy_tokens($type, $tokens, $data, $sanitize = TRUE) {
   elseif ($type == 'vocabulary' && !empty($data['vocabulary'])) {
     $vocabulary = $data['vocabulary'];
 
-    foreach($tokens as $name => $original) {
+    foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'vid':
           $replacements[$original] = $vocabulary->vid;
@@ -70,7 +78,9 @@ function taxonomy_tokens($type, $tokens, $data, $sanitize = TRUE) {
   return $replacements;
 }
 
-
+/**
+ * Implement hook_token_info().
+ */
 function taxonomy_token_info() {
   $data = array();
 

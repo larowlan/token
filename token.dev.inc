@@ -7,7 +7,7 @@ function token_test_form(&$form_state) {
     '#markup' => t('Enter tokens in this field. Optionally pick a node and/or comment to be added to the replacement context.'),
     '#prefix' => '</strong>',
   );
-  
+
   $sql = "SELECT n.nid, n.title FROM {node} n WHERE n.status = 1 ORDER BY n.created DESC LIMIT 10";
   $results = db_query($sql);
   $nodes = array('' => t('-None-'));
@@ -44,14 +44,14 @@ function token_test_form(&$form_state) {
     '#type' => 'submit',
     '#value' => t('Replace tokens'),
   );
-  
+
   if (!empty($form_state['input']['text'])) {
     $v = $form_state['input'];
     $data = array();
     if (!empty($v['node'])) {
       $data['node'] = node_load($v['node']);
     }
-  
+
     if (!empty($v['comment'])) {
       $data['comment'] = comment_load($v['comment']);
     }

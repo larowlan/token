@@ -1,11 +1,22 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Builds placeholder replacement tokens system-wide data.
+ *
+ * This file handles tokens for the global 'site' token type, as well as
+ * 'date' and 'file' tokens.
+ */
+
+/**
+ * Implement hook_tokens().
+ */
 function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
   $replacements = array();
-  
+
   if ($type == 'site') {
-    foreach($tokens as $name => $original) {
+    foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'name':
           $site_name = variable_get('site_name');
@@ -32,15 +43,16 @@ function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
       }
     }
   }
-  
+
   elseif ($type == 'date') {
     if (empty($data['date'])) {
       $date = REQUEST_TIME;
-    } else {
+    }
+    else {
       $date = $data['date'];
     }
 
-    foreach($tokens as $name => $original) {
+    foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'small':
           $replacements[$original] = format_date($date, 'small');
@@ -61,7 +73,7 @@ function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
     }
 
     if ($created_tokens = token_match_prefix($tokens, 'custom')) {
-      foreach($created_tokens as $name => $original) {
+      foreach ($created_tokens as $name => $original) {
         $replacements[$original] = format_date($date, 'custom', $name);
       }
     }
@@ -70,9 +82,9 @@ function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
   elseif ($type == 'file' && !empty($data['file'])) {
     $file = $data['file'];
 
-    foreach($tokens as $name => $original) {
+    foreach ($tokens as $name => $original) {
       switch ($name) {
-        
+
         // Basic keys and values.
         case 'fid':
           $replacements[$original] = $file->fid;
@@ -83,7 +95,7 @@ function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
         case 'nid':
           $replacements[$original] = $file->nid;
           break;
-        
+
         // Essential file data
         case 'name':
           $replacements[$original] = $sanitize ? check_plain($file->filename) : $file->filename;
@@ -103,7 +115,7 @@ function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
         case 'url':
           $replacements[$original] = url(file_create_url($file->filepath), array('absolute' => TRUE));
           break;
-        
+
         // These tokens are default variations on the chained tokens handled below.
         case 'node':
           if ($nid = $file->nid) {
@@ -138,8 +150,9 @@ function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
   return $replacements;
 }
 
-
-
+/**
+ * Implement hook_token_info().
+ */
 function system_token_info() {
   $data = array();
 
@@ -172,7 +185,7 @@ function system_token_info() {
 
   $data['tokens']['site']['login-url']['name'] = t("Login page");
   $data['tokens']['site']['login-url']['description'] = t("The URL of the site's login page.");
-  
+
 
   // Date formatting tokens.
   $data['tokens']['date']['small']['name'] = t("Small format");
@@ -197,25 +210,25 @@ function system_token_info() {
   // File related tokens.
   $data['tokens']['file']['fid']['name'] = t("File ID");
   $data['tokens']['file']['fid']['description'] = t("The unique ID of the uploaded file.");
-  
+
   $data['tokens']['file']['uid']['name'] = t("User ID");
   $data['tokens']['file']['uid']['description'] = t("The unique ID of the user who owns the file.");
 
   $data['tokens']['file']['nid']['name'] = t("Node ID");
   $data['tokens']['file']['nid']['description'] = t("The unique ID of the node the file is attached to.");
-  
+
   $data['tokens']['file']['name']['name'] = t("File name");
   $data['tokens']['file']['name']['description'] = t("The name of the file on disk.");
 
   $data['tokens']['file']['description']['name'] = t("Description");
   $data['tokens']['file']['description']['description'] = t("An optional human-readable description of the file.");
-  
+
   $data['tokens']['file']['path']['name'] = t("Path");
   $data['tokens']['file']['path']['description'] = t("The location of the file on disk.");
-  
+
   $data['tokens']['file']['mime']['name'] = t("MIME type");
   $data['tokens']['file']['mime']['description'] = t("The MIME type of the file.");
-  
+
   $data['tokens']['file']['size']['name'] = t("File size");
   $data['tokens']['file']['size']['description'] = t("The size of the file, in kilobytes.");
 

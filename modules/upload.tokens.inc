@@ -1,13 +1,21 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Builds placeholder replacement tokens for uploaded files attached to nodes.
+ */
+
+/**
+ * Implement hook_tokens().
+ */
 function upload_tokens($type, $tokens, $data, $sanitize = TRUE) {
   $replacements = array();
 
   if ($type == 'node' && !empty($data['node'])) {
     $node = $data['node'];
-    
-    foreach($tokens as $name => $original) {
+
+    foreach ($tokens as $name => $original) {
       if ($name == 'upload') {
         $upload = array_shift($node->files);
         $replacements[$original] = file_create_url($upload->filepath);

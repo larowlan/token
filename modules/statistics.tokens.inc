@@ -1,13 +1,21 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * Builds placeholder replacement tokens for node visitor statistics.
+ */
+
+/**
+ * Implement hook_tokens().
+ */
 function statistics_tokens($type, $tokens, $data, $sanitize = TRUE) {
   $replacements = array();
 
   if ($type == 'node' & !empty($data['node'])) {
     $node = $data['node'];
 
-    foreach($tokens as $name => $original) {
+    foreach ($tokens as $name => $original) {
       if ($name == 'views') {
         $statistics = statistics_get($node->nid);
         $replacements[$original] = $statistics['totalviews'];
@@ -21,7 +29,7 @@ function statistics_tokens($type, $tokens, $data, $sanitize = TRUE) {
         $replacements[$original] = format_date($statistics['timestamp']);
       }
     }
-    
+
     if ($created_tokens = token_match_prefix($tokens, 'last-view')) {
       $statistics = statistics_get($node->nid);
       $replacements += module_invoke_all('tokens', 'date', $created_tokens, array('date' => $statistics['timestamp']));
@@ -31,7 +39,9 @@ function statistics_tokens($type, $tokens, $data, $sanitize = TRUE) {
   return $replacements;
 }
 
-
+/**
+ * Implement hook_token_info().
+ */
 function statistics_token_info() {
   $data = array();
 
