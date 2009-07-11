@@ -9,15 +9,15 @@ function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
       switch ($name) {
         case 'name':
           $site_name = variable_get('site_name');
-          $replacements[$original] = $sanitize ? check_plain($site_name) : $site_name;
+          $replacements[$original] = $sanitize ? filter_xss($site_name) : $site_name;
           break;
         case 'slogan':
           $slogan = variable_get('site_slogan');
-          $replacements[$original] = $sanitize ? check_plain($slogan) : $slogan;
+          $replacements[$original] = $sanitize ? filter_xss($slogan) : $slogan;
           break;
         case 'mission':
-          $mission = variable_get('site_name');
-          $replacements[$original] = $sanitize ? check_plain($mission) : $mission;
+          $mission = variable_get('site_mission');
+          $replacements[$original] = $sanitize ? filter_xss($mission) : $mission;
           break;
         case 'mail':
           $mail = variable_get('site_name');
@@ -55,7 +55,7 @@ function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
           $replacements[$original] = format_interval((REQUEST_TIME - $date), 2);
           break;
         case 'raw':
-          $replacements[$original] = check_plain($date);
+          $replacements[$original] = filter_xss($date);
           break;
       }
     }
@@ -89,13 +89,13 @@ function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
           $replacements[$original] = $sanitize ? check_plain($file->filename) : $file->filename;
           break;
         case 'description':
-          $replacements[$original] = $sanitize ? check_plain($file->description) : $file->description;
+          $replacements[$original] = $sanitize ? filter_xss($file->description) : $file->description;
           break;
         case 'path':
-          $replacements[$original] = $sanitize ? check_plain($file->filepath) : $file->filepath;
+          $replacements[$original] = $sanitize ? filter_xss($file->filepath) : $file->filepath;
           break;
         case 'mime':
-          $replacements[$original] = $sanitize ? check_plain($file->filemime) : $file->filemime;
+          $replacements[$original] = $sanitize ? filter_xss($file->filemime) : $file->filemime;
           break;
         case 'size':
           $replacements[$original] = format_size($file->filesize);
@@ -108,7 +108,7 @@ function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
         case 'node':
           if ($nid = $file->nid) {
             $node = node_load($file->nid);
-            $replacements[$original] = $sanitize ? check_plain($node->title) : $node->title;
+            $replacements[$original] = $sanitize ? filter_xss($node->title) : $node->title;
           }
           break;
         case 'timestamp':
@@ -116,7 +116,7 @@ function system_tokens($type, $tokens, $data, $sanitize = TRUE) {
           break;
         case 'owner':
           $account = user_load($file->uid);
-          $replacements[$original] = $sanitize ? check_plain($user->name) : $user->name;
+          $replacements[$original] = $sanitize ? filter_xss($user->name) : $user->name;
           break;
       }
     }

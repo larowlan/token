@@ -26,10 +26,10 @@ function node_tokens($type, $tokens, $data, $sanitize = TRUE) {
   
         // Poster identity and basic node content information.
         case 'name':
-          $replacements[$original] = $sanitize ? check_plain($node->name) : $node->name;
+          $replacements[$original] = $sanitize ? filter_xss($node->name) : $node->name;
           break;
         case 'title':
-          $replacements[$original] = $sanitize ? check_plain($node->title) : $node->title;
+          $replacements[$original] = $sanitize ? filter_xss($node->title) : $node->title;
           break;
         case 'type':
           $replacements[$original] = $sanitize ? check_plain($node->type) : $node->type;
@@ -39,7 +39,7 @@ function node_tokens($type, $tokens, $data, $sanitize = TRUE) {
           $replacements[$original] = $sanitize ? check_plain($type_name) : $type_name;
           break;
         case 'language':
-          $replacements[$original] = $sanitize ? filter_xss_admin($node->language) : $node->language;
+          $replacements[$original] = $sanitize ? check_plain($node->language) : $node->language;
           break;
   
         // Comment related URLs.
@@ -52,7 +52,7 @@ function node_tokens($type, $tokens, $data, $sanitize = TRUE) {
         
         // Default values for the chained tokens handled below.
         case 'author':
-          $replacements[$original] = $sanitize ? check_plain($node->name) : $node->name;
+          $replacements[$original] = $sanitize ? filter_xss($node->name) : $node->name;
           break;
         case 'created':
           $replacements[$original] = format_date($node->created);

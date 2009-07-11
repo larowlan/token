@@ -29,16 +29,16 @@ function comment_tokens($type, $tokens, $data, $sanitize = TRUE) {
           $replacements[$original] = $sanitize ? check_plain($comment->hostname) : $comment->hostname;
           break;
         case 'name':
-          $replacements[$original] = $sanitize ? check_plain($comment->name) : $comment->name;
+          $replacements[$original] = $sanitize ? filter_xss($comment->name) : $comment->name;
           break;
         case 'mail':
           $replacements[$original] = $sanitize ? check_plain($comment->email) : $comment->email;
           break;
         case 'homepage':
-          $replacements[$original] = $sanitize ? check_plain($comment->homepage) : $comment->homepage;
+          $replacements[$original] = $sanitize ? filter_xss_bad_protocol($comment->homepage) : $comment->homepage;
           break;
         case 'title':
-          $replacements[$original] = $sanitize ? check_plain($comment->subject) : $comment->subject;
+          $replacements[$original] = $sanitize ? filter_xss($comment->subject) : $comment->subject;
           break;
         case 'body':
           $replacements[$original] = $sanitize ? check_markup($comment->comment, $comment->format) : $replacements[$original] = $comment->comment;
@@ -54,12 +54,12 @@ function comment_tokens($type, $tokens, $data, $sanitize = TRUE) {
 
         // Default values for the chained tokens handled below.
         case 'author':
-          $replacements[$original] = $sanitize ? check_plain($comment->name) : $comment->name;
+          $replacements[$original] = $sanitize ? filter_xss($comment->name) : $comment->name;
           break;
         case 'parent':
           if (!empty($comment->pid)) {
             $parent = comment_load($comment->pid);
-            $replacements[$original] = $sanitize ? check_plain($parent->subject) : $parent->subject;
+            $replacements[$original] = $sanitize ? filter_xss($parent->subject) : $parent->subject;
           }
           break;
         case 'created':
@@ -67,7 +67,7 @@ function comment_tokens($type, $tokens, $data, $sanitize = TRUE) {
           break;
         case 'node':
           $node = node_load($comment->nid);
-          $replacements[$original] = $sanitize ? check_plain($node->title) : $node->title;
+          $replacements[$original] = $sanitize ? filter_xss($node->title) : $node->title;
           break;
       }
     }

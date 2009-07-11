@@ -16,19 +16,19 @@ function taxonomy_tokens($type, $tokens, $data, $sanitize = TRUE) {
           $replacements[$original] = $term->vid;
           break;
         case 'name':
-          $replacements[$original] = $sanitize ? check_plain($term->name) : $term->name;
+          $replacements[$original] = $sanitize ? filter_xss($term->name) : $term->name;
           break;
         case 'description':
-          $replacements[$original] = $sanitize ? check_plain($term->description) : $term->description;
+          $replacements[$original] = $sanitize ? filter_xss($term->description) : $term->description;
           break;
         case 'node-count':
           $sql = "SELECT COUNT (1) FROM {taxonomy_term_node} tn WHERE tn.tid = :tid";
           $count = db_result(db_query($sql, array(':tid' => $term->tid)));
-          $replacements[$original] = check_plain($count);
+          $replacements[$original] = $count;
           break;
         case 'vocabulary':
           $vocabulary = taxonomy_vocabulary_load($term->vid);
-          $replacements[$original] = check_plain($vocabulary->name);
+          $replacements[$original] = filter_xss($vocabulary->name);
           break;
       }
     }
@@ -48,20 +48,20 @@ function taxonomy_tokens($type, $tokens, $data, $sanitize = TRUE) {
           $replacements[$original] = $vocabulary->vid;
           break;
         case 'name':
-          $replacements[$original] = $sanitize ? check_plain($vocabulary->name) : $vocabulary->name;
+          $replacements[$original] = $sanitize ? filter_xss($vocabulary->name) : $vocabulary->name;
           break;
         case 'description':
-          $replacements[$original] = $sanitize ? check_plain($vocabulary->description) : $vocabulary->description;
+          $replacements[$original] = $sanitize ? filter_xss($vocabulary->description) : $vocabulary->description;
           break;
         case 'term-count':
           $sql = "SELECT COUNT (1) FROM {taxonomy_term_data} td WHERE td.vid = :vid";
           $count = db_result(db_query($sql, array(':vid' => $vocabulary->vid)));
-          $replacements[$original] = check_plain($count);
+          $replacements[$original] = $count;
           break;
         case 'node-count':
           $sql = "SELECT COUNT (1) FROM {taxonomy_term_node} tn LEFT JOIN {taxonomy_term_data} td ON tn.tid = td.tid WHERE td.vid = :vid";
           $count = db_result(db_query($sql, array(':vid' => $vocabulary->vid)));
-          $replacements[$original] = check_plain($count);
+          $replacements[$original] = $count;
           break;
       }
     }

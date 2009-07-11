@@ -21,10 +21,10 @@ function user_tokens($type, $tokens, $data, $sanitize = TRUE) {
           $replacements[$original] = $account->uid;
           break;
         case 'name':
-          $replacements[$original] = $sanitize ? check_plain($account->name) : $account->name;
+          $replacements[$original] = $sanitize ? filter_xss($account->name) : $account->name;
           break;
         case 'mail':
-          $replacements[$original] = $sanitize ? check_plain($account->mail) : $account->mail;
+          $replacements[$original] = $sanitize ? filter_xss($account->mail) : $account->mail;
           break;
         case 'url':
           $replacements[$original] = url("user/$account->uid", array('absolute' => TRUE));

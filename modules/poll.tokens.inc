@@ -23,7 +23,7 @@ function poll_tokens($type, $tokens, $data, $sanitize = TRUE) {
           break;
         case 'poll-winner':
           if (isset($winner)) {
-            $replacements[$original] = $sanitize ? check_plain($winner['chtext']) : $winner['chtext'];
+            $replacements[$original] = $sanitize ? filter_xss($winner['chtext']) : $winner['chtext'];
           }
           break;
         case 'poll-winner-votes':
