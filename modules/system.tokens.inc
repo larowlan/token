@@ -91,7 +91,7 @@ function system_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE
           case 'since':
             $replacements[$original] = format_interval((REQUEST_TIME - $date), 2, $language->language);
             break;
-        }        
+        }
       }
     }
 

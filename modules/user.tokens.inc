@@ -48,10 +48,10 @@ function user_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) 
         case 'edit-url':
           $replacements[$original] = url("user/$account->uid/edit", $url_options);
           break;
-        case 'cancel-url':
+        case 'confirm-cancel-url':
           $replacements[$original] = user_cancel_url($account);
           break;
-        case 'reset-url':
+        case 'password-reset-url':
           $replacements[$original] = user_pass_reset_url($account);
           break;
 
@@ -114,11 +114,11 @@ function user_token_info() {
   $data['tokens']['user']['edit-url']['name'] = t('Edit URL');
   $data['tokens']['user']['edit-url']['description'] = t('The url of the account edit page.');
 
-  $data['tokens']['user']['cancel-url']['name'] = t('Account cancellation URL');
-  $data['tokens']['user']['cancel-url']['description'] = t("The account cancellation URL for the user account. Visiting this URL will automatically cancel a user account: it cannot be undone.");
+  $data['tokens']['user']['confirm-cancel-url']['name'] = t('Account cancellation URL');
+  $data['tokens']['user']['confirm-cancel-url']['description'] = t("The account cancellation URL for the user account. Visiting this URL will automatically cancel a user account: it cannot be undone.");
 
-  $data['tokens']['user']['reset-url']['name'] = t('Password reset URL');
-  $data['tokens']['user']['reset-url']['description'] = t('A single-use password reset URL for the user account.');
+  $data['tokens']['user']['password-reset-url']['name'] = t('Password reset URL');
+  $data['tokens']['user']['password-reset-url']['description'] = t('A single-use password reset URL for the user account.');
 
 
   // Chained tokens for users
