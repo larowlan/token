@@ -88,41 +88,65 @@ function user_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) 
 function user_token_info() {
   $results = array();
 
-  $type['name'] = t('Users');
-  $type['description'] = t('Tokens related to individual user accounts.');
+  $type = array(
+    'name' => t('Users'),
+    'description' => t('Tokens related to individual user accounts.'),
+  );
 
 
-  $user['uid']['name'] = t('User ID');
-  $user['uid']['description'] = t('The unique ID of the user account.');
+  $user['uid'] = array(
+    'name' => t('User ID'),
+    'description' => t("The unique ID of the user account."),
+  );
 
-  $user['name']['name'] = t('Name');
-  $user['name']['description'] = t("The login name of the user account.");
+  $user['name'] = array(
+    'name' => t("Name"),
+    'description' => t("The login name of the user account."),
+  );
 
-  $user['mail']['name'] = t('Email');
-  $user['mail']['description'] = t('The email address of the user account.');
+  $user['mail'] = array(
+    'name' => t("Email"),
+    'description' => t("The email address of the user account."),
+  );
 
-  $user['new-password']['name'] = t('New password');
-  $user['new-password']['description'] = t("A newly-assigned password given to the user account on creation.");
+  $user['new-password'] = array(
+    'name' => t("New password"),
+    'description' => t("A newly-assigned password given to the user account on creation."),
+  );
 
-  $user['url']['name'] = t('URL');
-  $user['url']['description'] = t('The url of the account profile page.');
+  $user['url'] = array(
+    'name' => t("URL"),
+    'description' => t("The URL of the account profile page."),
+  );
 
-  $user['edit-url']['name'] = t('Edit URL');
-  $user['edit-url']['description'] = t('The url of the account edit page.');
+  $user['edit-url'] = array(
+    'name' => t("Edit URL"),
+    'description' => t("The url of the account edit page."),
+  );
 
-  $user['confirm-cancel-url']['name'] = t('Account cancellation URL');
-  $user['confirm-cancel-url']['description'] = t("The account cancellation URL for the user account. Visiting this URL will automatically cancel a user account: it cannot be undone.");
+  $user['confirm-cancel-url'] = array(
+    'name' => t("Account cancellation URL"),
+    'description' => t("The account cancellation URL for the user account. Visiting this URL will automatically cancel a user account: it cannot be undone."),
+  );
 
-  $user['password-reset-url']['name'] = t('Password reset URL');
-  $user['password-reset-url']['description'] = t('A single-use password reset URL for the user account.');
+  $user['password-reset-url'] = array(
+    'name' => t("Password reset URL"),
+    'description' => t("A single-use password reset URL for the user account."),
+  );
 
-  $user['last-login']['name'] = t('Last login');
-  $user['last-login']['description'] = t('The date the user last logged in to the site.');
-  $user['last-login']['references'] = 'date';
 
-  $user['created']['name'] = t('Created');
-  $user['created']['description'] = t('The date the user account was created.');
-  $user['created']['references'] = 'date';
+  // Chained tokens for users.
+  $user['last-login'] = array(
+    'name' => t("Last login"),
+    'description' => t("The date the user last logged in to the site."),
+    'references' => 'date',
+  );
+
+  $user['created'] = array(
+    'name' => t("Created"),
+    'description' => t("The date the user account was created."),
+    'references' => 'date',
+  );
 
 
   $results['types']['user'] = $type;

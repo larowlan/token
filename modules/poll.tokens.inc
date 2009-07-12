@@ -65,21 +65,30 @@ function poll_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) 
 function poll_token_info() {
   $results = array();
 
-  // Poll results
-  $node['poll-votes']['name'] = t('Poll votes');
-  $node['poll-votes']['description'] = t('The number of votes that have been cast on a poll node.');
+  $node['poll-votes'] = array(
+    'name' => t("Poll votes"),
+    'description' => t("The number of votes that have been cast on a poll node."),
+  );
 
-  $node['poll-winner']['name'] = t('Poll winner');
-  $node['poll-winner']['description'] = t("The winning poll answer.");
+  $node['poll-winner'] = array(
+    'name' => t("Poll winner"),
+    'description' => t("The winning poll answer."),
+  );
 
-  $node['poll-winner-votes']['name'] = t('Poll winner votes');
-  $node['poll-winner-votes']['description'] = t('The number of votes received by the winning poll answer.');
+  $node['poll-winner-votes'] = array(
+    'name' => t("Poll winner votes"),
+    'description' => t("The number of votes received by the winning poll answer."),
+  );
 
-  $node['poll-winner-percent']['name'] = t('Poll winner percent');
-  $node['poll-winner-percent']['description'] = t('The percentage of votes received by the winning poll answer.');
+  $node['poll-winner-percent'] = array(
+    'name' => t("Poll winner percent"),
+    'description' => t("The percentage of votes received by the winning poll answer."),
+  );
 
-  $node['poll-duration']['name'] = t('Poll duration');
-  $node['poll-duration']['description'] = t('The length of time the poll node is set to run.');
+  $node['poll-duration'] = array(
+    'name' => t("Poll duration"),
+    'description' => t("The length of time the poll node is set to run."),
+  );
 
   $results['tokens']['node'] = $node;
   return $results;

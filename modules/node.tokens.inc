@@ -39,7 +39,6 @@ function node_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) 
           $replacements[$original] = $node->uid;
           break;
 
-        // Poster identity and basic node content information.
         case 'name':
           $replacements[$original] = $sanitize ? filter_xss($node->name) : $node->name;
           break;
@@ -73,7 +72,6 @@ function node_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) 
           $replacements[$original] = $sanitize ? check_plain($node->language) : $node->language;
           break;
 
-        // Comment related URLs.
         case 'url':
           $replacements[$original] = url('node/' . $node->nid, array('absolute' => TRUE));
           break;
@@ -124,53 +122,86 @@ function node_token_info() {
   $type['description'] = t('Tokens related to individual nodes.');
 
 
-  $node['nid']['name'] = t('Node ID');
-  $node['nid']['description'] = t('The unique ID of the node.');
+  // Core tokens for nodes.
+  $node['nid'] = array(
+    'name' => t("Node ID"),
+    'description' => t("The unique ID of the node."),
+  );
 
-  $node['vid']['name'] = t('Revision ID');
-  $node['vid']['description'] = t("The unique ID of the node's latest revision.");
+  $node['vid'] = array(
+    'name' => t("Revision ID"),
+    'description' => t("The unique ID of the node's latest revision."),
+  );
 
-  $node['tnid']['name'] = t('Translation set ID');
-  $node['tnid']['description'] = t('The unique ID of the original-language version of this node, if one exists.');
+  $node['tnid'] = array(
+    'name' => t("Translation set ID"),
+    'description' => t("The unique ID of the original-language version of this node, if one exists."),
+  );
 
-  $node['uid']['name'] = t('User ID');
-  $node['uid']['description'] = t('The unique ID of the user who posted the node.');
+  $node['uid'] = array(
+    'name' => t("User ID"),
+    'description' => t("The unique ID of the user who posted the node."),
+  );
 
-  $node['type']['name'] = t('Content type');
-  $node['type']['description'] = t('The type of the node.');
+  $node['type'] = array(
+    'name' => t("Content type"),
+    'description' => t("The type of the node."),
+  );
 
-  $node['type-name']['name'] = t('Content type name');
-  $node['type-name']['description'] = t('The human-readable name of the node type.');
+  $node['type-name'] = array(
+    'name' => t("Content type name"),
+    'description' => t("The human-readable name of the node type."),
+  );
 
-  $node['title']['name'] = t('Title');
-  $node['title']['description'] = t('The title of the node.');
+  $node['title'] = array(
+    'name' => t("Title"),
+    'description' => t("The title of the node."),
+  );
 
-  $node['body']['name'] = t('Body');
-  $node['body']['description'] = t('The main body text of the node.');
+  $node['body'] = array(
+    'name' => t("Body"),
+    'description' => t("The main body text of the node."),
+  );
 
-  $node['summary']['name'] = t('Summary');
-  $node['summary']['description'] = t("The summary of the node's main body text.");
+  $node['summary'] = array(
+    'name' => t("Summary"),
+    'description' => t("The summary of the node's main body text."),
+  );
 
-  $node['language']['name'] = t('Language');
-  $node['language']['description'] = t('The language the node is written in.');
+  $node['language'] = array(
+    'name' => t("Language"),
+    'description' => t("The language the node is written in."),
+  );
 
-  $node['url']['name'] = t('URL');
-  $node['url']['description'] = t('The URL of the node.');
+  $node['url'] = array(
+    'name' => t("URL"),
+    'description' => t("The URL of the node."),
+  );
 
-  $node['edit-url']['name'] = t('Edit URL');
-  $node['edit-url']['description'] = t("The URL of the node's edit page.");
+  $node['edit-url'] = array(
+    'name' => t("Edit URL"),
+    'description' => t("The URL of the node's edit page."),
+  );
 
-  $node['created']['name'] = t('Date created');
-  $node['created']['description'] = t('The date the node was posted.');
-  $node['created']['references'] = 'date';
 
-  $node['changed']['name'] = t('Date changed');
-  $node['changed']['description'] = t('The date the node was most recently updated.');
-  $node['changed']['references'] = 'date';
+  // Chained tokens for nodes.
+  $node['created'] = array(
+    'name' => t("Date created"),
+    'description' => t("The date the node was posted."),
+    'references' => 'date',
+  );
 
-  $node['author']['name'] = t('Author');
-  $node['author']['description'] = t('The author of the node.');
-  $node['author']['references'] = 'user';
+  $node['changed'] = array(
+    'name' => t("Date changed"),
+    'description' => t("The date the node was most recently updated."),
+    'references' => 'date',
+  );
+
+  $node['author'] = array(
+    'name' => t("Author"),
+    'description' => t("The author of the node."),
+    'references' => 'user',
+  );
 
   $results['types']['node'] = $type;
   $results['tokens']['node'] = $node;

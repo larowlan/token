@@ -139,68 +139,98 @@ function comment_token_info() {
 
 
   // Comment-related tokens for nodes
-  $node['comment-count']['name'] = t('Comment count');
-  $node['comment-count']['description'] = t('The number of comments posted on a node.');
+  $node['comment-count'] = array(
+    'name' => t("Comment count"),
+    'description' => t("The number of comments posted on a node."),
+  );
 
 
-  // Basic ids and foreign keys for comments
-  $comment['cid']['name'] = t('Comment ID');
-  $comment['cid']['description'] = t('The unique ID of the comment.');
+  // Core comment tokens
+  $comment['cid'] = array(
+    'name' => t("Comment ID"),
+    'description' => t("The unique ID of the comment."),
+  );
 
-  $comment['pid']['name'] = t('Parent ID');
-  $comment['pid']['description'] = t("The unique ID of the comment's parent, if comment threading is active.");
+  $comment['pid'] = array(
+    'name' => t("Parent ID"),
+    'description' => t("The unique ID of the comment's parent, if comment threading is active."),
+  );
 
-  $comment['nid']['name'] = t('Node ID');
-  $comment['nid']['description'] = t('The unique ID of the node the comment was posted to.');
+  $comment['nid'] = array(
+    'name' => t("Node ID"),
+    'description' => t("The unique ID of the node the comment was posted to."),
+  );
 
-  $comment['uid']['name'] = t('User ID');
-  $comment['uid']['description'] = t('The unique ID of the user who posted the comment.');
+  $comment['uid'] = array(
+    'name' => t("User ID"),
+    'description' => t("The unique ID of the user who posted the comment."),
+  );
 
+  $comment['hostname'] = array(
+    'name' => t("IP Address"),
+    'description' => t("The IP address of the computer the comment was posted from."),
+  );
 
-  // Poster identity information for comments
-  $comment['hostname']['name'] = t('IP Address');
-  $comment['hostname']['description'] = t('The IP address of the computer the comment was posted from.');
+  $comment['name'] = array(
+    'name' => t("Name"),
+    'description' => t("The name left by the comment author."),
+  );
 
-  $comment['name']['name'] = t('Name');
-  $comment['name']['description'] = t("The name left by the comment author.");
+  $comment['mail'] = array(
+    'name' => t("Email address"),
+    'description' => t("The email address left by the comment author."),
+  );
 
-  $comment['mail']['name'] = t('Email address');
-  $comment['mail']['description'] = t("The email address left by the comment author.");
+  $comment['homepage'] = array(
+    'name' => t("Home page"),
+    'description' => t("The home page URL left by the comment author."),
+  );
 
-  $comment['homepage']['name'] = t('Home page');
-  $comment['homepage']['description'] = t("The home page URL left by the comment author.");
+  $comment['title'] = array(
+    'name' => t("Title"),
+    'description' => t("The title of the comment."),
+  );
 
+  $comment['body'] = array(
+    'name' => t("Content"),
+    'description' => t("The formatted content of the comment itself."),
+  );
 
-  // Content tokens for the comment
-  $comment['title']['name'] = t('Title');
-  $comment['title']['description'] = t('The title of the comment.');
+  $comment['url'] = array(
+    'name' => t("URL"),
+    'description' => t("The URL of the comment."),
+  );
 
-  $comment['body']['name'] = t('Content');
-  $comment['body']['description'] = t('The formatted content of the comment itself.');
-
-  $comment['url']['name'] = t('URL');
-  $comment['url']['description'] = t('The URL of the comment.');
-
-  $comment['edit-url']['name'] = t('Edit URL');
-  $comment['edit-url']['description'] = t("The URL of the comment's edit page.");
+  $comment['edit-url'] = array(
+    'name' => t("Edit URL"),
+    'description' => t("The URL of the comment's edit page."),
+  );
 
 
   // Chained tokens for comments
-  $comment['created']['name'] = t('Date created');
-  $comment['created']['description'] = t('The date the comment was posted.');
-  $comment['created']['references'] = 'date';
+  $comment['created'] = array(
+    'name' => t("Date created"),
+    'description' => t("The date the comment was posted."),
+    'references' => 'date',
+  );
 
-  $comment['parent']['name'] = t('Parent');
-  $comment['parent']['description'] = t("The comment's parent, if comment threading is active.");
-  $comment['parent']['references'] = 'comment';
+  $comment['parent'] = array(
+    'name' => t("Parent"),
+    'description' => t("The comment's parent, if comment threading is active."),
+    'references' => 'comment',
+  );
 
-  $comment['node']['name'] = t('Node');
-  $comment['node']['description'] = t('The node the comment was posted to.');
-  $comment['node']['references'] = 'node';
+  $comment['node'] = array(
+    'name' => t("Node"),
+    'description' => t("The node the comment was posted to."),
+    'references' => 'node',
+  );
 
-  $comment['author']['name'] = t('Author');
-  $comment['author']['description'] = t('The author of the comment, if they were logged in.');
-  $comment['author']['references'] = 'user';
+  $comment['author'] = array(
+    'name' => t("Author"),
+    'description' => t("The author of the comment, if they were logged in."),
+    'references' => 'user',
+  );
 
   $results['types']['comment'] = $type;
   $results['tokens']['node'] = $node;

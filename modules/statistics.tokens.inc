@@ -45,15 +45,21 @@ function statistics_tokens($type, $tokens, $data, $language = NULL, $sanitize = 
 function statistics_token_info() {
   $results = array();
 
-  $node['views']['name'] = t('Number of views');
-  $node['views']['description'] = t('The number of visitors who have read the node.');
+  $node['views'] = array(
+    'name' => t("Number of views"),
+    'description' => t("The number of visitors who have read the node."),
+  );
 
-  $node['day-views']['name'] = t('Views today');
-  $node['day-views']['description'] = t('The number of visitors who have read the node today.');
+  $node['day-views'] = array(
+    'name' => t("Views today"),
+    'description' => t("The number of visitors who have read the node today."),
+  );
 
-  $node['last-view']['name'] = t('Last view');
-  $node['last-view']['description'] = t('The date on which a visitor last read the node.');
-  $node['last-view']['references'] = 'date';
+  $node['last-view'] = array(
+    'name' => t("Last view"),
+    'description' => t("The date on which a visitor last read the node."),
+    'references' => 'date',
+  );
 
   $results['tokens']['node'] = $node;
   return $results;

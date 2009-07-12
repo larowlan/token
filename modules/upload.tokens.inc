@@ -31,14 +31,12 @@ function upload_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE
 }
 
 function upload_token_info() {
-  $results = array();
-
-  $tokens['upload'] = array(
+  $results['tokens']['node'] = array(
+  'upload' => array(
     'name' => t('File attachment'),
     'description' => t('The first file attached to a node, if one exists.'),
     'references' => 'file',
+    )
   );
-  
-  $results['tokens']['node'] = $tokens;
   return $results;
 }
