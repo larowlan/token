@@ -17,19 +17,19 @@ function token_menu() {
 }
 
 /**
- * Find all tokens in a given string and replace them with appropriate values.
+ * Replace all tokens in a given string with appropriate values.
  *
  * @param $text
- *   The text containing replacable tokens.
+ *   A string potentially containing replacable tokens.
  * @param $data
- *   An array of keyed objects. For simple replacement scenarios 'node', 'user',
+ *   An array of keyed objects. For simple replacement scenarios, 'node', 'user',
  *   and others are common keys, with an accompanying node or user object being
- *   the value. Some tokens types, like 'site', do not require any explicit
+ *   the value. Some token types, like 'site', do not require any explicit
  *   information from $data and can be replaced even if $data is empty.
  * @param $language
  *   An optional language object to be used when generating locale-sensitive
  *   tokens like dates.
- * @returns
+ * * @return
  *   Text with tokens replaced.
  */
 function token_replace($text, array $data = array(), $language = NULL) {
@@ -47,23 +47,26 @@ function token_replace($text, array $data = array(), $language = NULL) {
  *
  * @param $text
  *   The text to be scanned for possible tokens.
- * @returns
+ * * @return
  *   An associative array of discovered tokens, grouped by type.
  */
 function token_scan($text) {
-  preg_match_all('/\[([^\]:\ ]*):([^\]\ ]*)\]/', $text, $matches);
+  // Matches tokens with the following pattern: [$type:$token]
+  // $type and $token may not contain white spaces.
+  preg_match_all('/\[([^\s\]:]*):([^\s\]]*)\]/', $text, $matches);
 
-  $tokens = array();
+  $types = $matches[1];
+  $tokens = $matches[2];
 
-  $raw = $matches[0];
-  $type = $matches[1];
-  $token = $matches[2];
-
-  for ($i = 0; $i < count($raw); $i++) {
-    $tokens[$type[$i]][$token[$i]] = $raw[$i];
+  // Iterate through the matches, building an associative array containing
+  // $tokens grouped by $types, pointing to the original "raw" version of the
+  // token found in the source text.
+  // For example, $results['node']['title'] = '[node:title]';
+  $results = array();
+  for ($i = 0; $i < count($tokens); $i++) {
+    $results[$types[$i]][$tokens[$i]] = $matches[0][$i];
   }
-
-  return $tokens;
+  return $results;
 }
 
 /**
@@ -74,16 +77,19 @@ function token_scan($text) {
  * @param $data
  *   An array of keyed objects. For simple replacement scenarios 'node', 'user',
  *   and others are common keys, with an accompanying node or user object being
- *   the value. Some tokens types, like 'site', do not require any explicit
+ *   the value. Some token types, like 'site', do not require any explicit
  *   information from $data and can be replaced even if $data is empty.
- * @param $sanitize
- *   A boolean flag indicating whether the replacement values should be sanitized
- *   for display on an HTML page. Defaults to TRUE.
  * @param $language
  *   An optional language object to be used when generating locale-sensitive
  *   tokens like dates.
- * @returns
- *   An associative array of discovered tokens, grouped by type.
+ * @param $sanitize
+ *   A boolean flag indicating whether the replacement values should be sanitized
+ *   for display for HTML. Defaults to TRUE. If FALSE, the calling module assumes
+ *   responsibility for sanitizing any returned token values manually.
+ * * @return
+ *   An associative array of replacement values, keyed by the original 'raw'
+ *   tokens that were found in the source text. For example:
+ *   $results['[node:title]'] = 'My new node';
  */
 function token_generate(array $raw_tokens, array $data = array(), $language = NULL, $sanitize = TRUE) {
   $results = array();
@@ -98,6 +104,20 @@ function token_generate(array $raw_tokens, array $data = array(), $language = NU
 /**
  * Given a list of tokens, return those that begin with a specific prefix.
  *
+ * Used to extract a group of 'chained' tokens (such as [node:author:name]) from
+ * the full list of tokens found in text. The following code:
+ * 
+ *   $data = array(
+ *     'author:name' => '[node:author:name]',
+ *     'title'       => '[node:title]',
+ *     'created'     => '[node:author:name]',
+ *   );
+ *   token_find_with_prefix($data, 'author');
+ *
+ * would result in the following return value:
+ *
+ *   array('name' => '[node:author:name]');
+ *
  * @param $tokens
  *   A keyed array of tokens, and their original raw form in the source text.
  * @param $prefix
@@ -105,11 +125,11 @@ function token_generate(array $raw_tokens, array $data = array(), $language = NU
  * @param $delimiter
  *   An optional string containing the character that separates the prefix from
  *   the rest of the token. Defaults to ':'.
- * @returns
+ * * @return
  *   An associative array of discovered tokens, with the prefix and delimiter
  *   stripped from the key.
  */
-function token_match_prefix(array $tokens, $prefix, $delimiter = ':') {
+function token_find_with_prefix(array $tokens, $prefix, $delimiter = ':') {
   $results = array();
   foreach ($tokens as $token => $raw) {
     $parts = split($delimiter, $token, 2);
@@ -143,12 +163,12 @@ function token_match_prefix(array $tokens, $prefix, $delimiter = ':') {
  *
  * @param $reset
  *   Rebuild the internal cache of Token metadata. Defaults to FALSE.
- * @returns
+ * * @return
  *   An associative array of token information, grouped by token type.
  */
 function token_info($reset = FALSE) {
-  $data = &drupal_static(__FUNCTION__, array(), $reset);
-  if (empty($data)) {
+  $data = &drupal_static(__FUNCTION__);
+  if (!isset($data)) {
     $data = module_invoke_all('token_info');
     drupal_alter('token_info', $data);
   }

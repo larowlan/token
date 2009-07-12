@@ -30,7 +30,7 @@ function statistics_tokens($type, $tokens, $data, $language = NULL, $sanitize = 
       }
     }
 
-    if ($created_tokens = token_match_prefix($tokens, 'last-view')) {
+    if ($created_tokens = token_find_with_prefix($tokens, 'last-view')) {
       $statistics = statistics_get($node->nid);
       $replacements += module_invoke_all('tokens', 'date', $created_tokens, array('date' => $statistics['timestamp']), $language, $sanitize);
     }
@@ -43,17 +43,18 @@ function statistics_tokens($type, $tokens, $data, $language = NULL, $sanitize = 
  * Implement hook_token_info().
  */
 function statistics_token_info() {
-  $data = array();
+  $results = array();
 
-  $data['tokens']['node']['views']['name'] = t('Number of views');
-  $data['tokens']['node']['views']['description'] = t('The number of visitors who have read the node.');
+  $node['views']['name'] = t('Number of views');
+  $node['views']['description'] = t('The number of visitors who have read the node.');
 
-  $data['tokens']['node']['day-views']['name'] = t('Views today');
-  $data['tokens']['node']['day-views']['description'] = t('The number of visitors who have read the node today.');
+  $node['day-views']['name'] = t('Views today');
+  $node['day-views']['description'] = t('The number of visitors who have read the node today.');
 
-  $data['tokens']['node']['last-view']['name'] = t('Last view');
-  $data['tokens']['node']['last-view']['description'] = t('The date on which a visitor last read the node.');
-  $data['tokens']['node']['last-view']['references'] = 'date';
+  $node['last-view']['name'] = t('Last view');
+  $node['last-view']['description'] = t('The date on which a visitor last read the node.');
+  $node['last-view']['references'] = 'date';
 
-  return $data;
+  $results['tokens']['node'] = $node;
+  return $results;
 }

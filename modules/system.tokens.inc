@@ -27,21 +27,26 @@ function system_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE
           $site_name = variable_get('site_name', 'Drupal');
           $replacements[$original] = $sanitize ? filter_xss($site_name) : $site_name;
           break;
+
         case 'slogan':
           $slogan = variable_get('site_slogan');
           $replacements[$original] = $sanitize ? filter_xss($slogan) : $slogan;
           break;
+
         case 'mission':
           $mission = variable_get('site_mission');
           $replacements[$original] = $sanitize ? filter_xss($mission) : $mission;
           break;
+
         case 'mail':
           $mail = variable_get('site_name');
           $replacements[$original] = variable_get('site_mail');
           break;
+
         case 'url':
           $replacements[$original] = url('<front>', $url_options);
           break;
+
         case 'login-url':
           $replacements[$original] = url('user', $url_options);
           break;
@@ -56,53 +61,35 @@ function system_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE
     else {
       $date = $data['date'];
     }
+    $langcode = (isset($language) ? $language->language : NULL);
 
     foreach ($tokens as $name => $original) {
-      if ($name == 'raw') {
-        $replacements[$original] = filter_xss($date);
-      }
-      elseif (isset($language)) {
-        switch ($name) {
-          case 'small':
-            $replacements[$original] = format_date($date, 'small');
-            break;
-          case 'medium':
-            $replacements[$original] = format_date($date, 'medium');
-            break;
-          case 'large':
-            $replacements[$original] = format_date($date, 'large');
-            break;
-          case 'since':
-            $replacements[$original] = format_interval((REQUEST_TIME - $date), 2);
-            break;
-        }
-      }
-      else {
-        switch ($name) {
-          case 'small':
-            $replacements[$original] = format_date($date, 'small', '', NULL, $language->language);
-            break;
-          case 'medium':
-            $replacements[$original] = format_date($date, 'medium', '', NULL, $language->language);
-            break;
-          case 'large':
-            $replacements[$original] = format_date($date, 'large', '', NULL, $language->language);
-            break;
-          case 'since':
-            $replacements[$original] = format_interval((REQUEST_TIME - $date), 2, $language->language);
-            break;
-        }
+      switch ($name) {
+        case 'raw':
+          $replacements[$original] = filter_xss($date);
+          break;
+
+        case 'small':
+          $replacements[$original] = format_date($date, 'small', '', NULL, $langcode);
+          break;
+
+        case 'medium':
+          $replacements[$original] = format_date($date, 'medium', '', NULL, $langcode);
+          break;
+
+        case 'large':
+          $replacements[$original] = format_date($date, 'large', '', NULL, $langcode);
+          break;
+
+        case 'since':
+          $replacements[$original] = format_interval((REQUEST_TIME - $date), 2, $langcode);
+          break;
       }
     }
 
-    if ($created_tokens = token_match_prefix($tokens, 'custom')) {
+    if ($created_tokens = token_find_with_prefix($tokens, 'custom')) {
       foreach ($created_tokens as $name => $original) {
-        if (isset($language)) {
-          $replacements[$original] = format_date($date, 'custom', $name, NULL, $language->language);
-        }
-        else {
-          $replacements[$original] = format_date($date, 'custom', $name);
-        }
+        $replacements[$original] = format_date($date, 'custom', $name, NULL, $langcode);
       }
     }
   }
@@ -112,14 +99,15 @@ function system_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
-
         // Basic keys and values.
         case 'fid':
           $replacements[$original] = $file->fid;
           break;
+
         case 'uid':
           $replacements[$original] = $file->uid;
           break;
+
         case 'nid':
           $replacements[$original] = $file->nid;
           break;
@@ -128,18 +116,23 @@ function system_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE
         case 'name':
           $replacements[$original] = $sanitize ? check_plain($file->filename) : $file->filename;
           break;
+
         case 'description':
           $replacements[$original] = $sanitize ? filter_xss($file->description) : $file->description;
           break;
+
         case 'path':
           $replacements[$original] = $sanitize ? filter_xss($file->filepath) : $file->filepath;
           break;
+
         case 'mime':
           $replacements[$original] = $sanitize ? filter_xss($file->filemime) : $file->filemime;
           break;
+
         case 'size':
           $replacements[$original] = format_size($file->filesize);
           break;
+
         case 'url':
           $replacements[$original] = url(file_create_url($file->filepath), $url_options);
           break;
@@ -151,14 +144,11 @@ function system_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE
             $replacements[$original] = $sanitize ? filter_xss($node->title) : $node->title;
           }
           break;
+
         case 'timestamp':
-          if (isset($language)) {
-            $replacements[$original] = format_date($file->timestamp, 'medium', '', NULL, $language->language);
-          }
-          else {
-            $replacements[$original] = format_date($file->timestamp);
-          }
+          $replacements[$original] = format_date($file->timestamp, 'medium', '', NULL, (isset($language) ? $language->language : NULL));
           break;
+
         case 'owner':
           $account = user_load($file->uid);
           $replacements[$original] = $sanitize ? filter_xss($user->name) : $user->name;
@@ -166,16 +156,16 @@ function system_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE
       }
     }
 
-    if ($node_tokens = token_match_prefix($tokens, 'node')) {
+    if ($node_tokens = token_find_with_prefix($tokens, 'node')) {
       $node = node_load($file->nid);
       $replacements += module_invoke_all('tokens', 'node', $node_tokens, array('node' => $node), $language, $sanitize);
     }
 
-    if ($date_tokens = token_match_prefix($tokens, 'timestamp')) {
+    if ($date_tokens = token_find_with_prefix($tokens, 'timestamp')) {
       $replacements += module_invoke_all('tokens', 'date', $date_tokens, array('date' => $file->timestamp), $language, $sanitize);
     }
 
-    if (($owner_tokens = token_match_prefix($tokens, 'owner')) && $account = user_load($file->uid)) {
+    if (($owner_tokens = token_find_with_prefix($tokens, 'owner')) && $account = user_load($file->uid)) {
       $replacements += module_invoke_all('tokens', 'user', $owner_tokens, array('user' => $account), $language, $sanitize);
     }
   }
@@ -187,100 +177,99 @@ function system_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE
  * Implement hook_token_info().
  */
 function system_token_info() {
-  $data = array();
+  $results = array();
 
-  // Metadata for token types.
-  $data['types']['site']['name'] = t('Site information');
-  $data['types']['site']['description'] = t('Tokens for site-wide settings and other global information.');
+  $types['site']['name'] = t('Site information');
+  $types['site']['description'] = t('Tokens for site-wide settings and other global information.');
 
-  $data['types']['date']['name'] = t('Dates');
-  $data['types']['date']['description'] = t('Tokens related to times and dates.');
+  $types['date']['name'] = t('Dates');
+  $types['date']['description'] = t('Tokens related to times and dates.');
 
-  $data['types']['file']['name'] = t('Files');
-  $data['types']['file']['description'] = t('Tokens related to uploaded files.');
-
-
-  // Sitewide variables and metadata.
-  $data['tokens']['site']['name']['name'] = t("Name");
-  $data['tokens']['site']['name']['description'] = t("The name of the site.");
-
-  $data['tokens']['site']['slogan']['name'] = t("Slogan");
-  $data['tokens']['site']['slogan']['description'] = t("The slogan of the site.");
-
-  $data['tokens']['site']['mission']['name'] = t("Mission");
-  $data['tokens']['site']['mission']['description'] = t("The optional 'mission' of the site.");
-
-  $data['tokens']['site']['mail']['name'] = t("Email");
-  $data['tokens']['site']['mail']['description'] = t("The administrative email address for the site.");
-
-  $data['tokens']['site']['url']['name'] = t("URL");
-  $data['tokens']['site']['url']['description'] = t("The URL of the site's front page.");
-
-  $data['tokens']['site']['login-url']['name'] = t("Login page");
-  $data['tokens']['site']['login-url']['description'] = t("The URL of the site's login page.");
+  $types['file']['name'] = t('Files');
+  $types['file']['description'] = t('Tokens related to uploaded files.');
 
 
-  // Date formatting tokens.
-  $data['tokens']['date']['small']['name'] = t("Small format");
-  $data['tokens']['date']['small']['description'] = t("A date in 'small' format. (%date)", array('%date' => format_date(REQUEST_TIME, 'small')));
+  $site['name']['name'] = t("Name");
+  $site['name']['description'] = t("The name of the site.");
 
-  $data['tokens']['date']['medium']['name'] = t("Medium format");
-  $data['tokens']['date']['medium']['description'] = t("A date in 'medium' format. (%date)", array('%date' => format_date(REQUEST_TIME, 'medium')));
+  $site['slogan']['name'] = t("Slogan");
+  $site['slogan']['description'] = t("The slogan of the site.");
 
-  $data['tokens']['date']['large']['name'] = t("Large format");
-  $data['tokens']['date']['large']['description'] = t("A date in 'large' format. (%date)", array('%date' => format_date(REQUEST_TIME, 'large')));
+  $site['mission']['name'] = t("Mission");
+  $site['mission']['description'] = t("The optional 'mission' of the site.");
 
-  $data['tokens']['date']['custom']['name'] = t("Custom format");
-  $data['tokens']['date']['custom']['description'] = t("A date in a custom format. See !php-date for details.", array('!php-date' => l(t('the PHP documentation'), 'http://php.net/manual/en/function.date.php')));
+  $site['mail']['name'] = t("Email");
+  $site['mail']['description'] = t("The administrative email address for the site.");
 
-  $data['tokens']['date']['since']['name'] = t("Time-since");
-  $data['tokens']['date']['since']['description'] = t("A data in 'time-since' format. (%date)", array('%date' => format_interval(REQUEST_TIME - 360, 2)));
+  $site['url']['name'] = t("URL");
+  $site['url']['description'] = t("The URL of the site's front page.");
 
-  $data['tokens']['date']['raw']['name'] = t("Raw timestamp");
-  $data['tokens']['date']['raw']['description'] = t("A date in UNIX timestamp format (%date)", array('%date' => REQUEST_TIME));
-
-
-  // File related tokens.
-  $data['tokens']['file']['fid']['name'] = t("File ID");
-  $data['tokens']['file']['fid']['description'] = t("The unique ID of the uploaded file.");
-
-  $data['tokens']['file']['uid']['name'] = t("User ID");
-  $data['tokens']['file']['uid']['description'] = t("The unique ID of the user who owns the file.");
-
-  $data['tokens']['file']['nid']['name'] = t("Node ID");
-  $data['tokens']['file']['nid']['description'] = t("The unique ID of the node the file is attached to.");
-
-  $data['tokens']['file']['name']['name'] = t("File name");
-  $data['tokens']['file']['name']['description'] = t("The name of the file on disk.");
-
-  $data['tokens']['file']['description']['name'] = t("Description");
-  $data['tokens']['file']['description']['description'] = t("An optional human-readable description of the file.");
-
-  $data['tokens']['file']['path']['name'] = t("Path");
-  $data['tokens']['file']['path']['description'] = t("The location of the file on disk.");
-
-  $data['tokens']['file']['mime']['name'] = t("MIME type");
-  $data['tokens']['file']['mime']['description'] = t("The MIME type of the file.");
-
-  $data['tokens']['file']['size']['name'] = t("File size");
-  $data['tokens']['file']['size']['description'] = t("The size of the file, in kilobytes.");
-
-  $data['tokens']['file']['path']['name'] = t("URL");
-  $data['tokens']['file']['path']['description'] = t("The web-accessible URL for the file.");
+  $site['login-url']['name'] = t("Login page");
+  $site['login-url']['description'] = t("The URL of the site's login page.");
 
 
-  // Chained tokens for files
-  $data['tokens']['file']['timestamp']['name'] = t('Timestamp');
-  $data['tokens']['file']['timestamp']['description'] = t('The date the file was most recently changed.');
-  $data['tokens']['file']['timestamp']['references'] = 'date';
+  $date['small']['name'] = t("Small format");
+  $date['small']['description'] = t("A date in 'small' format. (%date)", array('%date' => format_date(REQUEST_TIME, 'small')));
 
-  $data['tokens']['file']['node']['name'] = t('Node');
-  $data['tokens']['file']['node']['description'] = t('The node the file is attached to.');
-  $data['tokens']['file']['node']['references'] = 'date';
+  $date['medium']['name'] = t("Medium format");
+  $date['medium']['description'] = t("A date in 'medium' format. (%date)", array('%date' => format_date(REQUEST_TIME, 'medium')));
 
-  $data['tokens']['file']['owner']['name'] = t('Owner');
-  $data['tokens']['file']['owner']['description'] = t('The user who originally uploaded the file.');
-  $data['tokens']['file']['owner']['references'] = 'user';
+  $date['large']['name'] = t("Large format");
+  $date['large']['description'] = t("A date in 'large' format. (%date)", array('%date' => format_date(REQUEST_TIME, 'large')));
 
-  return $data;
+  $date['custom']['name'] = t("Custom format");
+  $date['custom']['description'] = t("A date in a custom format. See !php-date for details.", array('!php-date' => l(t('the PHP documentation'), 'http://php.net/manual/en/function.date.php')));
+
+  $date['since']['name'] = t("Time-since");
+  $date['since']['description'] = t("A data in 'time-since' format. (%date)", array('%date' => format_interval(REQUEST_TIME - 360, 2)));
+
+  $date['raw']['name'] = t("Raw timestamp");
+  $date['raw']['description'] = t("A date in UNIX timestamp format (%date)", array('%date' => REQUEST_TIME));
+
+
+  $file['fid']['name'] = t("File ID");
+  $file['fid']['description'] = t("The unique ID of the uploaded file.");
+
+  $file['uid']['name'] = t("User ID");
+  $file['uid']['description'] = t("The unique ID of the user who owns the file.");
+
+  $file['nid']['name'] = t("Node ID");
+  $file['nid']['description'] = t("The unique ID of the node the file is attached to.");
+
+  $file['name']['name'] = t("File name");
+  $file['name']['description'] = t("The name of the file on disk.");
+
+  $file['description']['name'] = t("Description");
+  $file['description']['description'] = t("An optional human-readable description of the file.");
+
+  $file['path']['name'] = t("Path");
+  $file['path']['description'] = t("The location of the file on disk.");
+
+  $file['mime']['name'] = t("MIME type");
+  $file['mime']['description'] = t("The MIME type of the file.");
+
+  $file['size']['name'] = t("File size");
+  $file['size']['description'] = t("The size of the file, in kilobytes.");
+
+  $file['path']['name'] = t("URL");
+  $file['path']['description'] = t("The web-accessible URL for the file.");
+
+  $file['timestamp']['name'] = t('Timestamp');
+  $file['timestamp']['description'] = t('The date the file was most recently changed.');
+  $file['timestamp']['references'] = 'date';
+
+  $file['node']['name'] = t('Node');
+  $file['node']['description'] = t('The node the file is attached to.');
+  $file['node']['references'] = 'date';
+
+  $file['owner']['name'] = t('Owner');
+  $file['owner']['description'] = t('The user who originally uploaded the file.');
+  $file['owner']['references'] = 'user';
+
+
+  $results['types'] = $types;
+  $results['tokens']['site'] = $site;
+  $results['tokens']['date'] = $date;
+  $results['tokens']['file'] = $file;
+  return $results;
 }

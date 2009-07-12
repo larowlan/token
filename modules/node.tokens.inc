@@ -22,17 +22,19 @@ function node_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) 
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
-
         // Simple key values on the node.
         case 'nid':
           $replacements[$original] = $node->nid;
           break;
+
         case 'vid':
           $replacements[$original] = $node->vid;
           break;
+
         case 'tnid':
           $replacements[$original] = $node->tnid;
           break;
+
         case 'uid':
           $replacements[$original] = $node->uid;
           break;
@@ -41,26 +43,32 @@ function node_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) 
         case 'name':
           $replacements[$original] = $sanitize ? filter_xss($node->name) : $node->name;
           break;
+
         case 'title':
           $replacements[$original] = $sanitize ? filter_xss($node->title) : $node->title;
           break;
+
         case 'body':
           if (!empty($node->body)) {
             $replacements[$original] = $sanitize ? $node->body[0]['safe'] : $node->body[0]['value'];
           }
           break;
+
         case 'summary':
           if (!empty($node->body)) {
             $replacements[$original] = $sanitize ? $node->body[0]['safe_summary'] : $node->body[0]['summary'];
           }
           break;
+
         case 'type':
           $replacements[$original] = $sanitize ? check_plain($node->type) : $node->type;
           break;
+
         case 'type-name':
           $type_name = node_get_types('name', $node->type);
           $replacements[$original] = $sanitize ? check_plain($type_name) : $type_name;
           break;
+
         case 'language':
           $replacements[$original] = $sanitize ? check_plain($node->language) : $node->language;
           break;
@@ -69,6 +77,7 @@ function node_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) 
         case 'url':
           $replacements[$original] = url('node/' . $node->nid, array('absolute' => TRUE));
           break;
+
         case 'edit-url':
           $replacements[$original] = url('node/' . $node->nid . '/edit', array('absolute' => TRUE));
           break;
@@ -77,35 +86,27 @@ function node_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) 
         case 'author':
           $replacements[$original] = $sanitize ? filter_xss($node->name) : $node->name;
           break;
+
         case 'created':
-          if (isset($language)) {
-            $replacements[$original] = date_format($node->created, '', NULL, $language->language);
-          }
-          else {
-            $replacements[$original] = date_format($node->created);
-          }
+          $replacements[$original] = format_date($node->created, 'medium', '', NULL, (isset($language) ? $language->language : NULL));
           break;
+
         case 'changed':
-          if (isset($language)) {
-            $replacements[$original] = date_format($node->changed, '', NULL, $language->language);
-          }
-          else {
-            $replacements[$original] = date_format($node->changed);
-          }
+          $replacements[$original] = format_date($node->changed, 'medium', '', NULL, (isset($language) ? $language->language : NULL));
           break;
       }
     }
 
-    if ($author_tokens = token_match_prefix($tokens, 'author')) {
+    if ($author_tokens = token_find_with_prefix($tokens, 'author')) {
       $author = user_load($node->uid);
       $replacements += module_invoke_all('tokens', 'user', $author_tokens, array('user' => $author), $language, $sanitize);
     }
 
-    if ($created_tokens = token_match_prefix($tokens, 'created')) {
+    if ($created_tokens = token_find_with_prefix($tokens, 'created')) {
       $replacements += module_invoke_all('tokens', 'date', $created_tokens, array('date' => $node->created), $language, $sanitize);
     }
 
-    if ($changed_tokens = token_match_prefix($tokens, 'changed')) {
+    if ($changed_tokens = token_find_with_prefix($tokens, 'changed')) {
       $replacements += module_invoke_all('tokens', 'date', $changed_tokens, array('date' => $node->changed), $language, $sanitize);
     }
   }
@@ -117,65 +118,61 @@ function node_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) 
  * Implement hook_token_info().
  */
 function node_token_info() {
-  $data = array();
+  $results = array();
 
-  // Metadata for token types.
-  $data['types']['node']['name'] = t('Nodes');
-  $data['types']['node']['description'] = t('Tokens related to individual nodes.');
-
-  // Basic ids, foreign keys, and metadata for nodes
-  $data['tokens']['node']['nid']['name'] = t('Node ID');
-  $data['tokens']['node']['nid']['description'] = t('The unique ID of the node.');
-
-  $data['tokens']['node']['vid']['name'] = t('Revision ID');
-  $data['tokens']['node']['vid']['description'] = t("The unique ID of the node's latest revision.");
-
-  $data['tokens']['node']['tnid']['name'] = t('Translation set ID');
-  $data['tokens']['node']['tnid']['description'] = t('The unique ID of the original-language version of this node, if one exists.');
-
-  $data['tokens']['node']['uid']['name'] = t('User ID');
-  $data['tokens']['node']['uid']['description'] = t('The unique ID of the user who posted the node.');
-
-  $data['tokens']['node']['type']['name'] = t('Content type');
-  $data['tokens']['node']['type']['description'] = t('The type of the node.');
-
-  $data['tokens']['node']['type-name']['name'] = t('Content type name');
-  $data['tokens']['node']['type-name']['description'] = t('The human-readable name of the node type.');
+  $type['name'] = t('Nodes');
+  $type['description'] = t('Tokens related to individual nodes.');
 
 
+  $node['nid']['name'] = t('Node ID');
+  $node['nid']['description'] = t('The unique ID of the node.');
 
-  // Content tokens for the node
-  $data['tokens']['node']['title']['name'] = t('Title');
-  $data['tokens']['node']['title']['description'] = t('The title of the node.');
+  $node['vid']['name'] = t('Revision ID');
+  $node['vid']['description'] = t("The unique ID of the node's latest revision.");
 
-  $data['tokens']['node']['body']['name'] = t('Body');
-  $data['tokens']['node']['body']['description'] = t('The main body text of the node.');
+  $node['tnid']['name'] = t('Translation set ID');
+  $node['tnid']['description'] = t('The unique ID of the original-language version of this node, if one exists.');
 
-  $data['tokens']['node']['summary']['name'] = t('Summary');
-  $data['tokens']['node']['summary']['description'] = t("The summary of the node's main body text.");
+  $node['uid']['name'] = t('User ID');
+  $node['uid']['description'] = t('The unique ID of the user who posted the node.');
 
-  $data['tokens']['node']['language']['name'] = t('Language');
-  $data['tokens']['node']['language']['description'] = t('The language the node is written in.');
+  $node['type']['name'] = t('Content type');
+  $node['type']['description'] = t('The type of the node.');
 
-  $data['tokens']['node']['url']['name'] = t('URL');
-  $data['tokens']['node']['url']['description'] = t('The URL of the node.');
+  $node['type-name']['name'] = t('Content type name');
+  $node['type-name']['description'] = t('The human-readable name of the node type.');
 
-  $data['tokens']['node']['edit-url']['name'] = t('Edit URL');
-  $data['tokens']['node']['edit-url']['description'] = t("The URL of the node's edit page.");
+  $node['title']['name'] = t('Title');
+  $node['title']['description'] = t('The title of the node.');
 
+  $node['body']['name'] = t('Body');
+  $node['body']['description'] = t('The main body text of the node.');
 
-  // Chained tokens for nodes
-  $data['tokens']['node']['created']['name'] = t('Date created');
-  $data['tokens']['node']['created']['description'] = t('The date the node was posted.');
-  $data['tokens']['node']['created']['references'] = 'date';
+  $node['summary']['name'] = t('Summary');
+  $node['summary']['description'] = t("The summary of the node's main body text.");
 
-  $data['tokens']['node']['changed']['name'] = t('Date changed');
-  $data['tokens']['node']['changed']['description'] = t('The date the node was most recently updated.');
-  $data['tokens']['node']['changed']['references'] = 'date';
+  $node['language']['name'] = t('Language');
+  $node['language']['description'] = t('The language the node is written in.');
 
-  $data['tokens']['node']['author']['name'] = t('Author');
-  $data['tokens']['node']['author']['description'] = t('The author of the node.');
-  $data['tokens']['node']['author']['references'] = 'user';
+  $node['url']['name'] = t('URL');
+  $node['url']['description'] = t('The URL of the node.');
 
-  return $data;
+  $node['edit-url']['name'] = t('Edit URL');
+  $node['edit-url']['description'] = t("The URL of the node's edit page.");
+
+  $node['created']['name'] = t('Date created');
+  $node['created']['description'] = t('The date the node was posted.');
+  $node['created']['references'] = 'date';
+
+  $node['changed']['name'] = t('Date changed');
+  $node['changed']['description'] = t('The date the node was most recently updated.');
+  $node['changed']['references'] = 'date';
+
+  $node['author']['name'] = t('Author');
+  $node['author']['description'] = t('The author of the node.');
+  $node['author']['references'] = 'user';
+
+  $results['types']['node'] = $type;
+  $results['tokens']['node'] = $node;
+  return $results;
 }

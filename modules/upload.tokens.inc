@@ -22,7 +22,7 @@ function upload_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE
       }
     }
 
-    if (($upload_tokens = token_match_prefix($tokens, 'upload')) && !empty($node->files) && $upload = array_shift($node->files)) {
+    if (($upload_tokens = token_find_with_prefix($tokens, 'upload')) && !empty($node->files) && $upload = array_shift($node->files)) {
       $replacements += module_invoke_all('tokens', 'file', $upload_tokens, array('file' => $upload), $language, $sanitize);
     }
   }
@@ -31,12 +31,14 @@ function upload_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE
 }
 
 function upload_token_info() {
-  $data = array();
+  $results = array();
 
-  // Upload-related chained tokens for nodes
-  $data['tokens']['node']['upload']['name'] = t('File attachment');
-  $data['tokens']['node']['upload']['description'] = t('The first file attached to a node, if one exists.');
-  $data['tokens']['ndoe']['upload']['references'] = 'file';
-
-  return $data;
+  $tokens['upload'] = array(
+    'name' => t('File attachment'),
+    'description' => t('The first file attached to a node, if one exists.'),
+    'references' => 'file',
+  );
+  
+  $results['tokens']['node'] = $tokens;
+  return $results;
 }
