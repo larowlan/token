@@ -10,13 +10,147 @@
  */
 
 /**
+ * Implement hook_token_info().
+ */
+function system_token_info() {
+  $types['site'] = array(
+    'name' => t("Site information"),
+    'description' => t("Tokens for site-wide settings and other global information."),
+  );
+  $types['date'] = array(
+    'name' => t("Dates"),
+    'description' => t("Tokens related to times and dates."),
+  );
+  $types['file'] = array(
+    'name' => t("Files"),
+    'description' => t("Tokens related to uploaded files."),
+  );
+
+  // Site-wide global tokens.
+  $site['name'] = array(
+    'name' => t("Name"),
+    'description' => t("The name of the site."),
+  );
+  $site['slogan'] = array(
+    'name' => t("Slogan"),
+    'description' => t("The slogan of the site."),
+  );
+  $site['mission'] = array(
+    'name' => t("Mission"),
+    'description' => t("The optional 'mission' of the site."),
+  );
+  $site['mail'] = array(
+    'name' => t("Email"),
+    'description' => t("The administrative email address for the site."),
+  );
+  $site['url'] = array(
+    'name' => t("URL"),
+    'description' => t("The URL of the site's front page."),
+  );
+  $site['login-url'] = array(
+    'name' => t("Login page"),
+    'description' => t("The URL of the site's login page."),
+  );
+
+  // Date related tokens.
+  $date['small'] = array(
+    'name' => t("Small format"),
+    'description' => t("A date in 'small' format. (%date)", array('%date' => format_date(REQUEST_TIME, 'small'))),
+  );
+  $date['medium'] = array(
+    'name' => t("Medium format"),
+    'description' => t("A date in 'medium' format. (%date)", array('%date' => format_date(REQUEST_TIME, 'medium'))),
+  );
+  $date['large'] = array(
+    'name' => t("Large format"),
+    'description' => t("A date in 'large' format. (%date)", array('%date' => format_date(REQUEST_TIME, 'large'))),
+  );
+  $date['custom'] = array(
+    'name' => t("Custom format"),
+    'description' => t("A date in a custom format. See !php-date for details.", array('!php-date' => l(t('the PHP documentation'), 'http://php.net/manual/en/function.date.php'))),
+  );
+  $date['since'] = array(
+    'name' => t("Time-since"),
+    'description' => t("A data in 'time-since' format. (%date)", array('%date' => format_interval(REQUEST_TIME - 360, 2))),
+  );
+  $date['raw'] = array(
+    'name' => t("Raw timestamp"),
+    'description' => t("A date in UNIX timestamp format (%date)", array('%date' => REQUEST_TIME)),
+  );
+
+
+  // File related tokens.
+  $file['fid'] = array(
+    'name' => t("File ID"),
+    'description' => t("The unique ID of the uploaded file."),
+  );
+  $file['uid'] = array(
+    'name' => t("User ID"),
+    'description' => t("The unique ID of the user who owns the file."),
+  );
+  $file['nid'] = array(
+    'name' => t("Node ID"),
+    'description' => t("The unique ID of the node the file is attached to."),
+  );
+  $file['name'] = array(
+    'name' => t("File name"),
+    'description' => t("The name of the file on disk."),
+  );
+  $file['description'] = array(
+    'name' => t("Description"),
+    'description' => t("An optional human-readable description of the file."),
+  );
+  $file['path'] = array(
+    'name' => t("Path"),
+    'description' => t("The location of the file on disk."),
+  );
+  $file['mime'] = array(
+    'name' => t("MIME type"),
+    'description' => t("The MIME type of the file."),
+  );
+  $file['size'] = array(
+    'name' => t("File size"),
+    'description' => t("The size of the file, in kilobytes."),
+  );
+  $file['path'] = array(
+    'name' => t("URL"),
+    'description' => t("The web-accessible URL for the file."),
+  );
+  $file['timestamp'] = array(
+    'name' => t("Timestamp"),
+    'description' => t("The date the file was most recently changed."),
+    'type' => 'date',
+  );
+  $file['node'] = array(
+    'name' => t("Node"),
+    'description' => t("The node the file is attached to."),
+    'type' => 'date',
+  );
+  $file['owner'] = array(
+    'name' => t("Owner"),
+    'description' => t("The user who originally uploaded the file."),
+    'type' => 'user',
+  );
+
+  return array(
+    'types' => $types,
+    'tokens' => array(
+      'site' => $site,
+      'date' => $date,
+      'file' => $file,
+    ),
+  );
+}
+
+/**
  * Implement hook_tokens().
  */
-function system_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) {
+function system_tokens($type, $tokens, array $data = array(), array $options = array()) {
   $url_options = array('absolute' => TRUE);
   if (isset($language)) {
     $url_options['language'] = $language;
   }
+  $sanitize = !empty($options['sanitize']);
 
   $replacements = array();
 
@@ -25,22 +159,21 @@ function system_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE
       switch ($name) {
         case 'name':
           $site_name = variable_get('site_name', 'Drupal');
-          $replacements[$original] = $sanitize ? filter_xss($site_name) : $site_name;
+          $replacements[$original] = $sanitize ? check_plain($site_name) : $site_name;
           break;
 
         case 'slogan':
-          $slogan = variable_get('site_slogan');
-          $replacements[$original] = $sanitize ? filter_xss($slogan) : $slogan;
+          $slogan = variable_get('site_slogan', '');
+          $replacements[$original] = $sanitize ? check_plain($slogan) : $slogan;
           break;
 
         case 'mission':
-          $mission = variable_get('site_mission');
+          $mission = variable_get('site_mission', '');
           $replacements[$original] = $sanitize ? filter_xss($mission) : $mission;
           break;
 
         case 'mail':
-          $mail = variable_get('site_name');
-          $replacements[$original] = variable_get('site_mail');
+          $replacements[$original] = variable_get('site_mail', '');
           break;
 
         case 'url':
@@ -171,162 +304,4 @@ function system_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE
   }
 
   return $replacements;
-}
-
-/**
- * Implement hook_token_info().
- */
-function system_token_info() {
-  $results = array();
-
-  $types['site'] = array(
-    'name' => t("Site information"),
-    'description' => t("Tokens for site-wide settings and other global information."),
-  );
-
-  $types['date'] = array(
-    'name' => t("Dates"),
-    'description' => t("Tokens related to times and dates."),
-  );
-
-  $types['file'] = array(
-    'name' => t("Files"),
-    'description' => t("Tokens related to uploaded files."),
-  );
-
-
-  // Site-wide global tokens.
-  $site['name'] = array(
-    'name' => t("Name"),
-    'description' => t("The name of the site."),
-  );
-
-  $site['slogan'] = array(
-    'name' => t("Slogan"),
-    'description' => t("The slogan of the site."),
-  );
-
-  $site['mission'] = array(
-    'name' => t("Mission"),
-    'description' => t("The optional 'mission' of the site."),
-  );
-
-  $site['mail'] = array(
-    'name' => t("Email"),
-    'description' => t("The administrative email address for the site."),
-  );
-
-  $site['url'] = array(
-    'name' => t("URL"),
-    'description' => t("The URL of the site's front page."),
-  );
-
-  $site['login-url'] = array(
-    'name' => t("Login page"),
-    'description' => t("The URL of the site's login page."),
-  );
-
-
-  // Date related tokens.
-  $date['small'] = array(
-    'name' => t("Small format"),
-    'description' => t("A date in 'small' format. (%date)", array('%date' => format_date(REQUEST_TIME, 'small'))),
-  );
-
-  $date['medium'] = array(
-    'name' => t("Medium format"),
-    'description' => t("A date in 'medium' format. (%date)", array('%date' => format_date(REQUEST_TIME, 'medium'))),
-  );
-
-  $date['large'] = array(
-    'name' => t("Large format"),
-  );
-  $date['large']['description'] = t("A date in 'large' format. (%date)", array('%date' => format_date(REQUEST_TIME, 'large')));
-
-  $date['custom'] = array(
-    'name' => t("Custom format"),
-    'description' => t("A date in a custom format. See !php-date for details.", array('!php-date' => l(t('the PHP documentation'), 'http://php.net/manual/en/function.date.php'))),
-  );
-
-  $date['since'] = array(
-    'name' => t("Time-since"),
-    'description' => t("A data in 'time-since' format. (%date)", array('%date' => format_interval(REQUEST_TIME - 360, 2))),
-  );
-
-  $date['raw'] = array(
-    'name' => t("Raw timestamp"),
-    'description' => t("A date in UNIX timestamp format (%date)", array('%date' => REQUEST_TIME)),
-  );
-
-
-  // File related tokens.
-  $file['fid'] = array(
-    'name' => t("File ID"),
-    'description' => t("The unique ID of the uploaded file."),
-  );
-
-  $file['uid'] = array(
-    'name' => t("User ID"),
-    'description' => t("The unique ID of the user who owns the file."),
-  );
-
-  $file['nid'] = array(
-    'name' => t("Node ID"),
-    'description' => t("The unique ID of the node the file is attached to."),
-  );
-
-  $file['name'] = array(
-    'name' => t("File name"),
-    'description' => t("The name of the file on disk."),
-  );
-
-  $file['description'] = array(
-    'name' => t("Description"),
-    'description' => t("An optional human-readable description of the file."),
-  );
-
-  $file['path'] = array(
-    'name' => t("Path"),
-    'description' => t("The location of the file on disk."),
-  );
-
-  $file['mime'] = array(
-    'name' => t("MIME type"),
-    'description' => t("The MIME type of the file."),
-  );
-
-  $file['size'] = array(
-    'name' => t("File size"),
-    'description' => t("The size of the file, in kilobytes."),
-  );
-
-  $file['path'] = array(
-    'name' => t("URL"),
-    'description' => t("The web-accessible URL for the file."),
-  );
-
-  $file['timestamp'] = array(
-    'name' => t("Timestamp"),
-    'description' => t("The date the file was most recently changed."),
-    'references' => 'date',
-  );
-
-  $file['node'] = array(
-    'name' => t("Node"),
-    'description' => t("The node the file is attached to."),
-    'references' => 'date',
-  );
-
-  $file['owner'] = array(
-    'name' => t("Owner"),
-    'description' => t("The user who originally uploaded the file."),
-    'references' => 'user',
-  );
-
-
-  $results['types'] = $types;
-  $results['tokens']['site'] = $site;
-  $results['tokens']['date'] = $date;
-  $results['tokens']['file'] = $file;
-  return $results;
 }

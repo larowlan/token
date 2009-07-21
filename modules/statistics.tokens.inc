@@ -7,10 +7,33 @@
  */
 
 /**
+ * Implement hook_token_info().
+ */
+function statistics_token_info() {
+  $node['views'] = array(
+    'name' => t("Number of views"),
+    'description' => t("The number of visitors who have read the node."),
+  );
+  $node['day-views'] = array(
+    'name' => t("Views today"),
+    'description' => t("The number of visitors who have read the node today."),
+  );
+  $node['last-view'] = array(
+    'name' => t("Last view"),
+    'description' => t("The date on which a visitor last read the node."),
+    'type' => 'date',
+  );
+
+  return array(
+    'tokens' => array('node' => $node),
+  );
+}
+
+/**
  * Implement hook_tokens().
  */
-function statistics_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) {
-  $replacements = array();
+function statistics_tokens($type, $tokens, array $data = array(), array $options = array()) {
+  $url_options = array('absolute' => TRUE);
 
   if ($type == 'node' & !empty($data['node'])) {
     $node = $data['node'];
@@ -32,35 +55,9 @@ function statistics_tokens($type, $tokens, $data, $language = NULL, $sanitize = 
 
     if ($created_tokens = token_find_with_prefix($tokens, 'last-view')) {
       $statistics = statistics_get($node->nid);
-      $replacements += module_invoke_all('tokens', 'date', $created_tokens, array('date' => $statistics['timestamp']), $language, $sanitize);
+      $replacements += module_invoke_all('tokens', 'date', $created_tokens, array('date' => $statistics['timestamp']), $options);
     }
   }
 
   return $replacements;
-}
-
-/**
- * Implement hook_token_info().
- */
-function statistics_token_info() {
-  $results = array();
-
-  $node['views'] = array(
-    'name' => t("Number of views"),
-    'description' => t("The number of visitors who have read the node."),
-  );
-
-  $node['day-views'] = array(
-    'name' => t("Views today"),
-    'description' => t("The number of visitors who have read the node today."),
-  );
-
-  $node['last-view'] = array(
-    'name' => t("Last view"),
-    'description' => t("The date on which a visitor last read the node."),
-    'references' => 'date',
-  );
-
-  $results['tokens']['node'] = $node;
-  return $results;
 }

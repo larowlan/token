@@ -7,10 +7,41 @@
  */
 
 /**
+ * Implement hook_token_info().
+ */
+function poll_token_info() {
+  $node['poll-votes'] = array(
+    'name' => t("Poll votes"),
+    'description' => t("The number of votes that have been cast on a poll node."),
+  );
+  $node['poll-winner'] = array(
+    'name' => t("Poll winner"),
+    'description' => t("The winning poll answer."),
+  );
+  $node['poll-winner-votes'] = array(
+    'name' => t("Poll winner votes"),
+    'description' => t("The number of votes received by the winning poll answer."),
+  );
+  $node['poll-winner-percent'] = array(
+    'name' => t("Poll winner percent"),
+    'description' => t("The percentage of votes received by the winning poll answer."),
+  );
+  $node['poll-duration'] = array(
+    'name' => t("Poll duration"),
+    'description' => t("The length of time the poll node is set to run."),
+  );
+
+  return array(
+    'tokens' => array('node' => $node),
+  );
+}
+
+/**
  * Implement hook_tokens().
  */
-function poll_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) {
-  $replacements = array();
+function poll_tokens($type, $tokens, array $data = array(), array $options = array()) {
+  $url_options = array('absolute' => TRUE);
+  $sanitize = !empty($options['sanitize']);
 
   if ($type == 'node' && !empty($data['node']) && $data['node']->type == 'poll') {
     $node = $data['node'];
@@ -50,46 +81,11 @@ function poll_tokens($type, $tokens, $data, $language = NULL, $sanitize = TRUE) 
           break;
 
         case 'poll-duration':
-          $replacements[$original] = format_interval($node->runtime, 1, (isset($language) ? $language->language : NULL));
+          $replacements[$original] = format_interval($node->runtime, 1, $language_code);
           break;
       }
     }
   }
 
   return $replacements;
-}
-
-/**
- * Implement hook_token_info().
- */
-function poll_token_info() {
-  $results = array();
-
-  $node['poll-votes'] = array(
-    'name' => t("Poll votes"),
-    'description' => t("The number of votes that have been cast on a poll node."),
-  );
-
-  $node['poll-winner'] = array(
-    'name' => t("Poll winner"),
-    'description' => t("The winning poll answer."),
-  );
-
-  $node['poll-winner-votes'] = array(
-    'name' => t("Poll winner votes"),
-    'description' => t("The number of votes received by the winning poll answer."),
-  );
-
-  $node['poll-winner-percent'] = array(
-    'name' => t("Poll winner percent"),
-    'description' => t("The percentage of votes received by the winning poll answer."),
-  );
-
-  $node['poll-duration'] = array(
-    'name' => t("Poll duration"),
-    'description' => t("The length of time the poll node is set to run."),
-  );
-
-  $results['tokens']['node'] = $node;
-  return $results;
 }
