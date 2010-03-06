@@ -1,18 +1,8 @@
 ; $Id$
-name = Token
-description = Handles token-based text substitution.
+name = Token UI
+description = User Interface for the Token API.
 core = 7.x
-
 files[] = token.module
-files[] = token.dev.inc
 files[] = token.install
 files[] = token.test
-
-files[] = modules/node.tokens.inc
-files[] = modules/comment.tokens.inc
-files[] = modules/taxonomy.tokens.inc
-files[] = modules/user.tokens.inc
-files[] = modules/poll.tokens.inc
-files[] = modules/system.tokens.inc
-files[] = modules/statistics.tokens.inc
-files[] = modules/upload.tokens.inc
+;files[] = modules/field.tokens.inc
