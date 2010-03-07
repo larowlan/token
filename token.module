@@ -13,3 +13,90 @@ function token_menu() {
   );
   return $items;
 }
+
+/**
+ * Implements hook_token_info_alter().
+ */
+function token_token_info_alter(&$data) {
+  // Add a 'dynamic' key to any tokens that have chained, dynamic tokens.
+  $data['tokens']['date']['custom']['dynamic'] = TRUE;
+}
+
+/**
+ * Validate an tokens in raw text based on possible contexts.
+ *
+ * @param $text
+ *   A string with the raw text containing the raw tokens.
+ * @param $tokens
+ *   An array of token types that will be used when token replacement is
+ *   performed.
+ * @return
+ *   An array with the invalid tokens in their original raw forms.
+ */
+function token_get_invalid_tokens_by_context($text, $valid_types = array()) {
+  $token_info = token_info();
+
+  // Add the token types that are always valid in global context.
+  foreach ($token_info['types'] as $type => $type_info) {
+    if (empty($type_info['needs-data']) && !in_array($type, $valid_types)) {
+      $valid_types[] = $type;
+    }
+  }
+
+  $invalid_tokens = array();
+  foreach (token_scan($text) as $type => $tokens) {
+    if (!in_array($type, $valid_types)) {
+      // If the token type is not a valid context, its tokens are invalid.
+      $invalid_tokens = array_merge($invalid_tokens, array_values($tokens));
+    }
+    else {
+      // Check each individual token for validity.
+      $invalid_tokens = array_merge($invalid_tokens, token_get_invalid_tokens($type, $tokens));
+    }
+  }
+
+  return $invalid_tokens;
+}
+
+/**
+ * Validate an array of tokens based on their token type.
+ *
+ * @param $type
+ *   The type of tokens to validate (e.g. 'node', etc.)
+ * @param $tokens
+ *   A keyed array of tokens, and their original raw form in the source text.
+ * @return
+ *   An array with the invalid tokens in their original raw forms.
+ */
+function token_get_invalid_tokens($type, $tokens) {
+  $token_info = token_info();
+  $invalid_tokens = array();
+
+  foreach ($tokens as $token => $full_token) {
+    // Split token up if it has chains.
+    $parts = explode(':', $token, 2);
+
+    if (!isset($token_info['tokens'][$type][$parts[0]])) {
+      // This is an invalid token (not defined).
+      $invalid_tokens[] = $full_token;
+    }
+    elseif (count($parts) == 2) {
+      $sub_token_info = $token_info['tokens'][$type][$parts[0]];
+      if (!empty($sub_token_info['dynamic'])) {
+        // If this token has been flagged as a dynamic token, skip it.
+        continue;
+      }
+      elseif (empty($sub_token_info['type'])) {
+        // If the token has chains, but does not support it, it is invalid.
+        $invalid_tokens[] = $full_token;
+      }
+      else {
+        // Resursively check the chained tokens.
+        $sub_tokens = token_find_with_prefix(array($token => $full_token), $parts[0]);
+        $invalid_tokens = array_merge($invalid_tokens, token_get_invalid_tokens($sub_token_info['type'], $sub_tokens));
+      }
+    }
+  }
+
+  return $invalid_tokens;
+}

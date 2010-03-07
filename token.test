@@ -1,3 +1,52 @@
 <?php
 // $Id$
 
+class TokenUnitTestCase extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Token unit tests',
+      'description' => 'Test basic, low-level token functions.',
+      'group' => 'Token',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('token');
+  }
+
+  /**
+   * Test token_get_invalid_tokens() and token_get_invalid_tokens_by_context().
+   */
+  public function testGetInvalidTokens() {
+    $tests = array();
+    $tests[] = array(
+      'valid tokens' => array(
+        '[node:title]',
+        '[node:created:short]',
+        '[node:created:custom:invalid]',
+        '[node:created:custom:mm-YYYY]',
+        '[site:name]',
+        '[site:slogan]',
+      ),
+      'invalid tokens' => array(
+        '[node:title:invalid]',
+        '[node:created:invalid]',
+        '[node:created:short:invalid]',
+        '[invalid:title]',
+        '[site:invalid]',
+      ),
+      'types' => array('node'),
+    );
+
+    foreach ($tests as $test) {
+      $tokens = array_merge($test['valid tokens'], $test['invalid tokens']);
+      shuffle($tokens);
+
+      $invalid_tokens = token_get_invalid_tokens_by_context(implode(' ', $tokens), $test['types']);
+
+      sort($invalid_tokens);
+      sort($test['invalid tokens']);
+      $this->assertEqual($invalid_tokens, $test['invalid tokens'], 'Invalid tokens detected properly.');
+    }
+  }
+}
