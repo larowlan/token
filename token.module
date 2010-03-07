@@ -17,7 +17,7 @@ function token_autocomplete() {
   $args = func_get_args();
   $string = implode('/', $args);
 
-  $token_info = module_invoke_all('token_info');
+  $token_info = token_info();
 
   preg_match_all('/\[([^\s\]:]*):?([^\s\]]*)?\]?/', $string, $matches);
   $types = $matches[1];
@@ -35,7 +35,7 @@ function token_autocomplete() {
 }
 
 function token_autocomplete_type($string = '') {
-  $token_info = module_invoke_all('token_info');
+  $token_info = token_info();
   $types = $token_info['types'];
   $matches = array();
 
@@ -58,7 +58,7 @@ function token_autocomplete_type($string = '') {
 }
 
 function token_autocomplete_token($type, $string = '') {
-  $token_info = module_invoke_all('token_info');
+  $token_info = token_info();
   $tokens = $token_info['tokens'][$type];
   $matches = array();
 
