@@ -1,17 +1,30 @@
 <?php
 // $Id$
 
-class TokenUnitTestCase extends DrupalWebTestCase {
+/**
+ * Helper test class with some added functions for testing.
+ */
+class TokenTestHelper extends DrupalWebTestCase {
+  function setUp() {
+    // Call parent::setUp() allowing test cases to pass further modules.
+    $modules = func_get_args();
+    $modules = array_merge(array('token'), $modules);
+    call_user_func_array(array('parent', 'setUp'), $modules);
+  }
+
+  function assertToken($type, $object, $token, $expected, $options = array()) {
+    $tokens = token_generate($type, array($token => $token), array($type => $object), $options);
+    $this->assertEqual($tokens[$token], $expected, t("Token value for [@type:@token] was '!actual', expected value '!expected'.", array('@type' => $type, '@token' => $token, '!actual' => $tokens[$token], '!expected' => $expected)));
+  }
+}
+
+class TokenUnitTestCase extends TokenTestHelper {
   public static function getInfo() {
     return array(
       'name' => 'Token unit tests',
       'description' => 'Test basic, low-level token functions.',
       'group' => 'Token',
     );
-  }
-
-  function setUp() {
-    parent::setUp('token');
   }
 
   /**
@@ -48,5 +61,23 @@ class TokenUnitTestCase extends DrupalWebTestCase {
       sort($test['invalid tokens']);
       $this->assertEqual($invalid_tokens, $test['invalid tokens'], 'Invalid tokens detected properly.');
     }
+  }
+}
+
+class TokenNodeTestCase extends TokenTestHelper {
+  public static function getInfo() {
+    return array(
+      'name' => 'Node token tests',
+      'description' => 'Test the node tokens.',
+      'group' => 'Token',
+    );
+  }
+
+  function testSource() {
+    $source_node = $this->drupalCreateNode();
+    $translated_node = $this->drupalCreateNode(array('tnid' => $source_node->nid));
+    $this->assertToken('node', $translated_node, 'source', $source_node->title);
+    $this->assertToken('node', $translated_node, 'source:nid', $source_node->nid);
+    //$this->assertToken('node', $source_node, 'source', '', array('clear' => TRUE));
   }
 }
