@@ -12,9 +12,16 @@ class TokenTestHelper extends DrupalWebTestCase {
     call_user_func_array(array('parent', 'setUp'), $modules);
   }
 
-  function assertToken($type, $object, $token, $expected, $options = array()) {
-    $tokens = token_generate($type, array($token => $token), array($type => $object), $options);
-    $this->assertEqual($tokens[$token], $expected, t("Token value for [@type:@token] was '!actual', expected value '!expected'.", array('@type' => $type, '@token' => $token, '!actual' => $tokens[$token], '!expected' => $expected)));
+  function assertToken($type, $object, $token, $expected, array $options = array()) {
+    $this->assertTokens($type, $object, array($token => $expected), $options);
+  }
+
+  function assertTokens($type, $object, array $tokens, array $options = array()) {
+    $token_input = drupal_map_assoc(array_keys($tokens));
+    $values = token_generate($type, $token_input, array($type => $object), $options);
+    foreach ($tokens as $token => $expected) {
+      $this->assertIdentical($values[$token], $expected, t("Token value for [@token] was '!actual', expected value '!expected'.", array('@token' => $token, '!actual' => $values[$token], '!expected' => $expected)));
+    }
   }
 }
 
