@@ -1,3 +1,67 @@
 <?php
 // $Id$
 
+function _token_upgrade_token_list() {
+  return array(
+    // Global tokens
+    'user-name' => 'current-user:name',
+    'user-id' => 'current-user:id',
+    'user-mail' => 'current-user:mail',
+    'site-url' => '',
+    'site-name' => '',
+    'site-slogan' => '',
+    'site-mission' => '',
+    'site-mail' => '',
+    'site-date' => '',
+    'site-date-[DATES]' => '', // EXPAND TO DATE TOKENS
+    'page-number' => '', // NOT A TOKEN YET
+    // Comment tokens
+    'comment-cid' => 'comment:cid',
+    'comment-nid' => 'comment:node:nid',
+    'comment-title' => 'comment:title',
+    'comment-body' => 'comment:body',
+    'comment-title-raw' => 'comment:title',
+    'comment-body-raw' => 'comment:body',
+    'comment-author-name-raw' => 'comment:author:name',
+    'comment-author-mail' => 'comment:author:mail',
+    'comment-author-mail-raw' => 'comment:author:mail',
+    'comment-body-format' => '', // NOT A TOKEN YET
+    'comment-[DATES]' => '', // EXPAND TO DATE TOKENS
+    // Node tokens
+    'nid' => 'node:nid',
+    'type' => 'node:type',
+    'type-name' => 'node:type-name',
+    'language' => 'node:language',
+    'title' => 'node:title',
+    'title-raw' => 'node:title',
+    'author-uid' => 'node:author:uid',
+    'author-name' => 'node:author:name',
+    'author-name-raw' => 'node:author:name',
+    'author-mail' => 'node:author:mail',
+    'author-mail-raw' => 'node:author:mail',
+    'node_comment_count' => 'node:comment-count',
+    'unread_comment_count' => 'node:comment-count-new',
+    '[DATES]' => '', // EXPAND TO DATE TOKENS
+    'mod-[DATES]' => '', // EXPAND TO DATE TOKENS
+    'menupath' => '',
+    'menupath-raw' => '',
+    'menu' => '',
+    'menu-raw' => '',
+    'menu-link-title' => '',
+    'menu-link-title-raw' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+  );
+}

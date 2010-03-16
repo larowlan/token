@@ -15,6 +15,58 @@ function token_menu() {
 }
 
 /**
+ * Implements hook_theme().
+ */
+function token_theme() {
+  return array(
+    'token_tree' => array(
+      'variables' => array('token_types' => array(), 'global_types' => TRUE, 'click_insert' => TRUE, 'recursion_limit' => 4),
+      'file' => 'token.pages.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_library().
+ */
+function token_library() {
+  // jQuery treeTable plugin.
+  $libraries['treeTable'] = array(
+    'title' => 'jQuery treeTable',
+    'website' => 'http://plugins.jquery.com/project/treetable',
+    'version' => '2.3.0',
+    'js' => array(
+      drupal_get_path('module', 'token') . '/jquery.treeTable.js' => array(),
+    ),
+    'css' => array(
+      drupal_get_path('module', 'token') . '/jquery.treeTable.css' => array(),
+    ),
+  );
+
+  return $libraries;
+}
+
+/**
+ * Get a list of token types that can be used without any context (global).
+ *
+ * @return
+ *   An array of global token types.
+ */
+function token_get_global_token_types() {
+  $global_types = &drupal_static(__FUNCTION__, array());
+  $token_info = token_info();
+
+  // Add the token types that are always valid in global context.
+  foreach ($token_info['types'] as $type => $type_info) {
+    if (empty($type_info['needs-data'])) {
+      $global_types[] = $type;
+    }
+  }
+
+  return $global_types;
+}
+
+/**
  * Validate an tokens in raw text based on possible contexts.
  *
  * @param $text

@@ -1,6 +1,133 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * User page callbacks for the token module.
+ */
+
+/**
+ * Provide a 'tree' display of nested tokens.
+ */
+function theme_token_tree($variables) {
+  $token_types = $variables['token_types'];
+  $info = token_info();
+
+  if ($token_types == 'all') {
+    $token_types = array_keys($info['types']);
+  }
+  elseif ($variables['global_types']) {
+    $token_types = array_merge($token_types, token_get_global_token_types());
+    array_unique($token_types);
+  }
+
+  // Check for token type validity and sort.
+  $token_types = array_intersect($token_types, array_keys($info['types']));
+  sort($token_types);
+
+  $header = array(
+    t('Name'),
+    t('Token'),
+    t('Description'),
+  );
+  $rows = array();
+
+  foreach ($token_types as $type) {
+    $type_info = $info['types'][$type] += array('type' => $type);
+    $id = _token_clean_css_identifier($type);
+    $row = array(
+      'id' => $id,
+      'class' => array('token-group'),
+      'data' => array(
+        $type_info['name'],
+        '',
+        $type_info['description'],
+      ),
+    );
+
+    //if (count($token_types) > 1) {
+      $rows[] = $row;
+    //}
+    //else {
+    //  $id = NULL;
+    //}
+    $rows = array_merge($rows, token_browser_list_tokens($type_info['type'], $type, $id, $variables['recursion_limit']));
+  }
+
+  if (count($rows)) {
+    drupal_add_library('token', 'treeTable');
+    drupal_add_js(drupal_get_path('module', 'token') . '/token.js');
+    drupal_add_css(drupal_get_path('module', 'token') . '/token.css');
+  }
+  
+  $table_options = array(
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => array('class' => array('token-tree')),
+    'empty' => t('No tokens available.'),
+  );
+  if ($variables['click_insert']) {
+    $table_options['caption'] = t('Click a token to insert it into the field you\'ve last clicked.');
+    $table_options['attributes']['class'][] = 'token-click-insert';
+  }
+  
+  return theme('table', $table_options);
+}
+
+function token_browser_list_tokens($type, $prefix = NULL, $parent_id = NULL, $recursion_limit = 4) {
+  $info = &drupal_static(__FUNCTION__);
+
+  // Since tokens could possibly recurse (e.g. terms have parents, and those
+  // parent terms could have parents, etc.), we have to add a depth check.
+  if ($recursion_limit <= 0) {
+    return array();
+  }
+
+  if (!isset($info)) {
+    $info = token_info();
+  }
+
+  $rows = array();
+
+  if (!isset($prefix)) {
+    $prefix = $type;
+  }
+
+  foreach ($info['tokens'][$type] as $token => $token_info) {
+    $key = "{$prefix}:{$token}";
+    if (!empty($token_info['dynamic'])) {
+      // Add a placeholder for dynamic tokens like date:custom.
+      $key .= ':?';
+    }
+    $id = _token_clean_css_identifier($key);
+    $row = array(
+      'id' => $id,
+      'class' => array(),
+      'data' => array(
+        $token_info['name'],
+        array(
+          'data' => "[{$key}]",
+          'class' => 'token-key',
+        ),
+        $token_info['description'],
+      ),
+    );
+    if (isset($parent_id)) {
+      $row['class'][] = 'child-of-' . $parent_id;
+    }
+    $rows[] = $row;
+    if (!empty($token_info['type'])) {
+      $rows = array_merge($rows, token_browser_list_tokens($token_info['type'], $key, $id, $recursion_limit - 1));
+    }
+  }
+
+  return $rows;
+}
+
+function _token_clean_css_identifier($id) {
+  return drupal_clean_css_identifier('token-' . $id, array(' ' => '-', '_' => '-', '/' => '-', '[' => '-', ']' => '', ':' => '-'));
+}
+
 function token_autocomplete() {
   $args = func_get_args();
   $string = implode('/', $args);
