@@ -45,12 +45,12 @@ function theme_token_tree($variables) {
       ),
     );
 
-    //if (count($token_types) > 1) {
+    if (count($token_types) > 1) {
       $rows[] = $row;
-    //}
-    //else {
-    //  $id = NULL;
-    //}
+    }
+    else {
+      $id = NULL;
+    }
     $rows = array_merge($rows, token_browser_list_tokens($type_info['type'], $type, $id, $variables['recursion_limit']));
   }
 
@@ -59,7 +59,7 @@ function theme_token_tree($variables) {
     drupal_add_js(drupal_get_path('module', 'token') . '/token.js');
     drupal_add_css(drupal_get_path('module', 'token') . '/token.css');
   }
-  
+
   $table_options = array(
     'header' => $header,
     'rows' => $rows,
@@ -70,7 +70,7 @@ function theme_token_tree($variables) {
     $table_options['caption'] = t('Click a token to insert it into the field you\'ve last clicked.');
     $table_options['attributes']['class'][] = 'token-click-insert';
   }
-  
+
   return theme('table', $table_options);
 }
 
