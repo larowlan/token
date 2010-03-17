@@ -48,7 +48,7 @@ Drupal.behaviors.tokenInsert = {
         }
         return false;
       });
-      $(this).replaceWith(newThis);
+      $(this).html(newThis);
     });
   }
 };
