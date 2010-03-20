@@ -17,7 +17,7 @@ Drupal.behaviors.tokenInsert = {
       Drupal.settings.tokenFocusedField = this;
     });
 
-    $('table.token-tree.token-click-insert td.token-key', context).once('token-click-insert', function() {
+    $('.token-click-insert .token-key', context).once('token-click-insert', function() {
       var newThis = $('<a href="javascript:void(0);" title="' + Drupal.t('Insert this token into your form') + '">' + $(this).html() + '</a>').click(function(){
         if (typeof Drupal.settings.tokenFocusedField == 'undefined') {
           alert(Drupal.t('First click a text field to insert your tokens into.'));
