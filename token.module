@@ -69,6 +69,33 @@ function token_entity_info_alter(&$info) {
 }
 
 /**
+ * Retrieve and store token info from the cache.
+ */
+function token_get_info() {
+  global $language;
+
+  // Use the advanced drupal_static() pattern, since this is called very often.
+  static $drupal_static_fast;
+  if (!isset($drupal_static_fast)) {
+    $drupal_static_fast['token_info'] = &drupal_static(__FUNCTION__);
+  }
+  $token_info = &$drupal_static_fast['token_info'];
+
+  if (empty($token_info)) {
+    $langcode = $language->language;
+    if ($cache = cache_get("token_info:$langcode")) {
+      $token_info = $cache->data;
+    }
+    else {
+      $token_info = token_info();
+      cache_set("token_info:$langcode", $token_info);
+    }
+  }
+
+  return $token_info;
+}
+
+/**
  * Get a list of token types that can be used without any context (global).
  *
  * @return
@@ -76,7 +103,7 @@ function token_entity_info_alter(&$info) {
  */
 function token_get_global_token_types() {
   $global_types = &drupal_static(__FUNCTION__, array());
-  $token_info = token_info();
+  $token_info = token_get_info();
 
   // Add the token types that are always valid in global context.
   foreach ($token_info['types'] as $type => $type_info) {
@@ -100,14 +127,8 @@ function token_get_global_token_types() {
  *   An array with the invalid tokens in their original raw forms.
  */
 function token_get_invalid_tokens_by_context($text, $valid_types = array()) {
-  $token_info = token_info();
-
   // Add the token types that are always valid in global context.
-  foreach ($token_info['types'] as $type => $type_info) {
-    if (empty($type_info['needs-data']) && !in_array($type, $valid_types)) {
-      $valid_types[] = $type;
-    }
-  }
+  $valid_types = array_merge($valid_types, token_get_global_token_types());
 
   $invalid_tokens = array();
   foreach (token_scan($text) as $type => $tokens) {
@@ -136,7 +157,7 @@ function token_get_invalid_tokens_by_context($text, $valid_types = array()) {
  *   An array with the invalid tokens in their original raw forms.
  */
 function token_get_invalid_tokens($type, $tokens) {
-  $token_info = token_info();
+  $token_info = token_get_info();
   $invalid_tokens = array();
 
   foreach ($tokens as $token => $full_token) {

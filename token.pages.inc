@@ -11,7 +11,7 @@
  */
 function theme_token_tree($variables) {
   $token_types = $variables['token_types'];
-  $info = token_info();
+  $info = token_get_info();
 
   if ($token_types == 'all') {
     $token_types = array_keys($info['types']);
@@ -75,18 +75,13 @@ function theme_token_tree($variables) {
 }
 
 function token_browser_list_tokens($type, $prefix = NULL, $parent_id = NULL, $recursion_limit = 4) {
-  $info = &drupal_static(__FUNCTION__);
-
   // Since tokens could possibly recurse (e.g. terms have parents, and those
   // parent terms could have parents, etc.), we have to add a depth check.
   if ($recursion_limit <= 0) {
     return array();
   }
 
-  if (!isset($info)) {
-    $info = token_info();
-  }
-
+  $info = token_get_info();
   $rows = array();
 
   if (!isset($prefix)) {
@@ -124,6 +119,11 @@ function token_browser_list_tokens($type, $prefix = NULL, $parent_id = NULL, $re
   return $rows;
 }
 
+/**
+ * Wrapper function for drupal_clean_css_identifier() that also removes ':'.
+ *
+ * @see drupal_clean_css_identifier().
+ */
 function _token_clean_css_identifier($id) {
   return drupal_clean_css_identifier('token-' . $id, array(' ' => '-', '_' => '-', '/' => '-', '[' => '-', ']' => '', ':' => '-'));
 }
