@@ -103,12 +103,15 @@ function token_get_info() {
  */
 function token_get_global_token_types() {
   $global_types = &drupal_static(__FUNCTION__, array());
-  $token_info = token_get_info();
 
-  // Add the token types that are always valid in global context.
-  foreach ($token_info['types'] as $type => $type_info) {
-    if (empty($type_info['needs-data'])) {
-      $global_types[] = $type;
+  if (empty($global_types)) {
+    $token_info = token_get_info();
+    foreach ($token_info['types'] as $type => $type_info) {
+      // If the token types has not specified that 'needs-data' => TRUE, then
+      // it is a global token type that will always be replaced in any context.
+      if (empty($type_info['needs-data'])) {
+        $global_types[] = $type;
+      }
     }
   }
 
