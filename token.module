@@ -47,6 +47,22 @@ function token_library() {
 }
 
 /**
+ * Implements hook_entity_info_alter().
+ *
+ * Since some token types to do not match their entity type names, we have to
+ * map them to the proper type. This is purely for other modules' benefit.
+ */
+function token_entity_info_alter(&$info) {
+  $token_mappings = array(
+    'taxonomy_term' => 'term',
+    'taxonomy_vocabulary' => 'vocabulary',
+  );
+  foreach ($token_mappings as $entity_type => $token_type) {
+    $info[$entity_type]['token type'] = $token_type;
+  }
+}
+
+/**
  * Get a list of token types that can be used without any context (global).
  *
  * @return
@@ -99,6 +115,7 @@ function token_get_invalid_tokens_by_context($text, $valid_types = array()) {
     }
   }
 
+  array_unique($invalid_tokens);
   return $invalid_tokens;
 }
 
