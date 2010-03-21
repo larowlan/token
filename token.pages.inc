@@ -7,6 +7,62 @@
  */
 
 /**
+ * Build a tree array of tokens used for themeing or information.
+ *
+ * @param $token_type
+ *   The token type. Should not be an alias (e.g. use 'user' instead of
+ *   'current-user').
+ * @param $flat_tree
+ *   A boolean if TRUE will only make a flat array of tokens, otherwise
+ *   child tokens will be inside the 'children' parameter of a token.
+ * @param $recursion_limit
+ *   An integer with the maximum number of token levels to recurse.
+ * @param $parents
+ *   An optional array with the current parents of the tokens.
+ */
+function token_build_tree($token_type, $flat_tree = FALSE, $recursion_limit = 4, $parents = array()) {
+  $info = token_get_info();
+  if ($recursion_limit <= 0 || !isset($info['types'][$token_type])) {
+    return array();
+  }
+
+  $tree = array();
+  foreach ($info['tokens'][$token_type] as $token => $token_info) {
+    // Build the raw token string.
+    $token_parents = $parents;
+    if (empty($token_parents)) {
+      // If the parents array is currently empty, assume the token type is its
+      // parent.
+      $token_parents[] = $token_type;
+    }
+    $token_parents[] = $token;
+    if (!empty($token_info['dynamic'])) {
+      $token_parents[] = '?';
+    }
+    $raw_token = '[' . implode(':', $token_parents) . ']';
+    $tree[$raw_token] = $token_info;
+
+    // Add the token's parent as its raw token value.
+    if (!empty($parents)) {
+      $tree[$raw_token]['parent'] = '[' . implode(':', $parents) . ']';
+    }
+
+    // Fetch the child tokens.
+    if (!empty($token_info['type'])) {
+      $children = token_build_tree($token_info['type'], $flat_tree, $recursion_limit - 1, $token_parents);
+      if ($flat_tree) {
+        $tree = array_merge($tree, $children);
+      }
+      else {
+        $tree[$raw_token]['children'] = $children;
+      }
+    }
+  }
+
+  return $tree;
+}
+
+/**
  * Provide a 'tree' display of nested tokens.
  */
 function theme_token_tree($variables) {
@@ -24,6 +80,7 @@ function theme_token_tree($variables) {
   // Check for token type validity and sort.
   $token_types = array_intersect($token_types, array_keys($info['types']));
   sort($token_types);
+  $token_types = array('node');
 
   $header = array(
     t('Name'),
@@ -34,24 +91,17 @@ function theme_token_tree($variables) {
 
   foreach ($token_types as $type) {
     $type_info = $info['types'][$type] += array('type' => $type);
-    $id = _token_clean_css_identifier($type);
-    $row = array(
-      'id' => $id,
-      'class' => array('token-group'),
-      'data' => array(
-        $type_info['name'],
-        '',
-        $type_info['description'],
-      ),
-    );
+    $parent = array();
 
     if (count($token_types) > 1) {
-      $rows[] = $row;
+      $rows[] = _token_token_tree_format_row($type, $type_info, TRUE);
+      $parent = array($type);
     }
-    else {
-      $id = NULL;
+
+    $tree = token_build_tree($type_info['type'], TRUE, $variables['recursion_limit'], $parent);
+    foreach ($tree as $token => $token_info) {
+      $rows[] = _token_token_tree_format_row($token, $token_info);
     }
-    $rows = array_merge($rows, token_browser_list_tokens($type_info['type'], $type, $id, $variables['recursion_limit']));
   }
 
   if (count($rows)) {
@@ -74,58 +124,48 @@ function theme_token_tree($variables) {
   return theme('table', $table_options);
 }
 
-function token_browser_list_tokens($type, $prefix = NULL, $parent_id = NULL, $recursion_limit = 4) {
-  // Since tokens could possibly recurse (e.g. terms have parents, and those
-  // parent terms could have parents, etc.), we have to add a depth check.
-  if ($recursion_limit <= 0) {
-    return array();
+/**
+ * Build a row in the token tree.
+ */
+function _token_token_tree_format_row($token, array $token_info, $is_group = FALSE) {
+  $row = array(
+    'id' => _token_clean_css_identifier($token),
+    'class' => array(),
+    'data' => array(
+      'name' => $token_info['name'],
+      'token' => '',
+      'description' => $token_info['description'],
+    ),
+  );
+
+  if ($is_group) {
+    // This is a token type/group.
+    $row['class'][] = 'token-group';
   }
-
-  $info = token_get_info();
-  $rows = array();
-
-  if (!isset($prefix)) {
-    $prefix = $type;
-  }
-
-  foreach ($info['tokens'][$type] as $token => $token_info) {
-    $key = "{$prefix}:{$token}";
-    if (!empty($token_info['dynamic'])) {
-      // Add a placeholder for dynamic tokens like date:custom.
-      $key .= ':?';
-    }
-    $id = _token_clean_css_identifier($key);
-    $row = array(
-      'id' => $id,
-      'class' => array(),
-      'data' => array(
-        $token_info['name'],
-        array(
-          'data' => "[{$key}]",
-          'class' => 'token-key',
-        ),
-        $token_info['description'],
-      ),
+  else {
+    // This is a token.
+    $row['data']['token'] = array(
+      'data' => $token,
+      'class' => array('token-key'),
     );
-    if (isset($parent_id)) {
-      $row['class'][] = 'child-of-' . $parent_id;
-    }
-    $rows[] = $row;
-    if (!empty($token_info['type'])) {
-      $rows = array_merge($rows, token_browser_list_tokens($token_info['type'], $key, $id, $recursion_limit - 1));
+    if (!empty($token_info['parent'])) {
+      $row['class'][] = 'child-of-' . _token_clean_css_identifier($token_info['parent']);
     }
   }
 
-  return $rows;
+  return $row;
 }
 
 /**
- * Wrapper function for drupal_clean_css_identifier() that also removes ':'.
+ * Wrapper function for drupal_clean_css_identifier() for use with tokens.
+ *
+ * This trims any brackets from the token and also cleans the colon character
+ * to a hyphen.
  *
  * @see drupal_clean_css_identifier().
  */
 function _token_clean_css_identifier($id) {
-  return drupal_clean_css_identifier('token-' . $id, array(' ' => '-', '_' => '-', '/' => '-', '[' => '-', ']' => '', ':' => '-'));
+  return drupal_clean_css_identifier('token-' . trim($id, '[]'), array(' ' => '-', '_' => '-', '/' => '-', '[' => '-', ']' => '', ':' => '-'));
 }
 
 function token_autocomplete() {
