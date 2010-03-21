@@ -54,11 +54,17 @@ function token_library() {
  */
 function token_entity_info_alter(&$info) {
   $token_mappings = array(
+    'comment' => 'comment',
+    'node' => 'node',
+    'file' => 'file',
     'taxonomy_term' => 'term',
     'taxonomy_vocabulary' => 'vocabulary',
+    'user' => 'user',
   );
   foreach ($token_mappings as $entity_type => $token_type) {
-    $info[$entity_type]['token type'] = $token_type;
+    if (isset($info[$entity_type])) {
+      $info[$entity_type]['token type'] = $token_type;
+    }
   }
 }
 
