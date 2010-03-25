@@ -2,6 +2,19 @@
 // $Id$
 
 /**
+ * Impelements hook_help().
+ */
+function token_help($path, $arg) {
+  if ($path == 'admin/help#token') {
+    $output = '<dl>';
+    $output .= '<dt>' . t('List of the currently available tokens on this site') . '</dt>';
+    $output .= '<dd>' . theme('token_tree', array('token_types' => 'all', 'click_insert' => FALSE)) . '</dd>';
+    $output .= '</dl>';
+    return $output;
+  }
+}
+
+/**
  * Implements hook_menu().
  */
 function token_menu() {
