@@ -74,7 +74,7 @@ function theme_token_tree($variables) {
   }
   elseif ($variables['global_types']) {
     $token_types = array_merge($token_types, token_get_global_token_types());
-    array_unique($token_types);
+    $token_types = array_unique($token_types);
   }
 
   // Check for token type validity and sort.
