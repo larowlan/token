@@ -80,7 +80,6 @@ function theme_token_tree($variables) {
   // Check for token type validity and sort.
   $token_types = array_intersect($token_types, array_keys($info['types']));
   sort($token_types);
-  $token_types = array('node');
 
   $header = array(
     t('Name'),
