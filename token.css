@@ -3,3 +3,8 @@
 table.token-tree {
   font-size: 0.85em;
 }
+
+table.token-tree td, table.token-tree th {
+  padding-top: 0;
+  padding-bottom: 0;
+}
