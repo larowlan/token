@@ -1,8 +1,7 @@
 ; $Id$
-name = Token UI
-description = User Interface for the Token API.
+name = Token
+description = Provides a user interface for the Token API and some missing core tokens.
 core = 7.x
 files[] = token.module
 files[] = token.install
 files[] = token.test
-;files[] = modules/field.tokens.inc
