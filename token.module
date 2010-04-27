@@ -82,6 +82,22 @@ function token_entity_info_alter(&$info) {
 }
 
 /**
+ * Implements hook_module_implements_alter().
+ *
+ * Adds missing token support for core modules.
+ */
+function token_module_implements_alter(&$implementations, $hook) {
+  if ($hook == 'tokens' || $hook == 'token_info') {
+    $modules = array();
+    foreach ($modules as $module) {
+      if (module_exists($module)) {
+        $implementations[$module] = TRUE;
+      }
+    }
+  }
+}
+
+/**
  * Retrieve and store token info from the cache.
  */
 function token_get_info() {
