@@ -20,8 +20,12 @@ function token_token_info_alter(&$data) {
 function token_token_info() {
   $info['tokens']['node']['source'] = array(
     'name' => t('Translation source node'),
-    'description' => t("Source node for this current node's translation set."),
+    'description' => t("The source node for this current node's translation set."),
     'type' => 'node',
+  );
+  $info['tokens']['node']['log'] = array(
+    'name' => t('Revision log message'),
+    'description' => t('The explanation of the most recent changes made to the node.'),
   );
 
   return $info;
@@ -46,12 +50,14 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
             $replacements[$original] = $sanitize ? filter_xss($title) : $title;
           }
           break;
+        case 'log':
+          $replacements[$original] = $sanitize ? filter_xss($node->log) : $node->log;
+          break;
       }
     }
 
     // Chained token relationships.
-    if (!empty($node->tnid) && $source_tokens = token_find_with_prefix($tokens, 'source')) {
-      $source_node = node_load($node->tnid);
+    if (!empty($node->tnid) && ($source_node = node_load($node->tnid)) && $source_tokens = token_find_with_prefix($tokens, 'source')) {
       $replacements += token_generate('node', $source_tokens, array('node' => $source_node), $options);
     }
   }

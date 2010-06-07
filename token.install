@@ -46,6 +46,7 @@ function _token_upgrade_token_list() {
     'author-mail-raw' => 'node:author:mail',
     'node_comment_count' => 'node:comment-count',
     'unread_comment_count' => 'node:comment-count-new',
+    'log' => 'node:log',
     //'' => '', // Date tokens expanded below
     //'mod-' => '', // Date tokens expanded below
     //'menupath' => 'node:menu:path',
