@@ -94,3 +94,49 @@ class TokenNodeTestCase extends TokenTestHelper {
     $this->assertToken('node', $translated_node, 'log', '');
   }
 }
+
+class TokenMenuTestCase extends TokenTestHelper {
+  public static function getInfo() {
+    return array(
+      'name' => 'Menu token tests',
+      'description' => 'Test the menu tokens.',
+      'group' => 'Token',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('menu');
+  }
+
+  function testMenuTokens() {
+    $root_link = array(
+      'link_path' => '<front>',
+      'link_title' => 'Front link',
+      'menu_name' => 'main-menu',
+    );
+    menu_link_save($root_link);
+
+    $node_link = array(
+      'enabled' => TRUE,
+      'link_title' => 'Node link',
+      'plid' => $root_link['mlid'],
+      'customized' => 0,
+    );
+    $node = $this->drupalCreateNode(array('menu' => $node_link));
+
+    // Test [node:menu] tokens.
+    $tokens = array(
+      'menu-link' => 'Node link',
+      'menu-link:mlid' => $node->menu['mlid'],
+      'menu-link:title' => 'Node link',
+      'menu-link:menu' => 'main-menu',
+      'menu-link:menu-name' => 'Main menu',
+      'menu-link:path' => 'node/' . $node->nid,
+      'menu-link:url' => url('node/' . $node->nid),
+      'menu-link:parent' => 'Front link',
+      'menu-link:parent:mlid' => $node->menu['plid'],
+      'menu-link:parent:mlid' => $root_link['mlid'],
+    );
+    $this->assertTokens('node', $node, $tokens);
+  }
+}

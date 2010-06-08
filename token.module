@@ -88,12 +88,16 @@ function token_entity_info_alter(&$info) {
  */
 function token_module_implements_alter(&$implementations, $hook) {
   if ($hook == 'tokens' || $hook == 'token_info') {
-    $modules = array();
+    $modules = array('menu');
     foreach ($modules as $module) {
       if (module_exists($module)) {
         $implementations[$module] = TRUE;
       }
     }
+    // Move token.module to get included first since it is responsible for
+    // other modules.
+    unset($implementations['token']);
+    $implementations = array_merge(array('token' => 'token'), $implementations);
   }
 }
 
