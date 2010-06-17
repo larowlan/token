@@ -83,7 +83,7 @@ function _token_entity_mappings() {
  */
 function _token_get_entity_from_token_type($token_type) {
   $token_entity_types = _token_entity_mappings();
-  array_reverse($token_entity_types);
+  $token_entity_types = array_flip($token_entity_types);
   if (isset($token_entity_types[$token_type])) {
     return $token_entity_types[$token_type];
   }

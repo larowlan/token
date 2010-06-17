@@ -23,6 +23,17 @@ class TokenTestHelper extends DrupalWebTestCase {
       $this->assertIdentical($values[$token], $expected, t("Token value for [@type:@token] was '@actual', expected value '@expected'.", array('@type' => $type, '@token' => $token, '@actual' => $values[$token], '@expected' => $expected)));
     }
   }
+
+  function addEntityAlias($entity_type, $entity, $alias, array $path = array()) {
+    $uri = entity_uri($entity_type, $entity);
+    if ($uri) {
+      $path += array(
+        'source' => $uri['path'],
+        'alias' => $alias,
+      );
+      path_save($alias);
+    }
+  }
 }
 
 class TokenUnitTestCase extends TokenTestHelper {
@@ -81,7 +92,7 @@ class TokenNodeTestCase extends TokenTestHelper {
   }
 
   function testNodeTokens() {
-    $source_node = $this->drupalCreateNode(array('log' => $this->randomName()));
+    $source_node = $this->drupalCreateNode(array('log' => $this->randomName(), 'path' => array('alias' => 'content/source-node')));
     $translated_node = $this->drupalCreateNode(array('tnid' => $source_node->nid));
 
     // Test [node:source] tokens.
@@ -94,8 +105,6 @@ class TokenNodeTestCase extends TokenTestHelper {
     $this->assertToken('node', $translated_node, 'log', '');
 
     // Test [node:path] token.
-    $alias = array('source' => 'node/' . $source_node->nid, 'alias' => 'content/source-node');
-    path_save($alias);
     $this->assertToken('node', $source_node, 'path', 'content/source-node');
     $this->assertToken('node', $translated_node, 'path', 'node/' . $translated_node->nid);
   }
@@ -144,5 +153,53 @@ class TokenMenuTestCase extends TokenTestHelper {
       'menu-link:parent:mlid' => $root_link['mlid'],
     );
     $this->assertTokens('node', $node, $tokens);
+  }
+}
+
+class TokenTaxonomyTestCase extends TokenTestHelper {
+  protected $vocab;
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Taxonomy token tests',
+      'description' => 'Test the taxonomy tokens.',
+      'group' => 'Token',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('taxonomy');
+    // Use the default 'Tags' taxonomy included with the standard install profile.
+    $tags_vid = db_query("SELECT vid FROM {taxonomy_vocabulary} WHERE name = 'Tags'")->fetchField();
+    $this->vocab = taxonomy_vocabulary_load($tags_vid);
+    $this->vocab->name = 'tags';
+  }
+
+  function testTaxonomyTokens() {
+    $term1 = $this->addTerm($this->vocab, array('path' => array('alias' => 'parent-term')));
+    $term2 = $this->addTerm($this->vocab, array('parent' => $term1->tid));
+
+    $this->assertToken('term', $term1, 'path', 'parent-term');
+    $this->assertToken('term', $term2, 'path', 'taxonomy/term/'. $term2->tid);
+  }
+
+  function addVocabulary(array $vocabulary = array()) {
+    $vocabulary += array(
+      'name' => drupal_strtolower($this->randomName(5)),
+      'nodes' => array('article' => 'article'),
+    );
+    $vocabulary = (object) $vocabulary;
+    taxonomy_vocabulary_save($vocabulary);
+    return $vocabulary;
+  }
+
+  function addTerm(stdClass $vocabulary, array $term = array()) {
+    $term += array(
+      'name' => drupal_strtolower($this->randomName(5)),
+      'vid' => $vocabulary->vid,
+    );
+    $term = (object) $term;
+    taxonomy_term_save($term);
+    return $term;
   }
 }
