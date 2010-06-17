@@ -20,7 +20,7 @@ class TokenTestHelper extends DrupalWebTestCase {
     $token_input = drupal_map_assoc(array_keys($tokens));
     $values = token_generate($type, $token_input, array($type => $object), $options);
     foreach ($tokens as $token => $expected) {
-      $this->assertIdentical($values[$token], $expected, t("Token value for [@type:@token] was '!actual', expected value '!expected'.", array('@type' => $type, '@token' => $token, '!actual' => $values[$token], '!expected' => $expected)));
+      $this->assertIdentical($values[$token], $expected, t("Token value for [@type:@token] was '@actual', expected value '@expected'.", array('@type' => $type, '@token' => $token, '@actual' => $values[$token], '@expected' => $expected)));
     }
   }
 }
@@ -92,6 +92,12 @@ class TokenNodeTestCase extends TokenTestHelper {
     // Test [node:log] token.
     $this->assertToken('node', $source_node, 'log', $source_node->log);
     $this->assertToken('node', $translated_node, 'log', '');
+
+    // Test [node:path] token.
+    $alias = array('source' => 'node/' . $source_node->nid, 'alias' => 'content/source-node');
+    path_save($alias);
+    $this->assertToken('node', $source_node, 'path', 'content/source-node');
+    $this->assertToken('node', $translated_node, 'path', 'node/' . $translated_node->nid);
   }
 }
 

@@ -12,6 +12,8 @@
 function token_token_info_alter(&$data) {
   // Add a 'dynamic' key to any tokens that have chained but dynamic tokens.
   $data['tokens']['date']['custom']['dynamic'] = TRUE;
+  // @todo Remove [node:tnid] now that we have [node:source:nid]?
+  //unset($data['tokens']['node']['tnid']);
 }
 
 /**
@@ -27,6 +29,23 @@ function token_token_info() {
     'name' => t('Revision log message'),
     'description' => t('The explanation of the most recent changes made to the node.'),
   );
+
+  // Add [token:path] tokens for any URI-able entities.
+  $entities = entity_get_info();
+  foreach ($entities as $entity => $entity_info) {
+    if (!isset($entity_info['token type'])) {
+      continue;
+    }
+    $token_type = $entity_info['token type'];
+
+    // Add [entity:path] tokens if they do not already exist.
+    if (!isset($info['tokens'][$token_type]['path']) && (!empty($entity_info['uri callback']) || !empty($entity_info['bundles'][$entity]['uri callback']))) {
+      $info['tokens'][$token_type]['path'] = array(
+        'name' => t('Path'),
+        'description' => t('The URL alias of the @entity.', array('@entity' => drupal_strtolower($entity_info['label']))),
+      );
+    }
+  }
 
   return $info;
 }
@@ -62,6 +81,21 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
   }
 
+  // Entity tokens.
+  if (!empty($data[$type]) && $entity_type = _token_get_entity_from_token_type($type)) {
+    $entity = $data[$type];
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'path':
+          if ($uri = entity_uri($entity_type, $entity)) {
+            $alias = drupal_get_path_alias($uri['path']);
+            $replacements[$original] = $sanitize ? check_plain($alias) : $alias;
+          }
+          break;
+      }
+    }
+  }
+
   return $replacements;
 }
 
@@ -92,7 +126,7 @@ function menu_token_info() {
   );
   $info['tokens']['menu-link']['path'] = array(
     'name' => t('Path'),
-    'description' => t('The path for the menu link.'),
+    'description' => t('The URL alias of the menu link.'),
   );
   $info['tokens']['menu-link']['url'] = array(
     'name' => t('URL'),
@@ -177,7 +211,7 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
           }
           break;
         case 'path':
-          $replacements[$original] = $link['href'];
+          $replacements[$original] = drupal_get_path_alias($link['href']);
           break;
         case 'url':
           $replacements[$original] = url($link['href']);

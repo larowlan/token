@@ -60,13 +60,10 @@ function token_library() {
 }
 
 /**
- * Implements hook_entity_info_alter().
- *
- * Since some token types to do not match their entity type names, we have to
- * map them to the proper type. This is purely for other modules' benefit.
+ * Return an array of entity type to token type mappings.
  */
-function token_entity_info_alter(&$info) {
-  $token_mappings = array(
+function _token_entity_mappings() {
+  return array(
     'comment' => 'comment',
     'node' => 'node',
     'file' => 'file',
@@ -74,7 +71,33 @@ function token_entity_info_alter(&$info) {
     'taxonomy_vocabulary' => 'vocabulary',
     'user' => 'user',
   );
-  foreach ($token_mappings as $entity_type => $token_type) {
+}
+
+/**
+ * Given a token type, return its corresponding entity type if available.
+ *
+ * @param $token_type
+ *   A token type.
+ * @return
+ *   An entity type, or NULL if not available.
+ */
+function _token_get_entity_from_token_type($token_type) {
+  $token_entity_types = _token_entity_mappings();
+  array_reverse($token_entity_types);
+  if (isset($token_entity_types[$token_type])) {
+    return $token_entity_types[$token_type];
+  }
+}
+
+/**
+ * Implements hook_entity_info_alter().
+ *
+ * Since some token types to do not match their entity type names, we have to
+ * map them to the proper type. This is purely for other modules' benefit.
+ */
+function token_entity_info_alter(&$info) {
+  $entity_token_types = _token_entity_mappings();
+  foreach ($entity_token_types as $entity_type => $token_type) {
     if (isset($info[$entity_type])) {
       $info[$entity_type]['token type'] = $token_type;
     }
@@ -98,6 +121,8 @@ function token_module_implements_alter(&$implementations, $hook) {
     // other modules.
     unset($implementations['token']);
     $implementations = array_merge(array('token' => 'token'), $implementations);
+    // Ensure this gets cached.
+    $implementations['#write_cache'] = TRUE;
   }
 }
 
