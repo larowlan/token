@@ -24,11 +24,8 @@ function _token_upgrade_token_list() {
     'comment-nid' => 'comment:node:nid',
     'comment-title' => 'comment:title',
     'comment-body' => 'comment:body',
-    'comment-title-raw' => 'comment:title',
-    'comment-body-raw' => 'comment:body',
-    'comment-author-name-raw' => 'comment:author:name',
+    'comment-author-name' => 'comment:author:name',
     'comment-author-mail' => 'comment:author:mail',
-    'comment-author-mail-raw' => 'comment:author:mail',
     //'comment-body-format' => '',
     //'comment-' => '', // Date tokens expanded below
 
@@ -38,66 +35,60 @@ function _token_upgrade_token_list() {
     'type-name' => 'node:type-name',
     'language' => 'node:language',
     'title' => 'node:title',
-    'title-raw' => 'node:title',
     'author-uid' => 'node:author:uid',
     'author-name' => 'node:author:name',
-    'author-name-raw' => 'node:author:name',
     'author-mail' => 'node:author:mail',
-    'author-mail-raw' => 'node:author:mail',
     'node_comment_count' => 'node:comment-count',
     'unread_comment_count' => 'node:comment-count-new',
     'log' => 'node:log',
     //'' => '', // Date tokens expanded below
     //'mod-' => '', // Date tokens expanded below
-    //'menupath' => 'node:menu:path',
-    //'menupath-raw' => 'node:menu:path',
-    //'menu' => 'node:menu',
-    //'menu-raw' => 'node:menu',
-    //'menu-link-title' => 'node:menu:title',
-    //'menu-link-title-raw' => 'node:menu:title',
+    'menupath' => 'node:menu-link:parent:path][node:menu-link',
+    'menu' => 'node:menu-link:menu-name',
+    'menu-link-title' => 'node:menu-link',
+    'menu-link-mlid' => 'node:menu-link:mlid',
+    'menu-link-plid' => 'node:menu-link:parent:mlid',
     //'term' => 'node:term',
-    //'term-raw' => 'node:term',
     //'term-id' => 'node:term:tid',
     //'vocab' => 'node:term:vocabulary',
-    //'vocab-raw' => 'node:term:vocabulary',
     //'vocab-id' => 'node:term:vocabulary:vid',
 
     // Book tokens
     //'book' => 'node:book',
-    //'book-raw' => 'node:book',
     //'book_id' => 'node:book:bid',
     //'bookpath' => 'node:book:path',
-    //'bookpath-raw' => 'node:book:path',
 
     // Taxonomy tokens
     'tid' => 'term:tid',
     'cat' => 'term:name',
-    'cat-raw' => 'term:name',
     'cat-description' => 'term:description',
     'vid' => 'term:vocabulary:vid',
     'vocab' => 'term:vocabulary',
-    'vocab-raw' => 'term:vocabulary',
     'vocab-description' => 'term:vocabulary:description',
 
     // User tokens
     'user' => 'user:name',
-    'user-raw' => 'user:name',
     'uid' => 'user:uid',
     'mail' => 'user:mail',
     'reg-date' => 'user:created',
     'reg-since' => 'user:created:since',
+    //'user-created' => '', // Date tokens expanded below
     'log-date' => 'user:last-login',
     'log-since' => 'user:last-login:since',
+    //'user-last-login' => '', // Date tokens expanded below
     //'date-in-tz' => '',
     'account-url' => 'user:url',
     'account-edit' => 'user:edit-url',
   );
 
   // Account for date tokens which need to be expanded.
+  $tokens += _token_upgrade_token_date_list('site-', 'site:date');
   $tokens += _token_upgrade_token_date_list('', 'node:created');
   $tokens += _token_upgrade_token_date_list('mod-', 'node:changed');
+  //$tokens += _token_upgrade_token_date_list('node-revision-', 'node:changed');
   $tokens += _token_upgrade_token_date_list('comment-', 'comment:created');
-  $tokens += _token_upgrade_token_date_list('site-', 'site:date');
+  $tokens += _token_upgrade_token_date_list('user-register-', 'user:created');
+  $tokens += _token_upgrade_token_date_list('user-last-login-', 'user:last-login');
 
   return $tokens;
 }
@@ -144,15 +135,17 @@ function _token_upgrade_token_date_list($old_token, $new_token) {
  *
  * @see _token_upgrade_token_list();
  */
-function token_update_token_text($text, $updates = array()) {
+function token_update_token_text($text, $updates = array(), $leading = '[', $trailing = ']') {
   $updates += _token_upgrade_token_list();
-  preg_match_all('/\[([^\s]*)\]/', $text, $matches);
+  $regex = '/' . preg_quote($leading, '/') . '([^\s]*)' . preg_quote($trailing, '/') . ']/';
+  preg_match_all($regex, $text, $matches);
 
   foreach ($matches[1] as $index => $old_token) {
     if (isset($updates[$old_token])) {
-      //$raw_old_token = $matches[0][$index];
       $new_token = $updates[$old_token];
-      $text = str_replace("[$old_token]", "[$new_token]", $text);
+      $text = str_replace("{$leading}{$old_token}{$trailing}", "[$new_token]", $text);
+      // Also replace any tokens that have a -raw suffix.
+      $text = str_replace("{$leading}{$old_token}-raw{$trailing}", "[$new_token]", $text);
     }
   }
 
