@@ -9,26 +9,11 @@
 /**
  * Implements hook_token_info_alter().
  */
-function token_token_info_alter(&$data) {
+function token_token_info_alter(&$info) {
   // Add a 'dynamic' key to any tokens that have chained but dynamic tokens.
-  $data['tokens']['date']['custom']['dynamic'] = TRUE;
+  $info['tokens']['date']['custom']['dynamic'] = TRUE;
   // @todo Remove [node:tnid] now that we have [node:source:nid]?
-  //unset($data['tokens']['node']['tnid']);
-}
-
-/**
- * Implements hook_token_info().
- */
-function token_token_info() {
-  $info['tokens']['node']['source'] = array(
-    'name' => t('Translation source node'),
-    'description' => t("The source node for this current node's translation set."),
-    'type' => 'node',
-  );
-  $info['tokens']['node']['log'] = array(
-    'name' => t('Revision log message'),
-    'description' => t('The explanation of the most recent changes made to the node.'),
-  );
+  //unset($info['tokens']['node']['tnid']);
 
   // Add [token:path] tokens for any URI-able entities.
   $entities = entity_get_info();
@@ -46,63 +31,23 @@ function token_token_info() {
       );
     }
   }
-
-  return $info;
 }
 
 /**
- * Implements hook_tokens().
+ * Implements hook_token_info().
  */
-function token_tokens($type, $tokens, array $data = array(), array $options = array()) {
-  $replacements = array();
-  $sanitize = !empty($options['sanitize']);
+function token_token_info() {
+  $info['tokens']['node']['source'] = array(
+    'name' => t('Translation source node'),
+    'description' => t("The source node for this current node's translation set."),
+    'type' => 'node',
+  );
+  $info['tokens']['node']['log'] = array(
+    'name' => t('Revision log message'),
+    'description' => t('The explanation of the most recent changes made to the node.'),
+  );
 
-  // Node tokens.
-  if ($type == 'node' && !empty($data['node'])) {
-    $node = $data['node'];
-
-    foreach ($tokens as $name => $original) {
-      switch ($name) {
-        case 'source':
-          if (!empty($node->tnid) && $source_node = node_load($node->tnid)) {
-            $title = $source_node->title;
-            $replacements[$original] = $sanitize ? filter_xss($title) : $title;
-          }
-          break;
-        case 'log':
-          $replacements[$original] = $sanitize ? filter_xss($node->log) : $node->log;
-          break;
-      }
-    }
-
-    // Chained token relationships.
-    if (!empty($node->tnid) && ($source_node = node_load($node->tnid)) && $source_tokens = token_find_with_prefix($tokens, 'source')) {
-      $replacements += token_generate('node', $source_tokens, array('node' => $source_node), $options);
-    }
-  }
-
-  // Entity tokens.
-  if (!empty($data[$type]) && $entity_type = _token_get_entity_from_token_type($type)) {
-    $entity = $data[$type];
-    foreach ($tokens as $name => $original) {
-      switch ($name) {
-        case 'path':
-          if ($uri = entity_uri($entity_type, $entity)) {
-            $alias = drupal_get_path_alias($uri['path']);
-            $replacements[$original] = $sanitize ? check_plain($alias) : $alias;
-          }
-          break;
-      }
-    }
-  }
-
-  return $replacements;
-}
-
-/**
- * Implements hook_token_info() on behalf of menu.module.
- */
-function menu_token_info() {
+  // Menu links (work regardless if menu.module is enabled or not).
   $info['types']['menu-link'] = array(
     'name' => t('Menu links'),
     'description' => t('Tokens related to menu links.'),
@@ -138,16 +83,156 @@ function menu_token_info() {
     'type' => 'menu-link',
   );
 
+  return $info;
+}
+
+/**
+ * Implements hook_tokens().
+ */
+function token_tokens($type, $tokens, array $data = array(), array $options = array()) {
+  $replacements = array();
+  $sanitize = !empty($options['sanitize']);
+
+  // Node tokens.
+  if ($type == 'node' && !empty($data['node'])) {
+    $node = $data['node'];
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'source':
+          if (!empty($node->tnid) && $source_node = node_load($node->tnid)) {
+            $title = $source_node->title;
+            $replacements[$original] = $sanitize ? filter_xss($title) : $title;
+          }
+          break;
+        case 'log':
+          $replacements[$original] = $sanitize ? filter_xss($node->log) : $node->log;
+          break;
+      }
+    }
+
+    // Chained token relationships.
+    if (!empty($node->tnid) && ($source_node = node_load($node->tnid)) && $source_tokens = token_find_with_prefix($tokens, 'source')) {
+      $replacements += token_generate('node', $source_tokens, array('node' => $source_node), $options);
+    }
+  }
+
+  // Menu link tokens.
+  if ($type == 'menu-link' && !empty($data['menu-link'])) {
+    $link = (array) $data['menu-link'];
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'mlid':
+          $replacements[$original] = $link['mlid'];
+          break;
+        case 'title':
+          $replacements[$original] = $sanitize ? check_plain($link['title']) : $link['title'];
+          break;
+        case 'menu':
+          $replacements[$original] = $link['menu_name'];
+          break;
+        case 'menu-name':
+          $menus = menu_get_menus();
+          if (isset($menus[$link['menu_name']])) {
+            $replacements[$original] = $menus[$link['menu_name']];
+          }
+          break;
+        case 'path':
+          $replacements[$original] = drupal_get_path_alias($link['href']);
+          break;
+        case 'url':
+          $replacements[$original] = url($link['href']);
+          break;
+        case 'parent':
+          if (!empty($link['plid']) && $parent = menu_link_load($link['plid'])) {
+            $replacements[$original] = $sanitize ? check_plain($parent['title']) : $parent['title'];
+          }
+          break;
+      }
+    }
+
+    // Chained token relationships.
+    if (!empty($link['plid']) && ($parent = menu_link_load($link['plid'])) && $source_tokens = token_find_with_prefix($tokens, 'parent')) {
+      $replacements += token_generate('menu-link', $source_tokens, array('menu-link' => $parent), $options);
+    }
+  }
+
+  // Entity tokens.
+  if (!empty($data[$type]) && $entity_type = _token_get_entity_from_token_type($type)) {
+    $entity = $data[$type];
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'path':
+          if ($uri = entity_uri($entity_type, $entity)) {
+            $alias = drupal_get_path_alias($uri['path']);
+            $replacements[$original] = $sanitize ? check_plain($alias) : $alias;
+          }
+          break;
+      }
+    }
+  }
+
+  return $replacements;
+}
+
+/**
+ * Implements hook_token_info() on behalf of book.module.
+ */
+function book_token_info() {
+  $info['tokens']['node']['book'] = array(
+    'name' => t('Book'),
+    'description' => t('The book page associated with the node.'),
+    'type' => 'menu-link',
+  );
+  return $info;
+}
+
+/**
+ * Implements hook_tokens() on behalf of book.module.
+ */
+function book_tokens($type, $tokens, array $data = array(), array $options = array()) {
+  $replacements = array();
+  $sanitize = !empty($options['sanitize']);
+
+  // Node tokens.
+  if ($type == 'node' && !empty($data['node'])) {
+    $node = $data['node'];
+
+    if (!empty($node->book['mlid'])) {
+      $link = $node->book;
+      if (!isset($link['title'])) {
+        // Links may be impartially loaded, so ensure we have a full link.
+        $link = book_link_load($link['mlid']);
+      }
+
+      foreach ($tokens as $name => $original) {
+        switch ($name) {
+          case 'book':
+            $replacements[$original] = $sanitize ? check_plain($link['title']) : $link['title'];
+            break;
+        }
+      }
+
+      // Chained token relationships.
+      if ($book_tokens = token_find_with_prefix($tokens, 'book')) {
+        $replacements += token_generate('menu-link', $book_tokens, array('menu-link' => $link), $options);
+      }
+    }
+  }
+
+  return $replacements;
+}
+
+/**
+ * Implements hook_token_info() on behalf of menu.module.
+ */
+function menu_token_info() {
   $info['tokens']['node']['menu-link'] = array(
     'name' => t('Menu link'),
     'description' => t("The menu link for this node."),
     'type' => 'menu-link',
   );
-  //$info['tokens']['menu-link']['node'] = array(
-  //  'name' => t('Menu node'),
-  //  'description' => t('The node associated with the menu link item.'),
-  //  'type' => 'node',
-  //);
   return $info;
 }
 
@@ -187,55 +272,6 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
         $replacements += token_generate('menu-link', $menu_tokens, array('menu-link' => $link), $options);
       }
     }
-  }
-
-  // Menu link tokens.
-  if ($type == 'menu-link' && !empty($data['menu-link'])) {
-    $link = (array) $data['menu-link'];
-
-    foreach ($tokens as $name => $original) {
-      switch ($name) {
-        case 'mlid':
-          $replacements[$original] = $link['mlid'];
-          break;
-        case 'title':
-          $replacements[$original] = $sanitize ? check_plain($link['title']) : $link['title'];
-          break;
-        case 'menu':
-          $replacements[$original] = $link['menu_name'];
-          break;
-        case 'menu-name':
-          $menus = menu_get_menus();
-          if (isset($menus[$link['menu_name']])) {
-            $replacements[$original] = $menus[$link['menu_name']];
-          }
-          break;
-        case 'path':
-          $replacements[$original] = drupal_get_path_alias($link['href']);
-          break;
-        case 'url':
-          $replacements[$original] = url($link['href']);
-          break;
-        case 'parent':
-          if (!empty($link['plid']) && $parent = menu_link_load($link['plid'])) {
-            $replacements[$original] = $sanitize ? check_plain($parent['title']) : $parent['title'];
-          }
-          break;
-        //case 'node':
-        //  if (preg_match('|node/(\d+)|', $link['link_path'], $matches) && ($node = node_load($matches[1]))) {
-        //    $replacements[$original] = $sanitize ? check_plain($node->title) : $node->title;
-        //  }
-        //  break;
-      }
-    }
-
-    // Chained token relationships.
-    if (!empty($link['plid']) && ($parent = menu_link_load($link['plid'])) && $source_tokens = token_find_with_prefix($tokens, 'parent')) {
-      $replacements += token_generate('menu-link', $source_tokens, array('menu-link' => $parent), $options);
-    }
-    //if (preg_match('|node/(\d+)|', $link['link_path'], $matches) && ($node = node_load($matches[1])) && $node_tokens = token_find_with_prefix($tokens, 'node')) {
-    //  $replacements += token_generate('node', $node_tokens, array('node' => $node), $options);
-    //}
   }
 
   return $replacements;
