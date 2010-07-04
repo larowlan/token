@@ -115,7 +115,7 @@ function token_entity_info_alter(&$info) {
  */
 function token_module_implements_alter(&$implementations, $hook) {
   if ($hook == 'tokens' || $hook == 'token_info') {
-    $modules = array('menu');
+    $modules = array('book', 'menu');
     foreach ($modules as $module) {
       if (module_exists($module)) {
         $implementations[$module] = TRUE;
@@ -125,8 +125,6 @@ function token_module_implements_alter(&$implementations, $hook) {
     // other modules.
     unset($implementations['token']);
     $implementations = array_merge(array('token' => 'token'), $implementations);
-    // Ensure this gets cached.
-    $implementations['#write_cache'] = TRUE;
   }
 }
 
