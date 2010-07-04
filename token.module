@@ -32,6 +32,10 @@ function token_menu() {
  */
 function token_theme() {
   return array(
+    'tree_table' => array(
+      'variables' => array('header' => array(), 'rows' => array(), 'attributes' => array(), 'empty' => '', 'caption' => ''),
+      'file' => 'token.pages.inc',
+    ),
     'token_tree' => array(
       'variables' => array('token_types' => array(), 'global_types' => TRUE, 'click_insert' => TRUE, 'recursion_limit' => 4),
       'file' => 'token.pages.inc',

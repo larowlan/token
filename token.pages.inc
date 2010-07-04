@@ -7,6 +7,27 @@
  */
 
 /**
+ * Theme a tree table.
+ *
+ * @ingroup themeable
+ */
+function theme_tree_table($variables) {
+  foreach ($variables['rows'] as &$row) {
+    $row += array('class' => array());
+    if (!empty($row['parent'])) {
+      $row['class'][] = 'child-of-' . drupal_clean_css_identifier($row['parent']);
+      unset($row['parent']);
+    }
+  }
+
+  if (count($variables['rows'])) {
+    drupal_add_library('token', 'treeTable');
+  }
+
+  return theme('table', $variables);
+}
+
+/**
  * Build a tree array of tokens used for themeing or information.
  *
  * @param $token_type
@@ -64,6 +85,8 @@ function token_build_tree($token_type, $flat_tree = FALSE, $recursion_limit = 4,
 
 /**
  * Provide a 'tree' display of nested tokens.
+ *
+ * @ingroup themeable
  */
 function theme_token_tree($variables) {
   $token_types = $variables['token_types'];
@@ -103,11 +126,8 @@ function theme_token_tree($variables) {
     }
   }
 
-  if (count($rows)) {
-    drupal_add_library('token', 'treeTable');
-    drupal_add_js(drupal_get_path('module', 'token') . '/token.js');
-    drupal_add_css(drupal_get_path('module', 'token') . '/token.css');
-  }
+  drupal_add_js(drupal_get_path('module', 'token') . '/token.js');
+  drupal_add_css(drupal_get_path('module', 'token') . '/token.css');
 
   $table_options = array(
     'header' => $header,
@@ -120,7 +140,7 @@ function theme_token_tree($variables) {
     $table_options['attributes']['class'][] = 'token-click-insert';
   }
 
-  return theme('table', $table_options);
+  return theme('tree_table', $table_options);
 }
 
 /**
@@ -148,7 +168,7 @@ function _token_token_tree_format_row($token, array $token_info, $is_group = FAL
       'class' => array('token-key'),
     );
     if (!empty($token_info['parent'])) {
-      $row['class'][] = 'child-of-' . _token_clean_css_identifier($token_info['parent']);
+      $row['parent'] = _token_clean_css_identifier($token_info['parent']);
     }
   }
 
