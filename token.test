@@ -8,7 +8,7 @@ class TokenTestHelper extends DrupalWebTestCase {
   function setUp() {
     // Call parent::setUp() allowing test cases to pass further modules.
     $modules = func_get_args();
-    $modules = array_merge(array('token'), $modules);
+    $modules = array_merge(array('path', 'token'), $modules);
     parent::setUp($modules);
   }
 
