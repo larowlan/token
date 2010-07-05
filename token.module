@@ -276,3 +276,64 @@ function token_element_validate_token_context(&$element, &$form_state) {
     form_error($element, t('The %element-title is using the following invalid tokens: @invalid-tokens.', array('%element-title' => $element['#title'], '@invalid-tokens' => implode(', ', $invalid_tokens))));
   }
 }
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Alters the user e-mail fields to add token context validation and
+ * adds the token tree for a better token UI and selection.
+ */
+function token_form_user_admin_settings_alter(&$form, &$form_state) {
+  $email_token_help = t('Available variables are: [site:name], [site:url], [user:name], [user:mail], [site:login-url], [site:url-brief], [user:edit-url], [user:one-time-login-url], [user:cancel-url].');
+
+  foreach (element_children($form) as $key) {
+    $element = &$form[$key];
+
+    // Remove the crummy default token help text.
+    if (!empty($element['#description'])) {
+      $element['#description'] = trim(str_replace($email_token_help, '', $element['#description']));
+    }
+
+    switch ($key) {
+      case 'email_admin_created':
+      case 'email_pending_approval':
+      case 'email_no_approval_required':
+      case 'email_password_reset':
+      case 'email_cancel_confirm':
+        // Do nothing, but allow execution to continue.
+        break;
+      case 'email_activated':
+      case 'email_blocked':
+      case 'email_canceled':
+        // These fieldsets have their e-mail elements inside a 'settings'
+        // sub-element, so switch to that element instead.
+        $element = &$form[$key]['settings'];
+        break;
+      default:
+        continue 2;
+    }
+
+    foreach (element_children($element) as $sub_key) {
+      if (!isset($element[$sub_key]['#type'])) {
+        continue;
+      }
+      elseif ($element[$sub_key]['#type'] == 'textfield' && substr($sub_key, -8) === '_subject') {
+        // Add validation to subject textfields.
+        $element[$sub_key]['#element_validate'][] = 'token_element_validate_token_context';
+        $element[$sub_key] += array('#token_types' => array('user'));
+      }
+      elseif ($element[$sub_key]['#type'] == 'textarea' && substr($sub_key, -5) === '_body') {
+        // Add validation to body textareas.
+        $element[$sub_key]['#element_validate'][] = 'token_element_validate_token_context';
+        $element[$sub_key] += array('#token_types' => array('user'));
+      }
+    }
+
+    // Add the token tree UI.
+    $element['token_tree'] = array(
+      '#theme' => 'token_tree',
+      '#token_types' => array('user'),
+      '#weight' => 100,
+    );
+  }
+}
