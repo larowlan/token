@@ -28,6 +28,7 @@ function _token_upgrade_token_list() {
     'comment-author-mail' => 'comment:author:mail',
     //'comment-body-format' => '',
     //'comment-' => '', // Date tokens expanded below
+    'comment-node-title' => 'comment:node',
 
     // Node tokens
     'nid' => 'node:nid',
