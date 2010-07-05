@@ -251,3 +251,28 @@ function token_get_invalid_tokens($type, $tokens) {
 
   return $invalid_tokens;
 }
+
+/**
+ * Validate a form element that should have tokens in it.
+ *
+ * Form elements that want to add this validation should have the #token_types
+ * parameter defined.
+ *
+ * For example:
+ * @code
+ * $form['my_node_text_element'] = array(
+ *   '#type' => 'textfield',
+ *   '#title' => t('Some text to token-ize that has a node context.'),
+ *   '#default_value' => 'The title of this node is [node:title].',
+ *   '#element_validate' => array('token_element_validate_token_context'),
+ *   '#token_types' => array('node'),
+ * );
+ * @endcode
+ */
+function token_element_validate_token_context(&$element, &$form_state) {
+  $value = isset($element['#value']) ? $element['#value'] : $element['#default_value'];
+  $invalid_tokens = token_get_invalid_tokens_by_context($value, array($element['#token_types']));
+  if ($invalid_tokens) {
+    form_error($element, t('The %element-title is using the following invalid tokens: @invalid-tokens.', array('%element-title' => $element['#title'], '@invalid-tokens' => implode(', ', $invalid_tokens))));
+  }
+}
