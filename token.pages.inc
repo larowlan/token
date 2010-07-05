@@ -36,12 +36,15 @@ function theme_tree_table($variables) {
  * @param $flat_tree
  *   A boolean if TRUE will only make a flat array of tokens, otherwise
  *   child tokens will be inside the 'children' parameter of a token.
+ * @param $show_restricted
+ *   A boolean if TRUE will show restricted tokens. Otherwise they will be
+ *   hidden. Default is FALSE.
  * @param $recursion_limit
  *   An integer with the maximum number of token levels to recurse.
  * @param $parents
  *   An optional array with the current parents of the tokens.
  */
-function token_build_tree($token_type, $flat_tree = FALSE, $recursion_limit = 4, $parents = array()) {
+function token_build_tree($token_type, $flat_tree = FALSE, $show_restricted = FALSE, $recursion_limit = 4, $parents = array()) {
   $info = token_get_info();
   if ($recursion_limit <= 0 || !isset($info['types'][$token_type])) {
     return array();
@@ -49,6 +52,10 @@ function token_build_tree($token_type, $flat_tree = FALSE, $recursion_limit = 4,
 
   $tree = array();
   foreach ($info['tokens'][$token_type] as $token => $token_info) {
+    // Skip restricted tokens if desired (default behavior).
+    if (!$show_restricted && !empty($token_info['restricted'])) {
+      continue;
+    }
     // Build the raw token string.
     $token_parents = $parents;
     if (empty($token_parents)) {
@@ -70,7 +77,7 @@ function token_build_tree($token_type, $flat_tree = FALSE, $recursion_limit = 4,
 
     // Fetch the child tokens.
     if (!empty($token_info['type'])) {
-      $children = token_build_tree($token_info['type'], $flat_tree, $recursion_limit - 1, $token_parents);
+      $children = token_build_tree($token_info['type'], $flat_tree, $show_restricted, $recursion_limit - 1, $token_parents);
       if ($flat_tree) {
         $tree = array_merge($tree, $children);
       }
@@ -120,7 +127,7 @@ function theme_token_tree($variables) {
       $parent = array($type);
     }
 
-    $tree = token_build_tree($type_info['type'], TRUE, $variables['recursion_limit'], $parent);
+    $tree = token_build_tree($type_info['type'], TRUE, $variables['show_restricted'], $variables['recursion_limit'], $parent);
     foreach ($tree as $token => $token_info) {
       $rows[] = _token_token_tree_format_row($token, $token_info);
     }

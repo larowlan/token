@@ -8,7 +8,7 @@ function token_help($path, $arg) {
   if ($path == 'admin/help#token') {
     $output = '<dl>';
     $output .= '<dt>' . t('List of the currently available tokens on this site') . '</dt>';
-    $output .= '<dd>' . theme('token_tree', array('token_types' => 'all', 'click_insert' => FALSE)) . '</dd>';
+    $output .= '<dd>' . theme('token_tree', array('token_types' => 'all', 'click_insert' => FALSE, 'show_restricted' => TRUE)) . '</dd>';
     $output .= '</dl>';
     return $output;
   }
@@ -37,7 +37,7 @@ function token_theme() {
       'file' => 'token.pages.inc',
     ),
     'token_tree' => array(
-      'variables' => array('token_types' => array(), 'global_types' => TRUE, 'click_insert' => TRUE, 'recursion_limit' => 4),
+      'variables' => array('token_types' => array(), 'global_types' => TRUE, 'click_insert' => TRUE, 'show_restricted' => FALSE, 'recursion_limit' => 4),
       'file' => 'token.pages.inc',
     ),
   );
@@ -333,6 +333,7 @@ function token_form_user_admin_settings_alter(&$form, &$form_state) {
     $element['token_tree'] = array(
       '#theme' => 'token_tree',
       '#token_types' => array('user'),
+      '#show_restricted' => TRUE,
       '#weight' => 100,
     );
   }

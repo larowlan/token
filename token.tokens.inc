@@ -47,6 +47,18 @@ function token_token_info() {
     'description' => t('The explanation of the most recent changes made to the node.'),
   );
 
+  // Add information on the restricted user tokens.
+  $info['tokens']['user']['cancel-url'] = array(
+    'name' => t('Account cancellation URL'),
+    'description' => t('The URL of the confirm delete page for the user account.'),
+    'restricted' => TRUE,
+  );
+  $info['tokens']['user']['one-time-login-url'] = array(
+    'name' => t('One-time login URL'),
+    'description' => t('The URL of the one-time login page for the user account.'),
+    'restricted' => TRUE,
+  );
+
   // Menu links (work regardless if menu.module is enabled or not).
   $info['types']['menu-link'] = array(
     'name' => t('Menu links'),
