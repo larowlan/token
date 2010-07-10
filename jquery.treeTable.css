@@ -17,11 +17,11 @@
 }
 
 .treeTable tr.collapsed td .expander {
-  background-image: url(/misc/arrow-asc.png);
+  background-image: url(arrow-right.png);
 }
 
 .treeTable tr.expanded td .expander {
-  background-image: url(arrow-right.png);
+  background-image: url(arrow-down.png);
 }
 
 /* jquery.treeTable.sortable
