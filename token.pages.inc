@@ -86,7 +86,7 @@ function token_build_tree($token_type, $flat_tree = FALSE, $show_restricted = FA
       }
     }
   }
-
+  
   return $tree;
 }
 
@@ -104,12 +104,7 @@ function theme_token_tree($variables) {
   }
   elseif ($variables['global_types']) {
     $token_types = array_merge($token_types, token_get_global_token_types());
-    $token_types = array_unique($token_types);
   }
-
-  // Check for token type validity and sort.
-  $token_types = array_intersect($token_types, array_keys($info['types']));
-  sort($token_types);
 
   $header = array(
     t('Name'),
@@ -118,8 +113,11 @@ function theme_token_tree($variables) {
   );
   $rows = array();
 
-  foreach ($token_types as $type) {
-    $type_info = $info['types'][$type] += array('type' => $type);
+  foreach ($info['types'] as $type => $type_info) {
+    if (!in_array($type, $token_types)) {
+      continue;
+    }
+    $type_info += array('type' => $type);
     $parent = array();
 
     if (count($token_types) > 1) {
