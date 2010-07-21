@@ -147,7 +147,7 @@ class TokenMenuTestCase extends TokenTestHelper {
       'menu-link:menu' => 'main-menu',
       'menu-link:menu-name' => 'Main menu',
       'menu-link:path' => 'node/' . $node->nid,
-      'menu-link:url' => url('node/' . $node->nid),
+      'menu-link:url' => url('node/' . $node->nid, array('absolute' => TRUE)),
       'menu-link:parent' => 'Front link',
       'menu-link:parent:mlid' => $node->menu['plid'],
       'menu-link:parent:mlid' => $root_link['mlid'],

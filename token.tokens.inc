@@ -95,6 +95,24 @@ function token_token_info() {
     'type' => 'menu-link',
   );
 
+  // Current page tokens.
+  $info['types']['current-page'] = array(
+    'name' => t('Current page'),
+    'description' => t('Tokens related to the current page request.'),
+  );
+  $info['tokens']['current-page']['path'] = array(
+    'name' => t('Path'),
+    'description' => t('The URL alias of the current page.'),
+  );
+  $info['tokens']['current-page']['url'] = array(
+    'name' => t('URL'),
+    'description' => t('The URL of the current page.'),
+  );
+  $info['tokens']['current-page']['page-number'] = array(
+    'name' => t('Page number'),
+    'description' => t('The page number of the current page when viewing paged lists.'),
+  );
+
   return $info;
 }
 
@@ -103,6 +121,16 @@ function token_token_info() {
  */
 function token_tokens($type, $tokens, array $data = array(), array $options = array()) {
   $replacements = array();
+
+  $url_options = array('absolute' => TRUE);
+  if (isset($options['language'])) {
+    $url_options['language'] = $options['language'];
+    $language_code = $options['language']->language;
+  }
+  else {
+    $language_code = NULL;
+  }
+
   $sanitize = !empty($options['sanitize']);
 
   // Node tokens.
@@ -142,19 +170,21 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           $replacements[$original] = $sanitize ? check_plain($link['title']) : $link['title'];
           break;
         case 'menu':
+          // This is a machine name so does not ever need to be sanitized.
           $replacements[$original] = $link['menu_name'];
           break;
         case 'menu-name':
           $menus = menu_get_menus();
           if (isset($menus[$link['menu_name']])) {
-            $replacements[$original] = $menus[$link['menu_name']];
+            $replacements[$original] = $sanitize ? check_plain($menus[$link['menu_name']]) : $menus[$link['menu_name']];
           }
           break;
         case 'path':
-          $replacements[$original] = drupal_get_path_alias($link['href']);
+          $alias = drupal_get_path_alias($link['href'], $language_code);
+          $replacements[$original] = $sanitize ? check_plain($alias) : $alias;
           break;
         case 'url':
-          $replacements[$original] = url($link['href']);
+          $replacements[$original] = url($link['href'], $url_options);
           break;
         case 'parent':
           if (!empty($link['plid']) && $parent = menu_link_load($link['plid'])) {
@@ -170,6 +200,31 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
   }
 
+  // Current page tokens.
+  if ($type == 'current-page') {
+    $current_path = current_path();
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'path':
+          $alias = drupal_get_path_alias($current_path, $language_code);
+          $replacements[$original] = $sanitize ? check_plain($alias) : $alias;
+          break;
+        case 'url':
+          $replacements[$original] = url($current_path, $url_options);
+          break;
+        case 'page-number':
+          if ($page = filter_input(INPUT_GET, 'page')) {
+            // @see PagerDefault::execute()
+            $pager_page_array = explode(',', $page);
+            $page = $pager_page_array[0];
+          }
+          $replacements[$original] = (int) $page + 1;
+          break;
+      }
+    }
+  }
+
   // Entity tokens.
   if (!empty($data[$type]) && $entity_type = _token_get_entity_from_token_type($type)) {
     $entity = $data[$type];
@@ -177,7 +232,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       switch ($name) {
         case 'path':
           if ($uri = entity_uri($entity_type, $entity)) {
-            $alias = drupal_get_path_alias($uri['path']);
+            $alias = drupal_get_path_alias($uri['path'], $language_code);
             $replacements[$original] = $sanitize ? check_plain($alias) : $alias;
           }
           break;
