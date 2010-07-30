@@ -100,6 +100,10 @@ function token_token_info() {
     'name' => t('Current page'),
     'description' => t('Tokens related to the current page request.'),
   );
+  $info['tokens']['current-page']['title'] = array(
+    'name' => t('Path'),
+    'description' => t('The title of the current page.'),
+  );
   $info['tokens']['current-page']['path'] = array(
     'name' => t('Path'),
     'description' => t('The URL alias of the current page.'),
@@ -206,6 +210,9 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
+        case 'title':
+          $replacements[$original] = drupal_get_title();
+          break;
         case 'path':
           $alias = drupal_get_path_alias($current_path, $language_code);
           $replacements[$original] = $sanitize ? check_plain($alias) : $alias;
