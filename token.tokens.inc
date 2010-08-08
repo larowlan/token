@@ -235,13 +235,15 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
   // Entity tokens.
   if (!empty($data[$type]) && $entity_type = _token_get_entity_from_token_type($type)) {
     $entity = $data[$type];
+
+    // @todo Remove when http://drupal.org/node/870528 is fixed.
+    if ($entity_type == 'taxonomy_term' && !isset($entity->vocabulary_machine_name)) {
+      $entity->vocabulary_machine_name = db_query("SELECT machine_name FROM {taxonomy_vocabulary} WHERE vid = :vid", array(':vid' => $entity->vid))->fetchField();
+    }
+
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'path':
-          // @todo Remove when http://drupal.org/node/870528 is fixed.
-          if ($entity_type == 'taxonomy_term' && !isset($entity->vocabulary_machine_name)) {
-            $entity->vocabulary_machine_name = db_query("SELECT machine_name FROM {taxonomy_vocabulary} WHERE vid = :vid", array(':vid' => $entity->vid))->fetchField();
-          }
           if ($uri = entity_uri($entity_type, $entity)) {
             $alias = drupal_get_path_alias($uri['path'], $language_code);
             $replacements[$original] = $sanitize ? check_plain($alias) : $alias;
