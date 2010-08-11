@@ -6,9 +6,13 @@
  */
 class TokenTestHelper extends DrupalWebTestCase {
   function setUp() {
+    $args = func_get_args();
+
     // Call parent::setUp() allowing test cases to pass further modules.
-    $modules = func_get_args();
-    $modules = array_merge(array('path', 'token'), $modules);
+    $modules = array('path', 'token');
+    if (isset($args[0]) && is_array($args[0])) {
+      $modules = array_merge($modules, $args[0]);
+    }
     parent::setUp($modules);
   }
 
@@ -24,15 +28,19 @@ class TokenTestHelper extends DrupalWebTestCase {
     }
   }
 
-  function addEntityAlias($entity_type, $entity, $alias, array $path = array()) {
+  function saveAlias($source, $alias, $language = LANGUAGE_NONE) {
+    $alias = array(
+      'source' => $source,
+      'alias' => $alias,
+      'language' => $language,
+    );
+    path_save($alias);
+    return $alias;
+  }
+
+  function saveEntityAlias($entity_type, $entity, $alias, $language = LANGUAGE_NONE) {
     $uri = entity_uri($entity_type, $entity);
-    if ($uri) {
-      $path += array(
-        'source' => $uri['path'],
-        'alias' => $alias,
-      );
-      path_save($alias);
-    }
+    return $this->saveAlias($uri['path'], $alias, $language);
   }
 }
 
@@ -120,7 +128,7 @@ class TokenMenuTestCase extends TokenTestHelper {
   }
 
   function setUp() {
-    parent::setUp('menu');
+    parent::setUp(array('menu'));
   }
 
   function testMenuTokens() {
@@ -168,7 +176,7 @@ class TokenTaxonomyTestCase extends TokenTestHelper {
   }
 
   function setUp() {
-    parent::setUp('taxonomy');
+    parent::setUp(array('taxonomy'));
     // Use the default 'Tags' taxonomy included with the standard install profile.
     $tags_vid = db_query("SELECT vid FROM {taxonomy_vocabulary} WHERE name = 'Tags'")->fetchField();
     $this->vocab = taxonomy_vocabulary_load($tags_vid);

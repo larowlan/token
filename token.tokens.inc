@@ -236,7 +236,8 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
   if (!empty($data[$type]) && $entity_type = _token_get_entity_from_token_type($type)) {
     $entity = $data[$type];
 
-    // @todo Remove when http://drupal.org/node/870528 is fixed.
+    // Sometimes taxonomy terms are not properly loaded.
+    // @see http://drupal.org/node/870528
     if ($entity_type == 'taxonomy_term' && !isset($entity->vocabulary_machine_name)) {
       $entity->vocabulary_machine_name = db_query("SELECT machine_name FROM {taxonomy_vocabulary} WHERE vid = :vid", array(':vid' => $entity->vid))->fetchField();
     }

@@ -17,7 +17,9 @@ function _token_upgrade_token_list() {
     'site-mail' => 'site:mail',
     'site-date' => 'date:short',
     //'site-date-' => '', // Date tokens expanded below
-    //'page-number' => '',
+    'current-page-path' => 'current-page:path',
+    'current-page-url' => 'current-page:url',
+    'page-number' => 'current-page:page-number',
 
     // Comment tokens
     'comment-cid' => 'comment:cid',
