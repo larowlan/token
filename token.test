@@ -144,6 +144,7 @@ class TokenMenuTestCase extends TokenTestHelper {
       'link_title' => 'Node link',
       'plid' => $root_link['mlid'],
       'customized' => 0,
+      'description' => '',
     );
     $node = $this->drupalCreateNode(array('menu' => $node_link));
 
