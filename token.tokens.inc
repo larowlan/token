@@ -101,7 +101,7 @@ function token_token_info() {
     'description' => t('Tokens related to the current page request.'),
   );
   $info['tokens']['current-page']['title'] = array(
-    'name' => t('Path'),
+    'name' => t('Title'),
     'description' => t('The title of the current page.'),
   );
   $info['tokens']['current-page']['path'] = array(
