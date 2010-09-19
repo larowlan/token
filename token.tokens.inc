@@ -94,6 +94,11 @@ function token_token_info() {
     'description' => t("The menu link's parent."),
     'type' => 'menu-link',
   );
+  $itme['tokens']['menu-link']['root'] = array(
+    'name' => t('Root'),
+    'description' => t("The menu link's root."),
+    'type' => 'menu-link',
+  );
 
   // Current page tokens.
   $info['types']['current-page'] = array(
@@ -195,12 +200,19 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
             $replacements[$original] = $sanitize ? check_plain($parent['title']) : $parent['title'];
           }
           break;
+        case 'root';
+          if (!empty($link['p1']) && $root = menu_link_load($link['p1'])) {
+            $replacements[$original] = $sanitize ? check_plain($root['title']) : $root['title'];
+          }
       }
     }
 
     // Chained token relationships.
     if (!empty($link['plid']) && ($parent = menu_link_load($link['plid'])) && $source_tokens = token_find_with_prefix($tokens, 'parent')) {
       $replacements += token_generate('menu-link', $source_tokens, array('menu-link' => $parent), $options);
+    }
+    if (!empty($link['p1']) && ($root = menu_link_load($link['p1'])) && $root_tokens = token_find_with_prefix($tokens, 'root')) {
+      $replacements += token_generate('menu-link', $source_tokens, array('menu-link' => $root), $options);
     }
   }
 
