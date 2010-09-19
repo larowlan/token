@@ -8,7 +8,7 @@ function token_actions_action_info() {
   return array(
     'token_actions_message_action' => array(
       'type' => 'system',
-      'description' => t('Display a tokenized message to the user'),
+      'label' => t('Display a tokenized message to the user'),
       'configurable' => TRUE,
       'hooks' => array(
         'nodeapi' => array('view', 'insert', 'update', 'delete'),
@@ -18,8 +18,8 @@ function token_actions_action_info() {
       ),
     ),
     'token_actions_send_email_action' => array(
-      'description' => t('Send tokenized e-mail'),
       'type' => 'system',
+      'label' => t('Send tokenized e-mail'),
       'configurable' => TRUE,
       'hooks' => array(
         'nodeapi' => array('view', 'insert', 'update', 'delete'),
@@ -29,8 +29,8 @@ function token_actions_action_info() {
       )
     ),
     'token_actions_goto_action' => array(
-      'description' => t('Redirect to a tokenized URL'),
       'type' => 'system',
+      'label' => t('Redirect to a tokenized URL'),
       'configurable' => TRUE,
       'hooks' => array(
         'nodeapi' => array('view', 'insert', 'update', 'delete'),
