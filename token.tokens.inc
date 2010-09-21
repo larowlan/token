@@ -94,7 +94,7 @@ function token_token_info() {
     'description' => t("The menu link's parent."),
     'type' => 'menu-link',
   );
-  $itme['tokens']['menu-link']['root'] = array(
+  $info['tokens']['menu-link']['root'] = array(
     'name' => t('Root'),
     'description' => t("The menu link's root."),
     'type' => 'menu-link',
