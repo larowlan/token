@@ -124,7 +124,7 @@ function token_module_implements_alter(&$implementations, $hook) {
     // Move token.module to get included first since it is responsible for
     // other modules.
     unset($implementations['token']);
-    $implementations = array_merge(array('token' => 'token'), $implementations);
+    $implementations = array_merge(array('token' => 'tokens'), $implementations);
   }
 }
 
@@ -148,13 +148,13 @@ function token_get_info($token_type = NULL) {
     }
     else {
       $token_info = token_info();
-      
+
       // Pre-sort tokens.
       uasort($token_info['types'], 'token_asort_tokens');
       foreach (array_keys($token_info['tokens']) as $type) {
         uasort($token_info['tokens'][$type], 'token_asort_tokens');
       }
-      
+
       // Store info in cache for future use.
       cache_set("token_info:$langcode", $token_info);
     }
