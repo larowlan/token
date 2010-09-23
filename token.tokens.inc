@@ -161,7 +161,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
 
     // Chained token relationships.
-    if (!empty($node->tnid) && ($source_node = node_load($node->tnid)) && $source_tokens = token_find_with_prefix($tokens, 'source')) {
+    if (!empty($node->tnid) && ($source_tokens = token_find_with_prefix($tokens, 'source')) && $source_node = node_load($node->tnid)) {
       $replacements += token_generate('node', $source_tokens, array('node' => $source_node), $options);
     }
   }
@@ -208,10 +208,10 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
 
     // Chained token relationships.
-    if (!empty($link['plid']) && ($parent = menu_link_load($link['plid'])) && $source_tokens = token_find_with_prefix($tokens, 'parent')) {
+    if (!empty($link['plid']) && ($source_tokens = token_find_with_prefix($tokens, 'parent')) && $parent = menu_link_load($link['plid'])) {
       $replacements += token_generate('menu-link', $source_tokens, array('menu-link' => $parent), $options);
     }
-    if (!empty($link['p1']) && ($root = menu_link_load($link['p1'])) && $root_tokens = token_find_with_prefix($tokens, 'root')) {
+    if (!empty($link['p1']) && ($root_tokens = token_find_with_prefix($tokens, 'root')) && $root = menu_link_load($link['p1'])) {
       $replacements += token_generate('menu-link', $source_tokens, array('menu-link' => $root), $options);
     }
   }
