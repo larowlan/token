@@ -28,69 +28,6 @@ function theme_tree_table($variables) {
 }
 
 /**
- * Build a tree array of tokens used for themeing or information.
- *
- * @param $token_type
- *   The token type. Should not be an alias (e.g. use 'user' instead of
- *   'current-user').
- * @param $flat_tree
- *   A boolean if TRUE will only make a flat array of tokens, otherwise
- *   child tokens will be inside the 'children' parameter of a token.
- * @param $show_restricted
- *   A boolean if TRUE will show restricted tokens. Otherwise they will be
- *   hidden. Default is FALSE.
- * @param $recursion_limit
- *   An integer with the maximum number of token levels to recurse.
- * @param $parents
- *   An optional array with the current parents of the tokens.
- */
-function token_build_tree($token_type, $flat_tree = FALSE, $show_restricted = FALSE, $recursion_limit = 4, $parents = array()) {
-  $info = token_get_info();
-  if ($recursion_limit <= 0 || !isset($info['types'][$token_type])) {
-    return array();
-  }
-
-  $tree = array();
-  foreach ($info['tokens'][$token_type] as $token => $token_info) {
-    // Skip restricted tokens if desired (default behavior).
-    if (!$show_restricted && !empty($token_info['restricted'])) {
-      continue;
-    }
-    // Build the raw token string.
-    $token_parents = $parents;
-    if (empty($token_parents)) {
-      // If the parents array is currently empty, assume the token type is its
-      // parent.
-      $token_parents[] = $token_type;
-    }
-    $token_parents[] = $token;
-    if (!empty($token_info['dynamic'])) {
-      $token_parents[] = '?';
-    }
-    $raw_token = '[' . implode(':', $token_parents) . ']';
-    $tree[$raw_token] = $token_info;
-
-    // Add the token's parent as its raw token value.
-    if (!empty($parents)) {
-      $tree[$raw_token]['parent'] = '[' . implode(':', $parents) . ']';
-    }
-
-    // Fetch the child tokens.
-    if (!empty($token_info['type'])) {
-      $children = token_build_tree($token_info['type'], $flat_tree, $show_restricted, $recursion_limit - 1, $token_parents);
-      if ($flat_tree) {
-        $tree = array_merge($tree, $children);
-      }
-      else {
-        $tree[$raw_token]['children'] = $children;
-      }
-    }
-  }
-  
-  return $tree;
-}
-
-/**
  * Provide a 'tree' display of nested tokens.
  *
  * @ingroup themeable
@@ -118,16 +55,29 @@ function theme_token_tree($variables) {
       continue;
     }
     $type_info += array('type' => $type);
-    $parent = array();
 
     if (count($token_types) > 1) {
-      $rows[] = _token_token_tree_format_row($type, $type_info, TRUE);
-      $parent = array($type);
+      $row = _token_token_tree_format_row($type, $type_info, TRUE);
+      unset($row['data']['value']);
+      $rows[] = $row;
     }
 
-    $tree = token_build_tree($type_info['type'], TRUE, $variables['show_restricted'], $variables['recursion_limit'], $parent);
+    $options = array(
+      'flat' => TRUE,
+      'restricted' => $variables['show_restricted'],
+      'depth' => $variables['recursion_limit'],
+    );
+    $tree = token_build_tree($type, $options);
     foreach ($tree as $token => $token_info) {
-      $rows[] = _token_token_tree_format_row($token, $token_info);
+      if (!empty($token_info['restricted']) && empty($variables['show_restricted'])) {
+        continue;
+      }
+      if (count($token_types) > 1 && !isset($token_info['parent'])) {
+        $token_info['parent'] = $type;
+      }
+      $row = _token_token_tree_format_row($token, $token_info);
+      unset($row['data']['value']);
+      $rows[] = $row;
     }
   }
 
@@ -158,6 +108,7 @@ function _token_token_tree_format_row($token, array $token_info, $is_group = FAL
     'data' => array(
       'name' => $token_info['name'],
       'token' => '',
+      'value' => '',
       'description' => $token_info['description'],
     ),
   );
@@ -172,6 +123,9 @@ function _token_token_tree_format_row($token, array $token_info, $is_group = FAL
       'data' => $token,
       'class' => array('token-key'),
     );
+    if (isset($token_info['value'])) {
+      $row['data']['value'] = $token_info['value'];
+    }
     if (!empty($token_info['parent'])) {
       $row['parent'] = _token_clean_css_identifier($token_info['parent']);
     }
@@ -190,6 +144,57 @@ function _token_token_tree_format_row($token, array $token_info, $is_group = FAL
  */
 function _token_clean_css_identifier($id) {
   return drupal_clean_css_identifier('token-' . trim($id, '[]'), array(' ' => '-', '_' => '-', '/' => '-', '[' => '-', ']' => '', ':' => '-'));
+}
+
+/**
+ * Menu callback; prints the available tokens and values for an object.
+ */
+function token_devel_token_object($entity, $object) {
+
+  $token_types = array($entity);
+  $info = token_get_info();
+
+  $header = array(
+    t('Token'),
+    t('Value'),
+  );
+  $rows = array();
+
+  foreach ($info['types'] as $type => $type_info) {
+    if (!in_array($type, $token_types)) {
+      continue;
+    }
+
+    $options = array(
+      'flat' => TRUE,
+      'values' => TRUE,
+      'data' => array($entity => $object),
+    );
+    $tree = token_build_tree($type, $options);
+    foreach ($tree as $token => $token_info) {
+      if (!empty($token_info['restricted'])) {
+        continue;
+      }
+      if (!isset($token_info['value']) && !empty($token_info['parent']) && !isset($tree[$token_info['parent']]['value'])) {
+        continue;
+      }
+      $row = _token_token_tree_format_row($token, $token_info);
+      unset($row['data']['description']);
+      unset($row['data']['name']);
+      $rows[] = $row;
+    }
+  }
+
+  drupal_add_js(drupal_get_path('module', 'token') . '/token.js');
+  drupal_add_css(drupal_get_path('module', 'token') . '/token.css');
+
+  $table_options = array(
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => array('class' => array('token-tree')),
+    'empty' => t('No tokens available.'),
+  );
+  return theme('tree_table', $table_options);
 }
 
 function token_autocomplete() {
@@ -236,26 +241,33 @@ function token_autocomplete_type($string = '') {
   drupal_json_output($matches);
 }
 
-function token_autocomplete_token($type, $string = '') {
-  $token_info = token_info();
-  $tokens = $token_info['tokens'][$type];
+function token_autocomplete_token($token_type) {
+  $args = func_get_args();
+  array_shift($args);
+  $string = trim(implode('/', $args));
+  $string = substr($string, strrpos($string, '['));
+
+  $token_type = $token_type['type'];
   $matches = array();
 
-  foreach ($tokens as $token => $token_info) {
-    if (!$string || strpos($token, $string) === 0) {
-      // Check if the token can be continued.
-      $token_key = "[{$type}:{$token}" . (empty($token_info['type']) ? ']' : ':');
-      $matches[$token_key] = levenshtein($token, $string);
+  if (!drupal_strlen($string)) {
+    $matches["[{$token_type}:"] = 0;
+  }
+  else {
+    $depth = max(1, substr_count($string, ':'));
+    $tree = token_build_tree($token_type, array('flat' => TRUE, 'depth' => $depth));
+    foreach (array_keys($tree) as $token) {
+      if (strpos($token, $string) === 0) {
+        $matches[$token] = levenshtein($token, $string);
+        if (isset($tree[$token]['children'])) {
+          $token = rtrim($token, ':]') . ':';
+          $matches[$token] = levenshtein($token, $string);
+        }
+      }
     }
   }
 
-  if ($string) {
-    asort($matches);
-  }
-  else {
-    ksort($matches);
-  }
-
+  asort($matches);
   $matches = drupal_map_assoc(array_keys($matches));
   drupal_json_output($matches);
 }
