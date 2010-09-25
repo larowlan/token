@@ -20,6 +20,13 @@ function token_help($path, $arg) {
 }
 
 /**
+ * Return an array of the core modules supported by token.module.
+ */
+function _token_core_supported_modules() {
+  return array('book', 'menu');
+}
+
+/**
  * Implements hook_menu().
  */
 function token_menu() {
@@ -180,8 +187,7 @@ function token_entity_info_alter(&$info) {
  */
 function token_module_implements_alter(&$implementations, $hook) {
   if ($hook == 'tokens' || $hook == 'token_info') {
-    $modules = array('book', 'menu');
-    foreach ($modules as $module) {
+    foreach (_token_core_supported_modules() as $module) {
       if (module_exists($module)) {
         $implementations[$module] = TRUE;
       }
@@ -579,4 +585,38 @@ function _token_build_tree($token_type, array $options) {
   }
 
   return $tree;
+}
+
+/**
+ * Find tokens that have been declared twice by different modules.
+ */
+function token_find_duplicate_tokens() {
+  $all_tokens = array();
+
+  foreach (module_implements('token_info') as $module) {
+    $module_token_info = module_invoke($module, 'token_info');
+    if (in_array($module, _token_core_supported_modules())) {
+      $module = 'token';
+    }
+    if (!empty($module_token_info['types'])) {
+      foreach (array_keys($module_token_info['types']) as $type) {
+        $all_tokens['type:' . $type][] = $module;
+      }
+    }
+    if (!empty($module_token_info['tokens'])) {
+      foreach ($module_token_info['tokens'] as $type => $tokens) {
+        foreach (array_keys($tokens) as $token) {
+          $all_tokens[$type . ':' . $token][] = $module;
+        }
+      }
+    }
+  }
+
+  foreach ($all_tokens as $token => $modules) {
+    if (count($modules) < 2) {
+      unset($all_tokens[$token]);
+    }
+  }
+
+  return $all_tokens;
 }
