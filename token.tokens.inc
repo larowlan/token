@@ -245,7 +245,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
   }
 
   // Entity tokens.
-  if (!empty($data[$type]) && $entity_type = _token_get_entity_from_token_type($type)) {
+  if (!empty($data[$type]) && $entity_type = token_get_entity_mapping('token', $type)) {
     $entity = $data[$type];
 
     // Sometimes taxonomy terms are not properly loaded.
@@ -256,6 +256,8 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
+        // @todo Support entity:label
+        // @todo Support entity:url
         case 'path':
           if ($uri = entity_uri($entity_type, $entity)) {
             $alias = drupal_get_path_alias($uri['path'], $language_code);
@@ -264,6 +266,12 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           break;
       }
     }
+  }
+
+  // If $type is a token type, $data[$type] is empty but $data[$entity_type] is not, re-run token replacements.
+  if (empty($data[$type]) && ($entity_type = token_get_entity_mapping('token', $type)) && $entity_type != $type && !empty($data[$entity_type])) {
+    $data[$type] = $data[$entity_type];
+    $replacements = module_invoke_all('tokens', $type, $tokens, $data, $options);
   }
 
   return $replacements;

@@ -149,40 +149,30 @@ function _token_clean_css_identifier($id) {
 /**
  * Menu callback; prints the available tokens and values for an object.
  */
-function token_devel_token_object($entity, $object) {
-
-  $token_types = array($entity);
-  $info = token_get_info();
-
+function token_devel_token_object($entity_type, $entity) {
   $header = array(
     t('Token'),
     t('Value'),
   );
   $rows = array();
 
-  foreach ($info['types'] as $type => $type_info) {
-    if (!in_array($type, $token_types)) {
+  $options = array(
+    'flat' => TRUE,
+    'values' => TRUE,
+    'data' => array($entity_type => $entity),
+  );
+  $tree = token_build_tree($entity_type, $options);
+  foreach ($tree as $token => $token_info) {
+    if (!empty($token_info['restricted'])) {
       continue;
     }
-
-    $options = array(
-      'flat' => TRUE,
-      'values' => TRUE,
-      'data' => array($entity => $object),
-    );
-    $tree = token_build_tree($type, $options);
-    foreach ($tree as $token => $token_info) {
-      if (!empty($token_info['restricted'])) {
-        continue;
-      }
-      if (!isset($token_info['value']) && !empty($token_info['parent']) && !isset($tree[$token_info['parent']]['value'])) {
-        continue;
-      }
-      $row = _token_token_tree_format_row($token, $token_info);
-      unset($row['data']['description']);
-      unset($row['data']['name']);
-      $rows[] = $row;
+    if (!isset($token_info['value']) && !empty($token_info['parent']) && !isset($tree[$token_info['parent']]['value'])) {
+      continue;
     }
+    $row = _token_token_tree_format_row($token, $token_info);
+    unset($row['data']['description']);
+    unset($row['data']['name']);
+    $rows[] = $row;
   }
 
   drupal_add_js(drupal_get_path('module', 'token') . '/token.js');

@@ -74,7 +74,7 @@ function token_menu() {
     $items['taxonomy/term/%taxonomy_term/devel/token'] = array(
       'title' => 'Tokens',
       'page callback' => 'token_devel_token_object',
-      'page arguments' => array('term', 2),
+      'page arguments' => array('taxonomy_term', 2),
       'access arguments' => array('access devel information'),
       'type' => MENU_LOCAL_TASK,
       'file' => 'token.pages.inc',
@@ -138,8 +138,8 @@ function token_library() {
 /**
  * Return an array of entity type to token type mappings.
  */
-function _token_entity_mappings() {
-  return array(
+function token_get_entity_mapping($value_type = 'token', $value = NULL) {
+  $mapping = array(
     'comment' => 'comment',
     'node' => 'node',
     'file' => 'file',
@@ -147,21 +147,15 @@ function _token_entity_mappings() {
     'taxonomy_vocabulary' => 'vocabulary',
     'user' => 'user',
   );
-}
 
-/**
- * Given a token type, return its corresponding entity type if available.
- *
- * @param $token_type
- *   A token type.
- * @return
- *   An entity type, or NULL if not available.
- */
-function _token_get_entity_from_token_type($token_type) {
-  $token_entity_types = _token_entity_mappings();
-  $token_entity_types = array_flip($token_entity_types);
-  if (isset($token_entity_types[$token_type])) {
-    return $token_entity_types[$token_type];
+  if (!isset($value)) {
+    return $mapping;
+  }
+  elseif ($value_type == 'token') {
+    return array_search($value, $mapping);
+  }
+  elseif ($value_type == 'entity') {
+    return isset($mapping[$value]) ? $mapping[$value] : FALSE;
   }
 }
 
@@ -172,7 +166,7 @@ function _token_get_entity_from_token_type($token_type) {
  * map them to the proper type. This is purely for other modules' benefit.
  */
 function token_entity_info_alter(&$info) {
-  $entity_token_types = _token_entity_mappings();
+  $entity_token_types = token_get_entity_mapping();
   foreach ($entity_token_types as $entity_type => $token_type) {
     if (isset($info[$entity_type])) {
       $info[$entity_type]['token type'] = $token_type;
@@ -220,8 +214,9 @@ function token_get_info($token_type = NULL) {
   $token_info = &$drupal_static_fast['token_info'];
 
   if (empty($token_info)) {
-    $langcode = $language->language;
-    if ($cache = cache_get("info:$langcode", 'cache_token')) {
+    $cid = "info:{$language->language}";
+
+    if ($cache = cache_get($cid, 'cache_token')) {
       $token_info = $cache->data;
     }
     else {
@@ -236,11 +231,13 @@ function token_get_info($token_type = NULL) {
       // Add a 'type' value to each token type so we can properly use
       // token_type_load().
       foreach (array_keys($token_info['types']) as $type_key) {
-        $token_info['types'][$type_key]['type'] = $type_key;
+        if (!isset($token_info['types'][$type_key]['type'])) {
+          $token_info['types'][$type_key]['type'] = $type_key;
+        }
       }
 
       // Store info in cache for future use.
-      cache_set("info:$langcode", $token_info, 'cache_token');
+      cache_set($cid, $token_info, 'cache_token');
     }
   }
 
@@ -448,8 +445,7 @@ function token_form_user_admin_settings_alter(&$form, &$form_state) {
  * Build a tree array of tokens used for themeing or information.
  *
  * @param $token_type
- *   The token type. Should not be an alias (e.g. use 'user' instead of
- *   'current-user').
+ *   The token type.
  * @param $flat_tree
  *   A boolean if TRUE will only make a flat array of tokens, otherwise
  *   child tokens will be inside the 'children' parameter of a token.
@@ -477,6 +473,11 @@ function token_build_tree($token_type, array $options = array()) {
 
   // Do not allow past the maximum token information depth.
   $options['depth'] = min($options['depth'], TOKEN_MAX_DEPTH);
+
+  // If $token_type is an entity, make sure we are using the actual token type.
+  if ($entity_token_type = token_get_entity_mapping('entity', $token_type)) {
+    $token_type = $entity_token_type;
+  }
 
   $tree_cid = "tree:{$token_type}:{$language->language}:{$options['depth']}";
 
@@ -551,7 +552,8 @@ function _token_build_tree($token_type, array $options) {
   }
 
   $tree = array();
-  foreach ($info['tokens'][$token_type] as $token => $token_info) {
+  $root_token_type = $info['types'][$token_type]['type'];
+  foreach ($info['tokens'][$root_token_type] as $token => $token_info) {
     // Build the raw token string.
     $token_parents = $options['parents'];
     if (empty($token_parents)) {
