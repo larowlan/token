@@ -15,6 +15,8 @@ function token_token_info_alter(&$info) {
   // @todo Remove [node:tnid] now that we have [node:source:nid]?
   //unset($info['tokens']['node']['tnid']);
 
+  // @todo Change [node:type-name] to [node:machine-name]?
+
   // Add [token:path] tokens for any URI-able entities.
   $entities = entity_get_info();
   foreach ($entities as $entity => $entity_info) {
@@ -37,6 +39,7 @@ function token_token_info_alter(&$info) {
  * Implements hook_token_info().
  */
 function token_token_info() {
+  // Node tokens.
   $info['tokens']['node']['source'] = array(
     'name' => t('Translation source node'),
     'description' => t("The source node for this current node's translation set."),
@@ -46,6 +49,23 @@ function token_token_info() {
     'name' => t('Revision log message'),
     'description' => t('The explanation of the most recent changes made to the node.'),
   );
+
+  // Taxonomy term and vocabulary tokens.
+  if (module_exists('taxonomy')) {
+    $info['tokens']['term']['edit-url'] = array(
+      'name' => t('Edit URL'),
+      'description' => t("The URL of the taxonomy term's edit page."),
+    );
+
+    $info['tokens']['vocabulary']['machine-name'] = array(
+      'name' => t('Machine-readable name'),
+      'description' => t('The unique machine-readable name of the vocabulary.'),
+    );
+    $info['tokens']['vocabulary']['edit-url'] = array(
+      'name' => t('Edit URL'),
+      'description' => t("The URL of the vocabulary's edit page."),
+    );
+  }
 
   // Add information on the restricted user tokens.
   $info['tokens']['user']['cancel-url'] = array(
@@ -59,7 +79,7 @@ function token_token_info() {
     'restricted' => TRUE,
   );
 
-  // Menu links (work regardless if menu.module is enabled or not).
+  // Menu link tokens (work regardless if menu module is enabled or not).
   $info['types']['menu-link'] = array(
     'name' => t('Menu links'),
     'description' => t('Tokens related to menu links.'),
@@ -163,6 +183,37 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     // Chained token relationships.
     if (!empty($node->tnid) && ($source_tokens = token_find_with_prefix($tokens, 'source')) && $source_node = node_load($node->tnid)) {
       $replacements += token_generate('node', $source_tokens, array('node' => $source_node), $options);
+    }
+  }
+
+  // Taxonomy term tokens.
+  if ($type == 'term' && !empty($data['term'])) {
+    $term = $data['term'];
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'edit-url':
+          $replacements[$original] = url("taxonomy/term/{$term->tid}/edit", $url_options);
+          break;
+      }
+    }
+  }
+
+  // Vocabulary tokens.
+  if ($type == 'vocabulary' && !empty($data['vocabulary'])) {
+    $vocabulary = $data['vocabulary'];
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'machine-name':
+          // Vocabulary machine names cannot have XSS-capable characters so
+          // there is no need to escape it.
+          $replacements[$original] = $vocabulary->machine_name;
+          break;
+        case 'edit-url':
+          $replacements[$original] = url("admin/structure/taxonomy/{$vocabulary->machine_name}/edit", $url_options);
+          break;
+      }
     }
   }
 
