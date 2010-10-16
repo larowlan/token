@@ -77,6 +77,12 @@ function token_token_info() {
     );
   }
 
+  // File tokens.
+  $info['tokens']['file']['extension'] = array(
+    'name' => t('Extension'),
+    'description' => t('The extenion of the file.'),
+  );
+
   // Add information on the restricted user tokens.
   $info['tokens']['user']['cancel-url'] = array(
     'name' => t('Account cancellation URL'),
@@ -233,6 +239,19 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
   }
 
+  if ($type == 'file' && !empty($data['file'])) {
+    $file = $data['file'];
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'extension':
+          $extension = pathinfo($file->filename, PATHINFO_EXTENSION);
+          $replacements[$original] = $sanitize ? check_plain($extension) : $extension;
+          break;
+      }
+    }
+  }
+
   // Menu link tokens.
   if ($type == 'menu-link' && !empty($data['menu-link'])) {
     $link = (array) $data['menu-link'];
@@ -326,7 +345,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
         // @todo Support entity:label
         // @todo Support entity:url
         case 'path':
-          if ($uri = entity_uri($entity_type, $entity)) {
+          if ($uri = entity_uri($entity_type, $entity) && $entity_type != 'file') {
             $alias = drupal_get_path_alias($uri['path'], $language_code);
             $replacements[$original] = $sanitize ? check_plain($alias) : $alias;
           }
