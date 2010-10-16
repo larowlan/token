@@ -10,8 +10,18 @@
  * Implements hook_token_info_alter().
  */
 function token_token_info_alter(&$info) {
+  // Force 'date' type tokens to require input and add a 'current-date' type.
+  // @todo Remove when http://drupal.org/node/943028 is fixed.
+  $info['types']['date']['needs-data'] = 'date';
+  $info['types']['current-date'] = array(
+    'name' => t('Current date'),
+    'description' => t('Tokens related to the current date and time.'),
+    'type' => 'date',
+  );
+
   // Add a 'dynamic' key to any tokens that have chained but dynamic tokens.
   $info['tokens']['date']['custom']['dynamic'] = TRUE;
+
   // @todo Remove [node:tnid] now that we have [node:source:nid]?
   //unset($info['tokens']['node']['tnid']);
 
@@ -161,6 +171,12 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
   }
 
   $sanitize = !empty($options['sanitize']);
+
+  // Current date tokens.
+  // @todo Remove when http://drupal.org/node/943028 is fixed.
+  if ($type == 'current-date') {
+    $replacements += token_generate('date', $tokens, array('date' => REQUEST_TIME), $options);
+  }
 
   // Node tokens.
   if ($type == 'node' && !empty($data['node'])) {
