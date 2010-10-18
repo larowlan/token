@@ -80,7 +80,7 @@ function token_token_info() {
   // File tokens.
   $info['tokens']['file']['extension'] = array(
     'name' => t('Extension'),
-    'description' => t('The extenion of the file.'),
+    'description' => t('The extension of the file.'),
   );
 
   // Add information on the restricted user tokens.
