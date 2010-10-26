@@ -282,20 +282,23 @@ function token_get_global_token_types() {
 /**
  * Validate an tokens in raw text based on possible contexts.
  *
- * @param $text
- *   A string with the raw text containing the raw tokens.
+ * @param $value
+ *   A string with the raw text containing the raw tokens, or an array of
+ *   tokens from token_scan().
  * @param $tokens
  *   An array of token types that will be used when token replacement is
  *   performed.
  * @return
  *   An array with the invalid tokens in their original raw forms.
  */
-function token_get_invalid_tokens_by_context($text, $valid_types = array()) {
+function token_get_invalid_tokens_by_context($value, $valid_types = array()) {
   // Add the token types that are always valid in global context.
   $valid_types = array_merge($valid_types, token_get_global_token_types());
 
   $invalid_tokens = array();
-  foreach (token_scan($text) as $type => $tokens) {
+  $value_tokens = is_string($value) ? token_scan($value) : $value;
+  
+  foreach ($value_tokens as $type => $tokens) {
     if (!in_array($type, $valid_types)) {
       // If the token type is not a valid context, its tokens are invalid.
       $invalid_tokens = array_merge($invalid_tokens, array_values($tokens));
@@ -365,18 +368,54 @@ function token_get_invalid_tokens($type, $tokens) {
  *   '#type' => 'textfield',
  *   '#title' => t('Some text to token-ize that has a node context.'),
  *   '#default_value' => 'The title of this node is [node:title].',
- *   '#element_validate' => array('token_element_validate_token_context'),
+ *   '#element_validate' => array('token_element_validate'),
  *   '#token_types' => array('node'),
+ *   '#min_tokens' => 1,
+ *   '#max_tokens' => 10,
  * );
  * @endcode
  */
-function token_element_validate_token_context(&$element, &$form_state) {
+function token_element_validate(&$element, &$form_state) {
   $value = isset($element['#value']) ? $element['#value'] : $element['#default_value'];
-  $invalid_tokens = token_get_invalid_tokens_by_context($value, $element['#token_types']);
-  if ($invalid_tokens) {
-    form_error($element, t('The %element-title is using the following invalid tokens: @invalid-tokens.', array('%element-title' => $element['#title'], '@invalid-tokens' => implode(', ', $invalid_tokens))));
+  
+  if (!drupal_strlen($value)) {
+    // Empty value needs no further validation since the element should depend
+    // on using the '#required' FAPI property.
+    return $element;
   }
+  
+  $tokens = token_scan($value);
+  
+  // Validate if an element must have a minimum number of tokens.
+  if (isset($element['#min_tokens']) && count($tokens) < $element['#min_tokens']) {
+    // @todo Change this error message to include the minimum number.
+    $error = format_plural($element['#min_tokens'], 'The %element-title cannot contain fewer than one token.', 'The %element-title must contain at least @count tokens.', array('%element-title' => $element['#title']));
+    form_error($element, $error);
+  }
+  
+  // Validate if an element must have a maximum number of tokens.
+  if (isset($element['#max_tokens']) && count($tokens) > $element['#max_tokens']) {
+    // @todo Change this error message to include the maximum number.
+    $error = format_plural($element['#max_tokens'], 'The %element-title must contain as most one token.', 'The %element-title must contain at most @count tokens.', array('%element-title' => $element['#title']));
+    form_error($element, $error);
+  }
+  
+  // Check if the field defines specific token types.
+  if (!empty($element['#token_types'])) {
+    $invalid_tokens = token_get_invalid_tokens_by_context($tokens, $element['#token_types']);
+    if ($invalid_tokens) {
+      form_error($element, t('The %element-title is using the following invalid tokens: @invalid-tokens.', array('%element-title' => $element['#title'], '@invalid-tokens' => implode(', ', $invalid_tokens))));
+    }
+  }
+  
   return $element;
+}
+
+/**
+ * Deprecated. Use token_element_validate() instead.
+ */
+function token_element_validate_token_context(&$element, &$form_state) {
+  return token_element_validate($element, $form_state);
 }
 
 /**
