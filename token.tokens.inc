@@ -290,6 +290,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           if (!empty($link['p1']) && $root = menu_link_load($link['p1'])) {
             $replacements[$original] = $sanitize ? check_plain($root['title']) : $root['title'];
           }
+          break;
       }
     }
 

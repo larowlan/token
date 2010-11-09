@@ -170,7 +170,7 @@ class TokenTaxonomyTestCase extends TokenTestHelper {
 
   public static function getInfo() {
     return array(
-      'name' => 'Taxonomy token tests',
+      'name' => 'Taxonomy and vocabulary token tests',
       'description' => 'Test the taxonomy tokens.',
       'group' => 'Token',
     );
@@ -179,17 +179,38 @@ class TokenTaxonomyTestCase extends TokenTestHelper {
   function setUp() {
     parent::setUp(array('taxonomy'));
     // Use the default 'Tags' taxonomy included with the standard install profile.
-    $tags_vid = db_query("SELECT vid FROM {taxonomy_vocabulary} WHERE name = 'Tags'")->fetchField();
-    $this->vocab = taxonomy_vocabulary_load($tags_vid);
-    $this->vocab->name = 'tags';
+    $this->vocab = taxonomy_vocabulary_machine_name_load('tags');
   }
 
+  /**
+   * Test the additional taxonomy term tokens.
+   */
   function testTaxonomyTokens() {
-    $term1 = $this->addTerm($this->vocab, array('path' => array('alias' => 'parent-term')));
-    $term2 = $this->addTerm($this->vocab, array('parent' => $term1->tid));
+    $parent_term = $this->addTerm($this->vocab, array('path' => array('alias' => 'parent-term')));
+    $parent_term_tokens = array(
+      'path' => 'parent-term',
+      'edit-url' => url("taxonomy/term/{$parent_term->tid}/edit", array('absolute' => TRUE)),
+    );
+    $this->assertTokens('term', $parent_term, $parent_term_tokens);
 
-    $this->assertToken('term', $term1, 'path', 'parent-term');
-    $this->assertToken('term', $term2, 'path', 'taxonomy/term/'. $term2->tid);
+    $child_term = $this->addTerm($this->vocab, array('parent' => $parent_term->tid));
+    $child_term_tokens = array(
+      'path' => "taxonomy/term/{$child_term->tid}",
+      'edit-url' => url("taxonomy/term/{$child_term->tid}/edit", array('absolute' => TRUE)),
+    );
+    $this->assertTokens('term', $child_term, $child_term_tokens);
+  }
+
+  /**
+   * Test the additional vocabulary tokens.
+   */
+  function testVocabularyTokens() {
+    $vocabulary = $this->vocab;
+    $tokens = array(
+      'machine-name' => 'tags',
+      'edit-url' => url("admin/structure/taxonomy/{$vocabulary->machine_name}/edit", array('absolute' => TRUE)),
+    );
+    $this->assertTokens('vocabulary', $vocabulary, $tokens);
   }
 
   function addVocabulary(array $vocabulary = array()) {
