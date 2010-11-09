@@ -345,7 +345,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
         // @todo Support entity:label
         // @todo Support entity:url
         case 'path':
-          if ($uri = entity_uri($entity_type, $entity) && $entity_type != 'file') {
+          if ($uri = entity_uri($entity_type, $entity)) {
             $alias = drupal_get_path_alias($uri['path'], $language_code);
             $replacements[$original] = $sanitize ? check_plain($alias) : $alias;
           }
