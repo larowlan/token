@@ -137,16 +137,22 @@ function token_library() {
 
 /**
  * Return an array of entity type to token type mappings.
+ *
+ * Why do we need this? Because when the token API was moved to core we did not
+ * re-use the entity type as the base name for taxonomy terms and vocabulary
+ * tokens.
+ *
+ * @see token_entity_info_alter()
+ * @see http://drupal.org/node/737726
  */
 function token_get_entity_mapping($value_type = 'token', $value = NULL) {
-  $mapping = array(
-    'comment' => 'comment',
-    'node' => 'node',
-    'file' => 'file',
-    'taxonomy_term' => 'term',
-    'taxonomy_vocabulary' => 'vocabulary',
-    'user' => 'user',
-  );
+  $mapping = &drupal_static(__FUNCTION__, array());
+
+  if (empty($mapping)) {
+    foreach (entity_get_info() as $entity_type => $info) {
+      $mapping[$entity_type] = !empty($info['token type']) ? $info['token type'] : $entity_type;
+    }
+  }
 
   if (!isset($value)) {
     return $mapping;
@@ -162,14 +168,30 @@ function token_get_entity_mapping($value_type = 'token', $value = NULL) {
 /**
  * Implements hook_entity_info_alter().
  *
- * Since some token types to do not match their entity type names, we have to
+ * Because some token types to do not match their entity type names, we have to
  * map them to the proper type. This is purely for other modules' benefit.
+ *
+ * @see token_get_entity_mapping()
+ * @see http://drupal.org/node/737726
  */
 function token_entity_info_alter(&$info) {
-  $entity_token_types = token_get_entity_mapping();
-  foreach ($entity_token_types as $entity_type => $token_type) {
-    if (isset($info[$entity_type])) {
-      $info[$entity_type]['token type'] = $token_type;
+  foreach (array_keys($info) as $entity_type) {
+    if (!empty($info[$entity_type]['token type'])) {
+      // If the entity's token type is already defined, great!
+      continue;
+    }
+
+    // Fill in default token types for entities.
+    switch ($entity_type) {
+      case 'taxonomy_term':
+      case 'taxonomy_vocabulary':
+        // Stupid taxonomy token types...
+        $info[$entity_type]['token type'] = str_replace('taxonomy_', '', $entity_type);
+        break;
+      default:
+        // By default the token type is the same as the entity type.
+        $info[$entity_type]['token type'] = $entity_type;
+        break;
     }
   }
 }
@@ -297,7 +319,7 @@ function token_get_invalid_tokens_by_context($value, $valid_types = array()) {
 
   $invalid_tokens = array();
   $value_tokens = is_string($value) ? token_scan($value) : $value;
-  
+
   foreach ($value_tokens as $type => $tokens) {
     if (!in_array($type, $valid_types)) {
       // If the token type is not a valid context, its tokens are invalid.
@@ -377,29 +399,29 @@ function token_get_invalid_tokens($type, $tokens) {
  */
 function token_element_validate(&$element, &$form_state) {
   $value = isset($element['#value']) ? $element['#value'] : $element['#default_value'];
-  
+
   if (!drupal_strlen($value)) {
     // Empty value needs no further validation since the element should depend
     // on using the '#required' FAPI property.
     return $element;
   }
-  
+
   $tokens = token_scan($value);
-  
+
   // Validate if an element must have a minimum number of tokens.
   if (isset($element['#min_tokens']) && count($tokens) < $element['#min_tokens']) {
     // @todo Change this error message to include the minimum number.
     $error = format_plural($element['#min_tokens'], 'The %element-title cannot contain fewer than one token.', 'The %element-title must contain at least @count tokens.', array('%element-title' => $element['#title']));
     form_error($element, $error);
   }
-  
+
   // Validate if an element must have a maximum number of tokens.
   if (isset($element['#max_tokens']) && count($tokens) > $element['#max_tokens']) {
     // @todo Change this error message to include the maximum number.
     $error = format_plural($element['#max_tokens'], 'The %element-title must contain as most one token.', 'The %element-title must contain at most @count tokens.', array('%element-title' => $element['#title']));
     form_error($element, $error);
   }
-  
+
   // Check if the field defines specific token types.
   if (!empty($element['#token_types'])) {
     $invalid_tokens = token_get_invalid_tokens_by_context($tokens, $element['#token_types']);
@@ -407,7 +429,7 @@ function token_element_validate(&$element, &$form_state) {
       form_error($element, t('The %element-title is using the following invalid tokens: @invalid-tokens.', array('%element-title' => $element['#title'], '@invalid-tokens' => implode(', ', $invalid_tokens))));
     }
   }
-  
+
   return $element;
 }
 

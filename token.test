@@ -233,3 +233,24 @@ class TokenTaxonomyTestCase extends TokenTestHelper {
     return $term;
   }
 }
+
+class TokenEntityTestCase extends TokenTestHelper {
+  public static function getInfo() {
+    return array(
+      'name' => 'Entity token tests',
+      'description' => 'Test the entity tokens.',
+      'group' => 'Token',
+    );
+  }
+
+  function testEntityMapping() {
+    $this->assertIdentical(token_get_entity_mapping('token', 'node'), 'node');
+    $this->assertIdentical(token_get_entity_mapping('token', 'term'), 'taxonomy_term');
+    $this->assertIdentical(token_get_entity_mapping('token', 'vocabulary'), 'taxonomy_vocabulary');
+    $this->assertIdentical(token_get_entity_mapping('token', 'invalid'), FALSE);
+    $this->assertIdentical(token_get_entity_mapping('entity', 'node'), 'node');
+    $this->assertIdentical(token_get_entity_mapping('entity', 'taxonomy_term'), 'term');
+    $this->assertIdentical(token_get_entity_mapping('entity', 'taxonomy_vocabulary'), 'vocabulary');
+    $this->assertIdentical(token_get_entity_mapping('entity', 'invalid'), FALSE);
+  }
+}

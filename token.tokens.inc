@@ -355,7 +355,8 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
   }
 
-  // If $type is a token type, $data[$type] is empty but $data[$entity_type] is not, re-run token replacements.
+  // If $type is a token type, $data[$type] is empty but $data[$entity_type] is
+  // not, re-run token replacements.
   if (empty($data[$type]) && ($entity_type = token_get_entity_mapping('token', $type)) && $entity_type != $type && !empty($data[$entity_type])) {
     $data[$type] = $data[$entity_type];
     $replacements += module_invoke_all('tokens', $type, $tokens, $data, $options);
