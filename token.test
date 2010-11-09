@@ -243,6 +243,10 @@ class TokenEntityTestCase extends TokenTestHelper {
     );
   }
 
+  function setUp() {
+    parent::setUp(array('taxonomy'));
+  }
+
   function testEntityMapping() {
     $this->assertIdentical(token_get_entity_mapping('token', 'node'), 'node');
     $this->assertIdentical(token_get_entity_mapping('token', 'term'), 'taxonomy_term');
@@ -252,5 +256,22 @@ class TokenEntityTestCase extends TokenTestHelper {
     $this->assertIdentical(token_get_entity_mapping('entity', 'taxonomy_term'), 'term');
     $this->assertIdentical(token_get_entity_mapping('entity', 'taxonomy_vocabulary'), 'vocabulary');
     $this->assertIdentical(token_get_entity_mapping('entity', 'invalid'), FALSE);
+
+    // Test that when we send the mis-matched entity type into token_replace()
+    // that we still get the tokens replaced.
+    $vocabulary = taxonomy_vocabulary_machine_name_load('tags');
+    $term = $this->addTerm($vocabulary);
+    $this->assertIdentical(token_replace('[vocabulary:name]', array('taxonomy_vocabulary' => $vocabulary)), $vocabulary->name);
+    $this->assertIdentical(token_replace('[term:name][term:vocabulary:name]', array('taxonomy_term' => $term)), $term->name . $vocabulary->name);
+  }
+
+  function addTerm(stdClass $vocabulary, array $term = array()) {
+    $term += array(
+      'name' => drupal_strtolower($this->randomName(5)),
+      'vid' => $vocabulary->vid,
+    );
+    $term = (object) $term;
+    taxonomy_term_save($term);
+    return $term;
   }
 }
