@@ -28,6 +28,14 @@ class TokenTestHelper extends DrupalWebTestCase {
     }
   }
 
+  function assertNoTokens($type, $object, array $tokens, array $options = array()) {
+    $token_input = drupal_map_assoc($tokens);
+    $values = token_generate($type, $token_input, array($type => $object), $options);
+    foreach ($tokens as $token) {
+      $this->assertTrue(!isset($values[$token]), t("Token value for [@type:@token] was not generated.", array('@type' => $type, '@token' => $token)));
+    }
+  }
+
   function saveAlias($source, $alias, $language = LANGUAGE_NONE) {
     $alias = array(
       'source' => $source,
@@ -273,5 +281,136 @@ class TokenEntityTestCase extends TokenTestHelper {
     $term = (object) $term;
     taxonomy_term_save($term);
     return $term;
+  }
+}
+
+/**
+ * Test the profile tokens.
+ */
+class TokenProfileTestCase extends TokenTestHelper {
+  private $account;
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Profile token tests',
+      'description' => 'Test the profile tokens.',
+      'group' => 'Token',
+    );
+  }
+
+  function setUp() {
+    parent::setUp(array('profile'));
+    $this->account = $this->drupalCreateUser(array('administer users'));
+    $this->drupalLogin($this->account);
+  }
+
+  /**
+   * Test the profile tokens.
+   */
+  function testProfileTokens() {
+    $field_types = _profile_field_types();
+    foreach (array_keys($field_types) as $field_type) {
+      $field = array();
+      switch ($field_type) {
+        case 'checkbox':
+          $field['title'] = 'This is a checkbox';
+          break;
+        case 'selection':
+          $field['options'] = implode("\n", array('Red', 'Blue', 'Green'));
+          break;
+      }
+      $this->addProfileField($field_type, $field);
+    }
+
+    // Submit the profile fields for the user.
+    $edit = array(
+      'profile_textfield' => 'This is a text field',
+      'profile_textarea' => "First paragraph.\n\nSecond paragraph.",
+      'profile_checkbox' => TRUE,
+      'profile_selection' => 'Red',
+      'profile_list' => 'Drupal, Joomla',
+      'profile_url' => 'http://www.example.com/',
+      'profile_date[month]' => 5,
+      'profile_date[day]' => 20,
+      'profile_date[year]' => 1984,
+    );
+    $this->drupalPost("user/{$this->account->uid}/edit/SimpleTest", $edit, 'Save');
+    $account = user_load($this->account->uid, TRUE);
+
+    // Test the profile token values.
+    $tokens = array(
+      'profile-textfield' => 'This is a text field',
+      'profile-textarea' => "<p>First paragraph.</p>\n<p>Second paragraph.</p>\n",
+      'profile-checkbox' => 'This is a checkbox',
+      'profile-selection' => 'Red',
+      'profile-list' => 'Drupal, Joomla',
+      'profile-url' => 'http://www.example.com/',
+      'profile-date' => format_date(453859200, 'medium', '', NULL),
+      'profile-date:raw' => '453859200',
+      'profile-date:custom:Y' => '1984',
+    );
+    $this->assertTokens('user', $account, $tokens);
+
+    // 'Un-select' the checkbox and select profile fields.
+    $edit = array(
+      'profile_checkbox' => FALSE,
+      'profile_selection' => '0',
+    );
+    $this->drupalPost("user/{$this->account->uid}/edit/SimpleTest", $edit, 'Save');
+    $account = user_load($this->account->uid, TRUE);
+
+    // The checkbox and select profile tokens should no longer return a value.
+    $no_tokens = array(
+      'profile-checkbox',
+      'profile-selection',
+    );
+    $this->assertNoTokens('user', $account, $no_tokens);
+  }
+
+  /**
+   * Add a profile field.
+   *
+   * @param $type
+   *   The profile field type.
+   * @param $field
+   *   (optional) An array of the profile field properties.
+   *
+   * @return
+   *   The saved profile field record object.
+   *
+   * @see drupal_form_submit()
+   */
+  function addProfileField($type, array $field = array()) {
+    $field += array(
+      'type' => $type,
+      'category' => 'SimpleTest',
+      'title' => $this->randomName(8),
+      'name' => 'profile_' . $type,
+      'explanation' => $this->randomName(50),
+      'autocomplete' => 0,
+      'required' => 0,
+      'register' => 0,
+    );
+
+    // Submit the profile field using drupal_form_submit().
+    $form_state = array();
+    $form_state['values'] = $field;
+    $form_state['values']['op'] = 'Save field';
+    $form_state['build_info']['args'] = array($type);
+    drupal_form_submit('profile_field_form', $form_state);
+
+    // Verify the profile field was created successfully.
+    $saved_field = db_query("SELECT * FROM {profile_field} WHERE type = :type AND name = :name", array(':type' => $type, ':name' => $field['name']))->fetchObject();
+    $this->assertTrue($saved_field, t('Profile field @name created.', array('@name' => $saved_field->name)));
+
+    // Why in the hell these fields get saved with not the explict values
+    // for autocomplete, register and required that we tell it, I have no idea.
+    // So we need to manually save it again. Stupid profile module...
+    $saved_field->autocomplete = $field['autocomplete'];
+    $saved_field->required = $field['required'];
+    $saved_field->register = $field['register'];
+    drupal_write_record('profile_field', $saved_field, array('fid'));
+
+    return $saved_field;
   }
 }

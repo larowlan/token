@@ -23,7 +23,7 @@ function token_help($path, $arg) {
  * Return an array of the core modules supported by token.module.
  */
 function _token_core_supported_modules() {
-  return array('book', 'menu');
+  return array('book', 'menu', 'profile');
 }
 
 /**
@@ -133,6 +133,34 @@ function token_library() {
   );
 
   return $libraries;
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Adds a submit handler to forms which could affect the tokens available on
+ * the site.
+ */
+function token_form_alter(&$form, $form_state, $form_id) {
+  switch ($form_id) {
+    // Profile field forms.
+    case 'profile_field_form':
+    case 'profile_field_delete':
+      $form += array('#submit' => array());
+      array_unshift($form['#submit'], 'token_clear_cache');
+      break;
+  }
+}
+
+/**
+ * Clear token caches and static variables.
+ */
+function token_clear_cache() {
+  cache_clear_all(NULL, 'cache_token');
+  drupal_static_reset('token_get_info');
+  drupal_static_reset('token_get_global_token_types');
+  drupal_static_reset('token_build_tree');
+  drupal_static_reset('_token_profile_fields');
 }
 
 /**

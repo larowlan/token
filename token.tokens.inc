@@ -466,3 +466,106 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
 
   return $replacements;
 }
+
+/**
+ * Implements hook_token_info() on behalf of profile.module.
+ */
+function profile_token_info() {
+  $info = array();
+
+  foreach (_token_profile_fields() as $field) {
+    $info['tokens']['user'][$field->token_name] = array(
+      'name' => check_plain($field->title),
+      'description' => t('@category @type field.', array('@category' => drupal_ucfirst($field->category), '@type' => $field->type)),
+    );
+
+    switch ($field->type) {
+      case 'date':
+        $info['tokens']['user'][$field->token_name]['type'] = 'date';
+        break;
+    }
+  }
+
+  return $info;
+}
+
+/**
+ * Implements hook_tokens() on behalf of profile.module.
+ */
+function profile_tokens($type, $tokens, array $data = array(), array $options = array()) {
+  $replacements = array();
+  $sanitize = !empty($options['sanitize']);
+  $language_code = isset($options['language']) ? $options['language']->language : NULL;
+
+  if ($type == 'user' && !empty($data['user'])) {
+    $account = $data['user'];
+
+    // Load profile fields if this is the global user account.
+    // @see http://drupal.org/node/361471
+    // @see http://drupal.org/node/967330
+    if ($account->uid == $GLOBALS['user']->uid && isset($account->timestamp)) {
+      $profile_users = array($account->uid => $account);
+      profile_user_load($profile_users);
+      $account = $profile_users[$account->uid];
+    }
+
+    $profile_fields = _token_profile_fields();
+    foreach ($tokens as $name => $original) {
+      if (isset($profile_fields[$name]) && isset($account->{$profile_fields[$name]->name})) {
+        $value = $account->{$profile_fields[$name]->name};
+        switch ($profile_fields[$name]->type) {
+          case 'textarea':
+            $replacements[$original] = $sanitize ? check_markup($value, filter_default_format($account), '', TRUE) : $value;
+            break;
+          case 'date':
+            $timestamp = gmmktime(0, 0, 0, $value['month'], $value['day'], $value['year']);
+            $replacements[$original] = format_date($timestamp, 'medium', '', NULL, $language_code);
+            break;
+          case 'url':
+            $replacements[$original] = $sanitize ? check_url($value) : $value;
+            break;
+          case 'checkbox':
+            if ($value) {
+              // Checkbox field if checked should return the text.
+              $replacements[$original] = $sanitize ? check_plain($profile_fields[$name]->title) : $profile_fields[$name]->title;
+            }
+            break;
+          case 'selection':
+            if (!$value) {
+              continue;
+            }
+          default:
+            $replacements[$original] = $sanitize ? check_plain($value) : $value;
+            break;
+        }
+      }
+    }
+
+    // Chained token relationships.
+    foreach ($profile_fields as $field) {
+      if ($field->type == 'date' && isset($account->{$field->name}) && $field_tokens = token_find_with_prefix($tokens, $field->token_name)) {
+        $date = $account->{$field->name};
+        $replacements += token_generate('date', $field_tokens, array('date' => gmmktime(0, 0, 0, $date['month'], $date['day'], $date['year'])), $options);
+      }
+    }
+  }
+
+  return $replacements;
+}
+
+/**
+ * Fetch an array of profile field objects, keyed by token name.
+ */
+function _token_profile_fields() {
+  $fields = &drupal_static(__FUNCTION__);
+
+  if (!isset($fields)) {
+    $results = db_query("SELECT name, title, category, type FROM {profile_field}");
+    foreach ($results as $field) {
+      $field->token_name = strtr($field->name, '_', '-');
+      $fields[$field->token_name] = $field;
+    }
+  }
+
+  return $fields;
+}
