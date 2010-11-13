@@ -22,10 +22,10 @@ function token_token_info_alter(&$info) {
   // Add a 'dynamic' key to any tokens that have chained but dynamic tokens.
   $info['tokens']['date']['custom']['dynamic'] = TRUE;
 
-  // @todo Remove [node:tnid] now that we have [node:source:nid]?
-  //unset($info['tokens']['node']['tnid']);
-
-  // @todo Change [node:type-name] to [node:machine-name]?
+  // Remove deprecated tokens from being listed.
+  unset($info['tokens']['node']['tnid']);
+  unset($info['tokens']['node']['type']);
+  unset($info['tokens']['node']['type-name']);
 
   // Add [token:path] tokens for any URI-able entities.
   $entities = entity_get_info();
@@ -58,6 +58,34 @@ function token_token_info() {
   $info['tokens']['node']['log'] = array(
     'name' => t('Revision log message'),
     'description' => t('The explanation of the most recent changes made to the node.'),
+  );
+  $info['tokens']['node']['content-type'] = array(
+    'name' => t('Content type'),
+    'description' => t('The content type of the node.'),
+    'type' => 'content-type',
+  );
+
+  // Content type tokens.
+  $info['types']['content-type'] = array(
+    'name' => t('Content type'),
+    'description' => t('Tokens related to content types.'),
+    'needs-data' => 'content-type',
+  );
+  $info['tokens']['content-type']['name'] = array(
+    'name' => t('Name'),
+    'description' => t('The name of the content type.'),
+  );
+  $info['tokens']['content-type']['machine-name'] = array(
+    'name' => t('Machine-readable name'),
+    'description' => t('The unique machine-readable name of the content type.'),
+  );
+  $info['tokens']['content-type']['description'] = array(
+    'name' => t('Description'),
+    'description' => t('The optional description of the content type.'),
+  );
+  $info['tokens']['content-type']['node-count'] = array(
+    'name' => t("Node count"),
+    'description' => t("The number of nodes belonging to the content type."),
   );
 
   // Taxonomy term and vocabulary tokens.
@@ -199,12 +227,45 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
         case 'log':
           $replacements[$original] = $sanitize ? filter_xss($node->log) : $node->log;
           break;
+        case 'content-type':
+          $type_name = node_type_get_name($node);
+          $replacements[$original] = $sanitize ? check_plain($type_name) : $type_name;
+          break;
       }
     }
 
     // Chained token relationships.
     if (!empty($node->tnid) && ($source_tokens = token_find_with_prefix($tokens, 'source')) && $source_node = node_load($node->tnid)) {
       $replacements += token_generate('node', $source_tokens, array('node' => $source_node), $options);
+    }
+    if (($node_type_tokens = token_find_with_prefix($tokens, 'content-type')) && $node_type = node_type_load($node->type)) {
+      $replacements += token_generate('content-type', $node_type_tokens, array('node_type' => $node_type), $options);
+    }
+  }
+
+  // Content type tokens.
+  if ($type == 'content-type' && !empty($data['node_type'])) {
+    $node_type = $data['node_type'];
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'name':
+          $replacements[$original] = $sanitize ? check_plain($node_type->name) : $node_type->name;
+          break;
+        case 'machine-name':
+          $replacements[$original] = $node_type->type;
+          break;
+        case 'description':
+          $replacements[$original] = $sanitize ? filter_xss($node_type->description) : $node_type->description;
+          break;
+        case 'node-count':
+          $query = db_select('node');
+          $query->condition('type', $node_type->type);
+          $query->addTag('node_type_node_count');
+          $count = $query->countQuery()->execute()->fetchField();
+          $replacements[$original] = (int) $count;
+          break;
+      }
     }
   }
 

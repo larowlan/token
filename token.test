@@ -24,7 +24,12 @@ class TokenTestHelper extends DrupalWebTestCase {
     $token_input = drupal_map_assoc(array_keys($tokens));
     $values = token_generate($type, $token_input, array($type => $object), $options);
     foreach ($tokens as $token => $expected) {
-      $this->assertIdentical($values[$token], $expected, t("Token value for [@type:@token] was '@actual', expected value '@expected'.", array('@type' => $type, '@token' => $token, '@actual' => $values[$token], '@expected' => $expected)));
+      if (isset($expected)) {
+        $this->assertIdentical($values[$token], $expected, t("Token value for [@type:@token] was '@actual', expected value '@expected'.", array('@type' => $type, '@token' => $token, '@actual' => $values[$token], '@expected' => $expected)));
+      }
+      else {
+        $this->assertTrue(!isset($values[$token]), t("Token value for [@type:@token] was not generated.", array('@type' => $type, '@token' => $token)));
+      }
     }
   }
 
@@ -81,6 +86,10 @@ class TokenUnitTestCase extends TokenTestHelper {
         '[node:created:short:invalid]',
         '[invalid:title]',
         '[site:invalid]',
+        // Deprecated tokens
+        '[node:tnid]',
+        '[node:type]',
+        '[node:type-name]',
       ),
       'types' => array('node'),
     );
@@ -101,28 +110,48 @@ class TokenUnitTestCase extends TokenTestHelper {
 class TokenNodeTestCase extends TokenTestHelper {
   public static function getInfo() {
     return array(
-      'name' => 'Node token tests',
-      'description' => 'Test the node tokens.',
+      'name' => 'Node and content type token tests',
+      'description' => 'Test the node and content type tokens.',
       'group' => 'Token',
     );
   }
 
   function testNodeTokens() {
     $source_node = $this->drupalCreateNode(array('log' => $this->randomName(), 'path' => array('alias' => 'content/source-node')));
-    $translated_node = $this->drupalCreateNode(array('tnid' => $source_node->nid));
+    $tokens = array(
+      'source' => NULL,
+      'source:nid' => NULL,
+      'log' => $source_node->log,
+      'path' => 'content/source-node',
+      'content-type' => 'Basic page',
+      'content-type:name' => 'Basic page',
+      'content-type:machine-name' => 'page',
+      'content-type:description' => "Use <em>basic pages</em> for your static content, such as an 'About us' page.",
+      'content-type:node-count' => 1,
+      // Deprecated tokens.
+      'tnid' => 0,
+      'type' => 'page',
+      'type-name' => 'Basic page',
+    );
+    $this->assertTokens('node', $source_node, $tokens);
 
-    // Test [node:source] tokens.
-    $this->assertToken('node', $translated_node, 'source', $source_node->title);
-    $this->assertToken('node', $translated_node, 'source:nid', $source_node->nid);
-    //$this->assertToken('node', $source_node, 'source', '', array('clear' => TRUE));
-
-    // Test [node:log] token.
-    $this->assertToken('node', $source_node, 'log', $source_node->log);
-    $this->assertToken('node', $translated_node, 'log', '');
-
-    // Test [node:path] token.
-    $this->assertToken('node', $source_node, 'path', 'content/source-node');
-    $this->assertToken('node', $translated_node, 'path', 'node/' . $translated_node->nid);
+    $translated_node = $this->drupalCreateNode(array('tnid' => $source_node->nid, 'type' => 'article'));
+    $tokens = array(
+      'source' => $source_node->title,
+      'source:nid' => $source_node->nid,
+      'log' => '',
+      'path' => "node/{$translated_node->nid}",
+      'content-type' => 'Article',
+      'content-type:name' => 'Article',
+      'content-type:machine-name' => 'article',
+      'content-type:description' => "Use <em>articles</em> for time-sensitive content like news, press releases or blog posts.",
+      'content-type:node-count' => 1,
+      // Deprecated tokens.
+      'type' => 'article',
+      'type-name' => 'Article',
+      'tnid' => $source_node->nid,
+    );
+    $this->assertTokens('node', $translated_node, $tokens);
   }
 }
 
@@ -170,6 +199,20 @@ class TokenMenuTestCase extends TokenTestHelper {
       'menu-link:parent:mlid' => $root_link['mlid'],
     );
     $this->assertTokens('node', $node, $tokens);
+  }
+
+  function testMenuItemAccess() {
+    variable_set('menu_options_page', array('main-menu', 'management'));
+    // Fetch the mlid of the administer
+    $admin_mlid = db_query("SELECT mlid FROM {menu_links} WHERE menu_name = 'management' AND link_path = 'admin'")->fetchField();
+    $node_link = array(
+      'enabled' => TRUE,
+      'link_title' => 'Admin node link',
+      'plid' => $admin_mlid,
+      'customized' => 0,
+      'description' => '',
+    );
+    $node = $this->drupalCreateNode(array('menu' => $node_link));
   }
 }
 
@@ -360,11 +403,11 @@ class TokenProfileTestCase extends TokenTestHelper {
     $account = user_load($this->account->uid, TRUE);
 
     // The checkbox and select profile tokens should no longer return a value.
-    $no_tokens = array(
-      'profile-checkbox',
-      'profile-selection',
+    $tokens = array(
+      'profile-checkbox' => NULL,
+      'profile-selection' => NULL,
     );
-    $this->assertNoTokens('user', $account, $no_tokens);
+    $this->assertTokens('user', $account, $tokens);
   }
 
   /**
