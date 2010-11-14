@@ -627,7 +627,7 @@ function profile_tokens($type, $tokens, array $data = array(), array $options = 
 
     $profile_fields = _token_profile_fields();
     foreach ($tokens as $name => $original) {
-      if (isset($profile_fields[$name]) && isset($account->{$profile_fields[$name]->name})) {
+      if (isset($profile_fields[$name]) && !empty($account->{$profile_fields[$name]->name})) {
         $value = $account->{$profile_fields[$name]->name};
         switch ($profile_fields[$name]->type) {
           case 'textarea':
@@ -641,15 +641,14 @@ function profile_tokens($type, $tokens, array $data = array(), array $options = 
             $replacements[$original] = $sanitize ? check_url($value) : $value;
             break;
           case 'checkbox':
-            if ($value) {
-              // Checkbox field if checked should return the text.
-              $replacements[$original] = $sanitize ? check_plain($profile_fields[$name]->title) : $profile_fields[$name]->title;
-            }
+            // Checkbox field if checked should return the text.
+            $replacements[$original] = $sanitize ? check_plain($profile_fields[$name]->title) : $profile_fields[$name]->title;
             break;
-          case 'selection':
-            if (!$value) {
-              continue;
-            }
+          case 'list':
+            $value = preg_split("/[,\n\r]/", $value);
+            $value = array_map('trim', $value);
+            $value = implode(', ', $value);
+            // Intentionally fall through to the default condition.
           default:
             $replacements[$original] = $sanitize ? check_plain($value) : $value;
             break;

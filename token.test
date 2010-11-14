@@ -391,7 +391,7 @@ class TokenProfileTestCase extends TokenTestHelper {
       'profile_textarea' => "First paragraph.\n\nSecond paragraph.",
       'profile_checkbox' => TRUE,
       'profile_selection' => 'Red',
-      'profile_list' => 'Drupal, Joomla',
+      'profile_list' => ' Drupal ,  Joomla ',
       'profile_url' => 'http://www.example.com/',
       'profile_date[month]' => 5,
       'profile_date[day]' => 20,
