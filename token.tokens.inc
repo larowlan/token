@@ -84,8 +84,8 @@ function token_token_info() {
     'description' => t('The optional description of the content type.'),
   );
   $info['tokens']['content-type']['node-count'] = array(
-    'name' => t("Node count"),
-    'description' => t("The number of nodes belonging to the content type."),
+    'name' => t('Node count'),
+    'description' => t('The number of nodes belonging to the content type.'),
   );
 
   // Taxonomy term and vocabulary tokens.
@@ -480,6 +480,10 @@ function menu_token_info() {
     'name' => t('Description'),
     'description' => t('The optional description of the menu.'),
   );
+  $info['tokens']['menu']['menu-link-count'] = array(
+    'name' => t('Menu link count'),
+    'description' => t('The number of menu links belonging to the menu.'),
+  );
 
   $info['tokens']['menu-link']['menu'] = array(
     'name' => t('Menu'),
@@ -565,7 +569,13 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
         case 'description':
           $replacements[$original] = $sanitize ? filter_xss($menu['description']) : $menu['description'];
           break;
-        // @todo case 'menu-link-count':
+        case 'menu-link-count':
+          $query = db_select('menu_links');
+          $query->condition('menu_name', $menu['menu_name']);
+          $query->addTag('menu_menu_link_count');
+          $count = $query->countQuery()->execute()->fetchField();
+          $replacements[$original] = (int) $count;
+          break;
       }
     }
   }

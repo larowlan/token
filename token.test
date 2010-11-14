@@ -194,6 +194,7 @@ class TokenMenuTestCase extends TokenTestHelper {
       'menu:name' => 'Main menu',
       'menu:machine-name' => 'main-menu',
       'menu:description' => 'The <em>Main</em> menu is used on many sites to show the major sections of the site, often in a top navigation bar.',
+      'menu:menu-link-count' => 3, // Standard install creates one link.
       'path' => 'root/parent',
       'url' => url('root/parent', array('absolute' => TRUE)),
       'parent' => 'Root link',
