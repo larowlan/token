@@ -158,7 +158,7 @@ class TokenNodeTestCase extends TokenTestHelper {
 class TokenMenuTestCase extends TokenTestHelper {
   public static function getInfo() {
     return array(
-      'name' => 'Menu token tests',
+      'name' => 'Menu link and menu token tests',
       'description' => 'Test the menu tokens.',
       'group' => 'Token',
     );
@@ -169,17 +169,49 @@ class TokenMenuTestCase extends TokenTestHelper {
   }
 
   function testMenuTokens() {
+    // Add a root link.
     $root_link = array(
-      'link_path' => '<front>',
-      'link_title' => 'Front link',
+      'link_path' => 'root',
+      'link_title' => 'Root link',
       'menu_name' => 'main-menu',
     );
     menu_link_save($root_link);
 
+    // Add another link with the root link as the parent
+    $parent_link = array(
+      'link_path' => 'root/parent',
+      'link_title' => 'Parent link',
+      'menu_name' => 'main-menu',
+      'plid' => $root_link['mlid'],
+    );
+    menu_link_save($parent_link);
+
+    // Test menu link tokens.
+    $tokens = array(
+      'mlid' => $parent_link['mlid'],
+      'title' => 'Parent link',
+      'menu' => 'Main menu',
+      'menu:name' => 'Main menu',
+      'menu:machine-name' => 'main-menu',
+      'menu:description' => 'The <em>Main</em> menu is used on many sites to show the major sections of the site, often in a top navigation bar.',
+      'path' => 'root/parent',
+      'url' => url('root/parent', array('absolute' => TRUE)),
+      'parent' => 'Root link',
+      'parent:mlid' => $root_link['mlid'],
+      'parent:menu' => 'Main menu',
+      'parent:parent' => NULL,
+      'root' => 'Root link',
+      'root:mlid' => $root_link['mlid'],
+      'root:parent' => NULL,
+      'root:root' => NULL,
+    );
+    $this->assertTokens('menu-link', $parent_link, $tokens);
+
+    // Add a node menu link
     $node_link = array(
       'enabled' => TRUE,
       'link_title' => 'Node link',
-      'plid' => $root_link['mlid'],
+      'plid' => $parent_link['mlid'],
       'customized' => 0,
       'description' => '',
     );
@@ -190,29 +222,16 @@ class TokenMenuTestCase extends TokenTestHelper {
       'menu-link' => 'Node link',
       'menu-link:mlid' => $node->menu['mlid'],
       'menu-link:title' => 'Node link',
-      'menu-link:menu' => 'main-menu',
-      'menu-link:menu-name' => 'Main menu',
+      'menu-link:menu' => 'Main menu',
       'menu-link:path' => 'node/' . $node->nid,
       'menu-link:url' => url('node/' . $node->nid, array('absolute' => TRUE)),
-      'menu-link:parent' => 'Front link',
+      'menu-link:parent' => 'Parent link',
       'menu-link:parent:mlid' => $node->menu['plid'],
-      'menu-link:parent:mlid' => $root_link['mlid'],
+      'menu-link:parent:mlid' => $parent_link['mlid'],
+      'menu-link:root' => 'Root link',
+      'menu-link:root:mlid' => $root_link['mlid'],
     );
     $this->assertTokens('node', $node, $tokens);
-  }
-
-  function testMenuItemAccess() {
-    variable_set('menu_options_page', array('main-menu', 'management'));
-    // Fetch the mlid of the administer
-    $admin_mlid = db_query("SELECT mlid FROM {menu_links} WHERE menu_name = 'management' AND link_path = 'admin'")->fetchField();
-    $node_link = array(
-      'enabled' => TRUE,
-      'link_title' => 'Admin node link',
-      'plid' => $admin_mlid,
-      'customized' => 0,
-      'description' => '',
-    );
-    $node = $this->drupalCreateNode(array('menu' => $node_link));
   }
 }
 

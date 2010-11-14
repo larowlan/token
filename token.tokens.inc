@@ -67,7 +67,7 @@ function token_token_info() {
 
   // Content type tokens.
   $info['types']['content-type'] = array(
-    'name' => t('Content type'),
+    'name' => t('Content types'),
     'description' => t('Tokens related to content types.'),
     'needs-data' => 'content-type',
   );
@@ -136,14 +136,6 @@ function token_token_info() {
   $info['tokens']['menu-link']['title'] = array(
     'name' => t('Title'),
     'description' => t('The title of the menu link.'),
-  );
-  $info['tokens']['menu-link']['menu'] = array(
-    'name' => t('Menu'),
-    'description' => t("The machine name of the link's menu."),
-  );
-  $info['tokens']['menu-link']['menu-name'] = array(
-    'name' => t('Menu name'),
-    'description' => t("The human-readable name of the link's menu."),
   );
   $info['tokens']['menu-link']['path'] = array(
     'name' => t('Path'),
@@ -253,6 +245,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           $replacements[$original] = $sanitize ? check_plain($node_type->name) : $node_type->name;
           break;
         case 'machine-name':
+          // This is a machine name so does not ever need to be sanitized.
           $replacements[$original] = $node_type->type;
           break;
         case 'description':
@@ -289,8 +282,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'machine-name':
-          // Vocabulary machine names cannot have XSS-capable characters so
-          // there is no need to escape it.
+          // This is a machine name so does not ever need to be sanitized.
           $replacements[$original] = $vocabulary->machine_name;
           break;
         case 'edit-url':
@@ -317,6 +309,11 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
   if ($type == 'menu-link' && !empty($data['menu-link'])) {
     $link = (array) $data['menu-link'];
 
+    if (!isset($link['title'])) {
+      // Re-load the link if it was not loaded via token_menu_link_load().
+      $link = token_menu_link_load($link['mlid']);
+    }
+
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'mlid':
@@ -324,16 +321,6 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           break;
         case 'title':
           $replacements[$original] = $sanitize ? check_plain($link['title']) : $link['title'];
-          break;
-        case 'menu':
-          // This is a machine name so does not ever need to be sanitized.
-          $replacements[$original] = $link['menu_name'];
-          break;
-        case 'menu-name':
-          $menus = menu_get_menus();
-          if (isset($menus[$link['menu_name']])) {
-            $replacements[$original] = $sanitize ? check_plain($menus[$link['menu_name']]) : $menus[$link['menu_name']];
-          }
           break;
         case 'path':
           $alias = drupal_get_path_alias($link['href'], $language_code);
@@ -343,12 +330,12 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           $replacements[$original] = url($link['href'], $url_options);
           break;
         case 'parent':
-          if (!empty($link['plid']) && $parent = menu_link_load($link['plid'])) {
+          if (!empty($link['plid']) && $parent = token_menu_link_load($link['plid'])) {
             $replacements[$original] = $sanitize ? check_plain($parent['title']) : $parent['title'];
           }
           break;
         case 'root';
-          if (!empty($link['p1']) && $root = menu_link_load($link['p1'])) {
+          if (!empty($link['p1']) && $link['p1'] != $link['mlid'] && $root = token_menu_link_load($link['p1'])) {
             $replacements[$original] = $sanitize ? check_plain($root['title']) : $root['title'];
           }
           break;
@@ -356,11 +343,11 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
 
     // Chained token relationships.
-    if (!empty($link['plid']) && ($source_tokens = token_find_with_prefix($tokens, 'parent')) && $parent = menu_link_load($link['plid'])) {
+    if (!empty($link['plid']) && ($source_tokens = token_find_with_prefix($tokens, 'parent')) && $parent = token_menu_link_load($link['plid'])) {
       $replacements += token_generate('menu-link', $source_tokens, array('menu-link' => $parent), $options);
     }
-    if (!empty($link['p1']) && ($root_tokens = token_find_with_prefix($tokens, 'root')) && $root = menu_link_load($link['p1'])) {
-      $replacements += token_generate('menu-link', $source_tokens, array('menu-link' => $root), $options);
+    if (!empty($link['p1']) && $link['p1'] != $link['mlid'] && ($root_tokens = token_find_with_prefix($tokens, 'root')) && $root = token_menu_link_load($link['p1'])) {
+      $replacements += token_generate('menu-link', $root_tokens, array('menu-link' => $root), $options);
     }
   }
 
@@ -451,11 +438,7 @@ function book_tokens($type, $tokens, array $data = array(), array $options = arr
     $node = $data['node'];
 
     if (!empty($node->book['mlid'])) {
-      $link = $node->book;
-      if (!isset($link['title'])) {
-        // Links may be impartially loaded, so ensure we have a full link.
-        $link = book_link_load($link['mlid']);
-      }
+      $link = token_book_link_load($node->book['mlid']);
 
       foreach ($tokens as $name => $original) {
         switch ($name) {
@@ -479,11 +462,36 @@ function book_tokens($type, $tokens, array $data = array(), array $options = arr
  * Implements hook_token_info() on behalf of menu.module.
  */
 function menu_token_info() {
+  // Menu tokens.
+  $info['types']['menu'] = array(
+    'name' => t('Menus'),
+    'description' => t('Tokens related to menus.'),
+    'needs-data' => 'menu',
+  );
+  $info['tokens']['menu']['name'] = array(
+    'name' => t('Name'),
+    'description' => t("The name of the menu."),
+  );
+  $info['tokens']['menu']['machine-name'] = array(
+    'name' => t('Machine-readable name'),
+    'description' => t("The unique machine-readable name of the menu."),
+  );
+  $info['tokens']['menu']['description'] = array(
+    'name' => t('Description'),
+    'description' => t('The optional description of the menu.'),
+  );
+
+  $info['tokens']['menu-link']['menu'] = array(
+    'name' => t('Menu'),
+    'description' => t('The menu of the menu link.'),
+    'type' => 'menu',
+  );
   $info['tokens']['node']['menu-link'] = array(
     'name' => t('Menu link'),
     'description' => t("The menu link for this node."),
     'type' => 'menu-link',
   );
+
   return $info;
 }
 
@@ -504,11 +512,7 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
     }
 
     if (!empty($node->menu['mlid'])) {
-      $link = $node->menu;
-      if (!isset($link['title'])) {
-        // Links may be impartially loaded, so ensure we have a full link.
-        $link = menu_link_load($node->menu['mlid']);
-      }
+      $link = token_menu_link_load($node->menu['mlid']);
 
       foreach ($tokens as $name => $original) {
         switch ($name) {
@@ -521,6 +525,47 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
       // Chained token relationships.
       if ($menu_tokens = token_find_with_prefix($tokens, 'menu-link')) {
         $replacements += token_generate('menu-link', $menu_tokens, array('menu-link' => $link), $options);
+      }
+    }
+  }
+
+  // Menu link tokens.
+  if ($type == 'menu-link' && !empty($data['menu-link'])) {
+    $link = (array) $data['menu-link'];
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'menu':
+          if ($menu = menu_load($link['menu_name'])) {
+            $replacements[$original] = $sanitize ? check_plain($menu['title']) : $menu['title'];
+          }
+          break;
+      }
+    }
+
+    // Chained token relationships.
+    if (($menu_tokens = token_find_with_prefix($tokens, 'menu')) && $menu = menu_load($link['menu_name'])) {
+      $replacements += token_generate('menu', $menu_tokens, array('menu' => $menu), $options);
+    }
+  }
+
+  // Menu tokens.
+  if ($type == 'menu' && !empty($data['menu'])) {
+    $menu = (array) $data['menu'];
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'name':
+          $replacements[$original] = $sanitize ? check_plain($menu['title']) : $menu['title'];
+          break;
+        case 'machine-name':
+          // This is a machine name so does not ever need to be sanitized.
+          $replacements[$original] = $menu['menu_name'];
+          break;
+        case 'description':
+          $replacements[$original] = $sanitize ? filter_xss($menu['description']) : $menu['description'];
+          break;
+        // @todo case 'menu-link-count':
       }
     }
   }
