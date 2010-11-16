@@ -20,11 +20,11 @@ class TokenTestHelper extends DrupalWebTestCase {
     $token_input = drupal_map_assoc(array_keys($tokens));
     $values = token_generate($type, $token_input, array($type => $object), $options);
     foreach ($tokens as $token => $expected) {
-      if (isset($expected)) {
-        $this->assertIdentical($values[$token], $expected, t("Token value for [@type:@token] was '@actual', expected value '@expected'.", array('@type' => $type, '@token' => $token, '@actual' => $values[$token], '@expected' => $expected)));
+      if (!isset($expected)) {
+        $this->assertTrue(!isset($values[$token]) || $result['values'][$token] === $token, t("Token value for [@type:@token] was not generated.", array('@type' => $type, '@token' => $token)));
       }
       else {
-        $this->assertTrue(!isset($values[$token]), t("Token value for [@type:@token] was not generated.", array('@type' => $type, '@token' => $token)));
+        $this->assertIdentical($values[$token], $expected, t("Token value for [@type:@token] was '@actual', expected value '@expected'.", array('@type' => $type, '@token' => $token, '@actual' => $values[$token], '@expected' => $expected)));
       }
     }
   }
@@ -78,7 +78,7 @@ class TokenTestHelper extends DrupalWebTestCase {
 
     foreach ($tokens as $token => $expected) {
       if (!isset($expected)) {
-        $this->assertTrue(!isset($result['values'][$token]), t("Token value for @token was not generated.", array('@token' => $token)));
+        $this->assertTrue(!isset($result['values'][$token]) || $result['values'][$token] === $token, t("Token value for @token was not generated.", array('@token' => $token)));
       }
       elseif (!isset($result['values'][$token])) {
         $this->fail(t('Failed to generate token @token.', array('@token' => $token)));
@@ -539,6 +539,8 @@ class TokenCurrentPageTestCase extends TokenTestHelper {
       '[current-page:path]' => 'node',
       '[current-page:url]' => url('node', array('absolute' => TRUE)),
       '[current-page:page-number]' => 1,
+      '[current-page:arg:0]' => 'node',
+      '[current-page:arg:1]' => NULL,
     );
     $this->assertPageTokens('', $tokens);
 
@@ -548,6 +550,9 @@ class TokenCurrentPageTestCase extends TokenTestHelper {
       '[current-page:path]' => 'node-alias',
       '[current-page:url]' => url("node/{$node->nid}", array('absolute' => TRUE)),
       '[current-page:page-number]' => 1,
+      '[current-page:arg:0]' => 'node',
+      '[current-page:arg:1]' => $node->nid,
+      '[current-page:arg:2]' => NULL,
     );
     $this->assertPageTokens("node/{$node->nid}", $tokens);
   }

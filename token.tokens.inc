@@ -181,6 +181,11 @@ function token_token_info() {
     'name' => t('Page number'),
     'description' => t('The page number of the current page when viewing paged lists.'),
   );
+  $info['tokens']['current-page']['arg'] = array(
+    'name' => t('Page argument'),
+    'description' => t("The specific argument of the current page (e.g. 'arg:1' on the page 'node/1' returns '1')."),
+    'dynamic' => TRUE,
+  );
 
   return $info;
 }
@@ -382,6 +387,15 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           }
           $replacements[$original] = (int) $page + 1;
           break;
+      }
+    }
+
+    // Argument tokens.
+    if ($arg_tokens = token_find_with_prefix($tokens, 'arg')) {
+      foreach ($arg_tokens as $name => $original) {
+        if (is_numeric($name) && ($arg = arg($name)) && isset($arg)) {
+          $replacements[$original] = $sanitize ? check_plain($arg) : $arg;
+        }
       }
     }
   }
