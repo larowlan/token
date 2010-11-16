@@ -5,14 +5,10 @@
  * Helper test class with some added functions for testing.
  */
 class TokenTestHelper extends DrupalWebTestCase {
-  function setUp() {
-    $args = func_get_args();
-
-    // Call parent::setUp() allowing test cases to pass further modules.
-    $modules = array('path', 'token');
-    if (isset($args[0]) && is_array($args[0])) {
-      $modules = array_merge($modules, $args[0]);
-    }
+  function setUp($modules = array()) {
+    $modules[] = 'path';
+    $modules[] = 'token';
+    $modules[] = 'token_test';
     parent::setUp($modules);
   }
 
@@ -54,6 +50,43 @@ class TokenTestHelper extends DrupalWebTestCase {
   function saveEntityAlias($entity_type, $entity, $alias, $language = LANGUAGE_NONE) {
     $uri = entity_uri($entity_type, $entity);
     return $this->saveAlias($uri['path'], $alias, $language);
+  }
+
+  /**
+   * Make a page request and test for token generation.
+   */
+  function assertPageTokens($url, array $tokens, array $data = array(), array $options = array()) {
+    if (empty($tokens)) {
+      return TRUE;
+    }
+
+    $token_page_tokens = array(
+      'tokens' => $tokens,
+      'data' => $data,
+      'options' => $options,
+    );
+    variable_set('token_page_tokens', $token_page_tokens);
+
+    $options += array('url_options' => array());
+    $this->drupalGet($url, $options['url_options']);
+    $this->refreshVariables();
+    $result = variable_get('token_page_tokens');
+
+    if (!isset($result['values']) || !is_array($result['values'])) {
+      return $this->fail('Failed to generate tokens.');
+    }
+
+    foreach ($tokens as $token => $expected) {
+      if (!isset($expected)) {
+        $this->assertTrue(!isset($result['values'][$token]), t("Token value for @token was not generated.", array('@token' => $token)));
+      }
+      elseif (!isset($result['values'][$token])) {
+        $this->fail(t('Failed to generate token @token.', array('@token' => $token)));
+      }
+      else {
+        $this->assertIdentical($result['values'][$token], (string) $expected, t("Token value for @token was '@actual', expected value '@expected'.", array('@token' => $token, '@actual' => $result['values'][$token], '@expected' => $expected)));
+      }
+    }
   }
 }
 
@@ -166,8 +199,9 @@ class TokenMenuTestCase extends TokenTestHelper {
     );
   }
 
-  function setUp() {
-    parent::setUp(array('menu'));
+  function setUp($modules = array()) {
+    $modules[] = 'menu';
+    parent::setUp($modules);
   }
 
   function testMenuTokens() {
@@ -253,8 +287,9 @@ class TokenTaxonomyTestCase extends TokenTestHelper {
     );
   }
 
-  function setUp() {
-    parent::setUp(array('taxonomy'));
+  function setUp($modules = array()) {
+    $modules[] = 'taxonomy';
+    parent::setUp($modules);
     // Use the default 'Tags' taxonomy included with the standard install profile.
     $this->vocab = taxonomy_vocabulary_machine_name_load('tags');
   }
@@ -320,8 +355,9 @@ class TokenEntityTestCase extends TokenTestHelper {
     );
   }
 
-  function setUp() {
-    parent::setUp(array('taxonomy'));
+  function setUp($modules = array()) {
+    $modules[] = 'taxonomy';
+    parent::setUp($modules);
   }
 
   function testEntityMapping() {
@@ -367,8 +403,9 @@ class TokenProfileTestCase extends TokenTestHelper {
     );
   }
 
-  function setUp() {
-    parent::setUp(array('profile'));
+  function setUp($modules = array()) {
+    $modules[] = 'profile';
+    parent::setUp($modules);
     $this->account = $this->drupalCreateUser(array('administer users'));
     $this->drupalLogin($this->account);
   }
@@ -481,5 +518,37 @@ class TokenProfileTestCase extends TokenTestHelper {
     drupal_write_record('profile_field', $saved_field, array('fid'));
 
     return $saved_field;
+  }
+}
+
+/**
+ * Test the current page tokens.
+ */
+class TokenCurrentPageTestCase extends TokenTestHelper {
+  public static function getInfo() {
+    return array(
+      'name' => 'Current page token tests',
+      'description' => 'Test the [current-page:*] tokens.',
+      'group' => 'Token',
+    );
+  }
+
+  function testCurrentPageTokens() {
+    $tokens = array(
+      '[current-page:title]' => 'Welcome to Drupal',
+      '[current-page:path]' => 'node',
+      '[current-page:url]' => url('node', array('absolute' => TRUE)),
+      '[current-page:page-number]' => 1,
+    );
+    $this->assertPageTokens('', $tokens);
+
+    $node = $this->drupalCreateNode(array('title' => 'Node title', 'path' => array('alias' => 'node-alias')));
+    $tokens = array(
+      '[current-page:title]' => 'Node title',
+      '[current-page:path]' => 'node-alias',
+      '[current-page:url]' => url("node/{$node->nid}", array('absolute' => TRUE)),
+      '[current-page:page-number]' => 1,
+    );
+    $this->assertPageTokens("node/{$node->nid}", $tokens);
   }
 }
