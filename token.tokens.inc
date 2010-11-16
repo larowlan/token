@@ -87,6 +87,10 @@ function token_token_info() {
     'name' => t('Node count'),
     'description' => t('The number of nodes belonging to the content type.'),
   );
+  $info['tokens']['content-type']['edit-url'] = array(
+    'name' => t('Edit URL'),
+    'description' => t("The URL of the content type's edit page."),
+  );
 
   // Taxonomy term and vocabulary tokens.
   if (module_exists('taxonomy')) {
@@ -257,6 +261,9 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           $query->addTag('node_type_node_count');
           $count = $query->countQuery()->execute()->fetchField();
           $replacements[$original] = (int) $count;
+          break;
+        case 'edit-url':
+          $replacements[$original] = url("admin/structure/types/manage/{$node_type->type}", $url_options);
           break;
       }
     }
@@ -484,11 +491,19 @@ function menu_token_info() {
     'name' => t('Menu link count'),
     'description' => t('The number of menu links belonging to the menu.'),
   );
+  $info['tokens']['menu']['edit-url'] = array(
+    'name' => t('Edit URL'),
+    'description' => t("The URL of the menu's edit page."),
+  );
 
   $info['tokens']['menu-link']['menu'] = array(
     'name' => t('Menu'),
     'description' => t('The menu of the menu link.'),
     'type' => 'menu',
+  );
+  $info['tokens']['menu-link']['edit-url'] = array(
+    'name' => t('Edit URL'),
+    'description' => t("The URL of the menu link's edit page."),
   );
   $info['tokens']['node']['menu-link'] = array(
     'name' => t('Menu link'),
@@ -504,6 +519,16 @@ function menu_token_info() {
  */
 function menu_tokens($type, $tokens, array $data = array(), array $options = array()) {
   $replacements = array();
+
+  $url_options = array('absolute' => TRUE);
+  if (isset($options['language'])) {
+    $url_options['language'] = $options['language'];
+    $language_code = $options['language']->language;
+  }
+  else {
+    $language_code = NULL;
+  }
+
   $sanitize = !empty($options['sanitize']);
 
   // Node tokens.
@@ -544,6 +569,9 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
             $replacements[$original] = $sanitize ? check_plain($menu['title']) : $menu['title'];
           }
           break;
+        case 'edit-url':
+          $replacements[$original] = url("admin/structure/menu/item/{$link['mlid']}/edit", $url_options);
+          break;
       }
     }
 
@@ -575,6 +603,9 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
           $query->addTag('menu_menu_link_count');
           $count = $query->countQuery()->execute()->fetchField();
           $replacements[$original] = (int) $count;
+          break;
+        case 'edit-url':
+          $replacements[$original] = url("admin/structure/menu/manage/" . $menu['menu_name'], $url_options);
           break;
       }
     }

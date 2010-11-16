@@ -128,6 +128,7 @@ class TokenNodeTestCase extends TokenTestHelper {
       'content-type:machine-name' => 'page',
       'content-type:description' => "Use <em>basic pages</em> for your static content, such as an 'About us' page.",
       'content-type:node-count' => 1,
+      'content-type:edit-url' => url('admin/structure/types/manage/page', array('absolute' => TRUE)),
       // Deprecated tokens.
       'tnid' => 0,
       'type' => 'page',
@@ -146,6 +147,7 @@ class TokenNodeTestCase extends TokenTestHelper {
       'content-type:machine-name' => 'article',
       'content-type:description' => "Use <em>articles</em> for time-sensitive content like news, press releases or blog posts.",
       'content-type:node-count' => 1,
+      'content-type:edit-url' => url('admin/structure/types/manage/article', array('absolute' => TRUE)),
       // Deprecated tokens.
       'type' => 'article',
       'type-name' => 'Article',
@@ -195,10 +197,13 @@ class TokenMenuTestCase extends TokenTestHelper {
       'menu:machine-name' => 'main-menu',
       'menu:description' => 'The <em>Main</em> menu is used on many sites to show the major sections of the site, often in a top navigation bar.',
       'menu:menu-link-count' => 3, // Standard install creates one link.
+      'menu:edit-url' => url("admin/structure/menu/manage/main-menu", array('absolute' => TRUE)),
       'path' => 'root/parent',
       'url' => url('root/parent', array('absolute' => TRUE)),
+      'edit-url' => url("admin/structure/menu/item/{$parent_link['mlid']}/edit", array('absolute' => TRUE)),
       'parent' => 'Root link',
       'parent:mlid' => $root_link['mlid'],
+      'parent:title' => 'Root link',
       'parent:menu' => 'Main menu',
       'parent:parent' => NULL,
       'root' => 'Root link',
@@ -226,6 +231,7 @@ class TokenMenuTestCase extends TokenTestHelper {
       'menu-link:menu' => 'Main menu',
       'menu-link:path' => 'node/' . $node->nid,
       'menu-link:url' => url('node/' . $node->nid, array('absolute' => TRUE)),
+      'menu-link:edit-url' => url("admin/structure/menu/item/{$node->menu['mlid']}/edit", array('absolute' => TRUE)),
       'menu-link:parent' => 'Parent link',
       'menu-link:parent:mlid' => $node->menu['plid'],
       'menu-link:parent:mlid' => $parent_link['mlid'],
