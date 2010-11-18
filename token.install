@@ -45,6 +45,32 @@ function token_update_7000() {
 }
 
 /**
+ * Deprecate and disable the token_actions module.
+ */
+function token_update_7001() {
+  module_disable(array('token_actions'));
+  return 'The Token actions module has been deprecated by the updated system module actions that support tokens.';
+}
+
+/**
+ * Migrate old token_actions module actions to system actions.
+ */
+//function token_update_700X() {
+//  $actions = db_query("SELECT aid, type, callback, parameters, label FROM {actions} WHERE type = 'system' AND callback IN ('token_actions_message_action', 'token_actions_send_email_action', 'token_actions_goto_action')")->fetchAll();
+//  foreach ($actions as $action) {
+//    $action->parameters = unserialize($action->parameters);
+//    foreach ($action->parameters as $key => $value) {
+//      if (is_string($value)) {
+//        $action->parameters[$key] = token_update_token_text($value);
+//      }
+//    }
+//    $action->callback = str_replace('token_actions_', '', $action->callback);
+//    actions_save($action->callback, $action->type, $action->parameters, $action->label, $action->aid);
+//  }
+//  return 'Token actions module actions migrated to system module actions. You may still want to verify that the actions were upgraded correctly.';
+//}
+
+/**
  * Build a list of Drupal 6 tokens and their Drupal 7 token names.
  */
 function _token_upgrade_token_list() {

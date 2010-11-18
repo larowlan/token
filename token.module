@@ -471,6 +471,29 @@ function token_element_validate_token_context(&$element, &$form_state) {
 /**
  * Implements hook_form_FORM_ID_alter().
  *
+ * Alters the configure action form to add token context validation and
+ * adds the token tree for a better token UI and selection.
+ */
+function token_form_system_actions_configure_alter(&$form, $form_state) {
+  $action = actions_function_lookup($form['actions_action']['#value']);
+
+  switch ($action) {
+    case 'system_message_action':
+    case 'system_send_email_action':
+    case 'system_goto_action':
+      $form['token_tree'] = array(
+        '#theme' => 'token_tree',
+        '#token_types' => 'all',
+        '#weight' => 100,
+      );
+      // @todo Add token validation to the action fields that can use tokens.
+      break;
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
  * Alters the user e-mail fields to add token context validation and
  * adds the token tree for a better token UI and selection.
  */

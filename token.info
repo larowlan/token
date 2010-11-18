@@ -4,4 +4,6 @@ description = Provides a user interface for the Token API and some missing core 
 core = 7.x
 files[] = token.module
 files[] = token.install
+files[] = token.tokens.inc
+files[] = token.pages.inc
 files[] = token.test
