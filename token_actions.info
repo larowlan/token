@@ -1,5 +1,0 @@
-; $Id$
-name = Token actions
-description = Provides enhanced versions of core Drupal actions using the Token module.
-core = 7.x
-hidden = TRUE
