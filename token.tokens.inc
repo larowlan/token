@@ -40,6 +40,7 @@ function token_token_info_alter(&$info) {
       $info['tokens'][$token_type]['path'] = array(
         'name' => t('Path'),
         'description' => t('The URL alias of the @entity.', array('@entity' => drupal_strtolower($entity_info['label']))),
+        'module' => 'token',
       );
     }
   }
@@ -126,6 +127,13 @@ function token_token_info() {
     'description' => t('The URL of the one-time login page for the user account.'),
     'restricted' => TRUE,
   );
+  if (variable_get('user_pictures', 0)) {
+    $info['tokens']['user']['picture'] = array(
+      'name' => t('Picture'),
+      'description' => t('The picture of the user.'),
+      'type' => 'file',
+    );
+  }
 
   // Menu link tokens (work regardless if menu module is enabled or not).
   $info['types']['menu-link'] = array(
@@ -304,6 +312,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
   }
 
+  // File tokens.
   if ($type == 'file' && !empty($data['file'])) {
     $file = $data['file'];
 
@@ -314,6 +323,28 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           $replacements[$original] = $sanitize ? check_plain($extension) : $extension;
           break;
       }
+    }
+  }
+
+  // User tokens.
+  if ($type == 'user' && !empty($data['user'])) {
+    $account = $data['user'];
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'picture':
+          if (variable_get('user_pictures', 0)) {
+            $replacements[$original] = theme('user_picture', array('account' => $account));
+          }
+          break;
+      }
+    }
+
+    // Chained token relationships.
+    if (variable_get('user_pictures', 0) && !empty($account->picture) && ($picture_tokens = token_find_with_prefix($tokens, 'picture'))) {
+      // @todo Remove when core bug http://drupal.org/node/978028 is fixed.
+      $account->picture->description = '';
+      $replacements += token_generate('file', $picture_tokens, array('file' => $account->picture), $options);
     }
   }
 
@@ -415,6 +446,12 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
         // @todo Support entity:label
         // @todo Support entity:url
         case 'path':
+          $token_info = token_get_token_info($type, $name);
+          if (empty($token_info['module']) || $token_info['module'] != 'token') {
+            // We must check that this token was added by token.module itself
+            // otherwise we may cause an array to be returned.
+            continue;
+          }
           if ($uri = entity_uri($entity_type, $entity)) {
             $alias = drupal_get_path_alias($uri['path'], $language_code);
             $replacements[$original] = $sanitize ? check_plain($alias) : $alias;

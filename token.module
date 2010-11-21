@@ -158,6 +158,8 @@ function token_form_alter(&$form, $form_state, $form_id) {
     // Profile field forms.
     case 'profile_field_form':
     case 'profile_field_delete':
+    // User picture form.
+    case 'user_admin_settings':
       $form += array('#submit' => array());
       array_unshift($form['#submit'], 'token_clear_cache');
       break;
@@ -265,7 +267,7 @@ function token_flush_caches() {
 /**
  * Retrieve, sort, store token info from the cache.
  */
-function token_get_info($token_type = NULL) {
+function token_get_info() {
   global $language;
 
   // Use the advanced drupal_static() pattern, since this is called very often.
@@ -303,12 +305,26 @@ function token_get_info($token_type = NULL) {
     }
   }
 
-  if (empty($token_type)) {
-    return $token_info;
-  }
-  elseif (isset($token_info[$token_type])) {
-    return $token_info[$token_type];
-  }
+  return $token_info;
+}
+
+/**
+ * Retrieve information about a specific token.
+ *
+ * @param $token_type
+ *   The token type.
+ * @param $token
+ *   The token name.
+ *
+ * @return
+ *   The array of information from token_get_info()'s
+ *   $info[$token_type][$token].
+ *
+ * @see token_get_info()
+ */
+function token_get_token_info($token_type, $token) {
+  $token_info = token_get_info();
+  return isset($token_info['tokens'][$token_type][$token]) ? $token_info['tokens'][$token_type][$token] : NULL;
 }
 
 /**
