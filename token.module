@@ -463,6 +463,7 @@ function token_element_validate(&$element, &$form_state) {
   }
 
   $tokens = token_scan($value);
+  // @todo Find old Drupal 6 style tokens and add them to invalid tokens.
 
   // Validate if an element must have a minimum number of tokens.
   if (isset($element['#min_tokens']) && count($tokens) < $element['#min_tokens']) {
@@ -494,6 +495,22 @@ function token_element_validate(&$element, &$form_state) {
  */
 function token_element_validate_token_context(&$element, &$form_state) {
   return token_element_validate($element, $form_state);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function token_form_field_ui_field_edit_form_alter(&$form, $form_state) {
+  if (($form['#field']['type'] == 'file' || $form['#field']['type'] == 'image') && isset($form['instance']['settings']['file_directory']) && !module_exists('filefield_paths')) {
+    // GAH! We can only support global tokens in the upload file directory path.
+    $form['instance']['settings']['file_directory']['#element_validate'][] = 'token_element_validate';
+    $form['instance']['settings']['file_directory']['#token_types'] = array();
+    $form['instance']['settings']['token_tree'] = array(
+      '#theme' => 'token_tree',
+      '#token_types' => array(),
+      '#weight' => $form['instance']['settings']['file_directory']['#weight'] + 0.5,
+    );
+  }
 }
 
 /**
@@ -561,12 +578,12 @@ function token_form_user_admin_settings_alter(&$form, &$form_state) {
       }
       elseif ($element[$sub_key]['#type'] == 'textfield' && substr($sub_key, -8) === '_subject') {
         // Add validation to subject textfields.
-        $element[$sub_key]['#element_validate'][] = 'token_element_validate_token_context';
+        $element[$sub_key]['#element_validate'][] = 'token_element_validate';
         $element[$sub_key] += array('#token_types' => array('user'));
       }
       elseif ($element[$sub_key]['#type'] == 'textarea' && substr($sub_key, -5) === '_body') {
         // Add validation to body textareas.
-        $element[$sub_key]['#element_validate'][] = 'token_element_validate_token_context';
+        $element[$sub_key]['#element_validate'][] = 'token_element_validate';
         $element[$sub_key] += array('#token_types' => array('user'));
       }
     }
