@@ -266,8 +266,22 @@ function token_flush_caches() {
 
 /**
  * Retrieve, sort, store token info from the cache.
+ *
+ * @param $token_type
+ *   The optional token type that if specified will return
+ *   $info['types'][$token_type].
+ * @param $token
+ *   The optional token name if specified will return
+ *   $info['tokens'][$token_type][$token].
+ *
+ * @return
+ *   An array of all token information from hook_token_info(), or the array
+ *   of a token type or specific token.
+ *
+ * @see hook_token_info()
+ * @see hook_token_info_alter()
  */
-function token_get_info() {
+function token_get_info($token_type = NULL, $token = NULL) {
   global $language;
 
   // Use the advanced drupal_static() pattern, since this is called very often.
@@ -305,26 +319,15 @@ function token_get_info() {
     }
   }
 
-  return $token_info;
-}
-
-/**
- * Retrieve information about a specific token.
- *
- * @param $token_type
- *   The token type.
- * @param $token
- *   The token name.
- *
- * @return
- *   The array of information from token_get_info()'s
- *   $info[$token_type][$token].
- *
- * @see token_get_info()
- */
-function token_get_token_info($token_type, $token) {
-  $token_info = token_get_info();
-  return isset($token_info['tokens'][$token_type][$token]) ? $token_info['tokens'][$token_type][$token] : NULL;
+  if (isset($token_type) && isset($token)) {
+    return isset($token_info['tokens'][$token_type][$token]) ? $token_info['tokens'][$token_type][$token] : NULL;
+  }
+  elseif (isset($token_type)) {
+    return isset($token_info['types'][$token_type]) ? $token_info['types'][$token_type] : NULL;
+  }
+  else {
+    return $token_info;
+  }
 }
 
 /**

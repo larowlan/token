@@ -446,8 +446,8 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
         // @todo Support entity:label
         // @todo Support entity:url
         case 'path':
-          $token_info = token_get_token_info($type, $name);
-          if (empty($token_info['module']) || $token_info['module'] != 'token') {
+          $token_info = token_get_info($type, $name);
+          if (!isset($token_info['module']) || $token_info['module'] != 'token') {
             // We must check that this token was added by token.module itself
             // otherwise we may cause an array to be returned.
             continue;
