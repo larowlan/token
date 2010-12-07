@@ -112,6 +112,8 @@ class TokenUnitTestCase extends TokenTestHelper {
         '[node:created:custom:mm-YYYY]',
         '[site:name]',
         '[site:slogan]',
+        '[current-date:short]',
+        '[current-user:name]',
       ),
       'invalid tokens' => array(
         '[node:title:invalid]',

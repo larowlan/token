@@ -408,6 +408,10 @@ function token_get_invalid_tokens($type, $tokens) {
   $token_info = token_get_info();
   $invalid_tokens = array();
 
+  // Normalize the token type (e.g. if $type is 'current-user' we need to
+  // convert it to the 'user' type).
+  $type = $token_info['types'][$type]['type'];
+
   foreach ($tokens as $token => $full_token) {
     // Split token up if it has chains.
     $parts = explode(':', $token, 2);
