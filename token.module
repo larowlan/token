@@ -803,7 +803,7 @@ function token_find_duplicate_tokens() {
  * @see _token_menu_link_translate()
  */
 function token_menu_link_load($mlid) {
-  $cache = &drupal_static(__FUNCTION__);
+  $cache = &drupal_static(__FUNCTION__, array());
 
   if (!is_numeric($mlid)) {
     return FALSE;
@@ -821,7 +821,7 @@ function token_menu_link_load($mlid) {
 }
 
 function token_book_link_load($mlid) {
-  $cache = &drupal_static(__FUNCTION__);
+  $cache = &drupal_static(__FUNCTION__, array());
 
   if (!is_numeric($mlid)) {
     return FALSE;
