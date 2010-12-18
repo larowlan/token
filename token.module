@@ -300,18 +300,24 @@ function token_get_info($token_type = NULL, $token = NULL) {
     else {
       $token_info = token_info();
 
+      foreach (array_keys($token_info['types']) as $type_key) {
+        if (isset($token_info['types'][$type_key]['type'])) {
+          // If this token type extends another token type, then merge in
+          // the base token type's tokens.
+          $token_info['tokens'] += array($type_key => array());
+          $token_info['tokens'][$type_key] += $token_info['tokens'][$token_info['types'][$type_key]['type']];
+        }
+        else {
+          // Add a 'type' value to each token type so we can properly use
+          // token_type_load().
+          $token_info['types'][$type_key]['type'] = $type_key;
+        }
+      }
+
       // Pre-sort tokens.
       uasort($token_info['types'], 'token_asort_tokens');
       foreach (array_keys($token_info['tokens']) as $type) {
         uasort($token_info['tokens'][$type], 'token_asort_tokens');
-      }
-
-      // Add a 'type' value to each token type so we can properly use
-      // token_type_load().
-      foreach (array_keys($token_info['types']) as $type_key) {
-        if (!isset($token_info['types'][$type_key]['type'])) {
-          $token_info['types'][$type_key]['type'] = $type_key;
-        }
       }
 
       // Store info in cache for future use.
@@ -407,10 +413,6 @@ function token_get_invalid_tokens_by_context($value, $valid_types = array()) {
 function token_get_invalid_tokens($type, $tokens) {
   $token_info = token_get_info();
   $invalid_tokens = array();
-
-  // Normalize the token type (e.g. if $type is 'current-user' we need to
-  // convert it to the 'user' type).
-  $type = $token_info['types'][$type]['type'];
 
   foreach ($tokens as $token => $full_token) {
     // Split token up if it has chains.
@@ -716,8 +718,7 @@ function _token_build_tree($token_type, array $options) {
   }
 
   $tree = array();
-  $root_token_type = $info['types'][$token_type]['type'];
-  foreach ($info['tokens'][$root_token_type] as $token => $token_info) {
+  foreach ($info['tokens'][$token_type] as $token => $token_info) {
     // Build the raw token string.
     $token_parents = $options['parents'];
     if (empty($token_parents)) {
@@ -788,10 +789,11 @@ function token_find_duplicate_tokens() {
 }
 
 /**
- * Get a menu link by its mlid, access checked and link translated for rendering.
+ * Get a translated menu link by its mlid, without access checking.
  *
  * This function is a copy of menu_link_load() but with its own cache and a
- * simpler query to load the link.
+ * simpler query to load the link. This also skips normal menu link access
+ * checking by using _token_menu_link_translate().
  *
  * @param $mlid
  *   The mlid of the menu item.
@@ -820,6 +822,22 @@ function token_menu_link_load($mlid) {
   return $cache[$mlid];
 }
 
+/**
+ * Get a translated book menu link by its mlid, without access checking.
+ *
+ * This function is a copy of book_link_load() but with its own cache and a
+ * simpler query to load the link. This also skips normal menu link access
+ * checking by using _token_menu_link_translate().
+ *
+ * @param $mlid
+ *   The mlid of the book menu item.
+ *
+ * @return
+ *   A book menu link translated for rendering.
+ *
+ * @see book_link_load()
+ * @see _token_menu_link_translate()
+ */
 function token_book_link_load($mlid) {
   $cache = &drupal_static(__FUNCTION__, array());
 

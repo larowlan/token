@@ -116,6 +116,7 @@ function token_token_info() {
     'description' => t('The extension of the file.'),
   );
 
+  // User tokens.
   // Add information on the restricted user tokens.
   $info['tokens']['user']['cancel-url'] = array(
     'name' => t('Account cancellation URL'),
@@ -134,6 +135,12 @@ function token_token_info() {
       'type' => 'file',
     );
   }
+
+  // Current user tokens.
+  $info['tokens']['current-user']['ip-address'] = array(
+    'name' => t('IP address'),
+    'description' => 'The IP address of the current user.',
+  );
 
   // Menu link tokens (work regardless if menu module is enabled or not).
   $info['types']['menu-link'] = array(
@@ -345,6 +352,18 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       // @todo Remove when core bug http://drupal.org/node/978028 is fixed.
       $account->picture->description = '';
       $replacements += token_generate('file', $picture_tokens, array('file' => $account->picture), $options);
+    }
+  }
+
+  // Current user tokens.
+  if ($type == 'current-user') {
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'ip-address':
+          $ip = ip_address();
+          $replacements[$original] = $sanitize ? check_plain($ip) : $ip;
+          break;
+      }
     }
   }
 

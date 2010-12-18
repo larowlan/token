@@ -54,7 +54,6 @@ function theme_token_tree($variables) {
     if (!in_array($type, $token_types)) {
       continue;
     }
-    $type_info += array('type' => $type);
 
     if (count($token_types) > 1) {
       $row = _token_token_tree_format_row($type, $type_info, TRUE);

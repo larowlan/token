@@ -70,7 +70,7 @@ class TokenTestHelper extends DrupalWebTestCase {
     $options += array('url_options' => array());
     $this->drupalGet($url, $options['url_options']);
     $this->refreshVariables();
-    $result = variable_get('token_page_tokens');
+    $result = variable_get('token_page_tokens', array());
 
     if (!isset($result['values']) || !is_array($result['values'])) {
       return $this->fail('Failed to generate tokens.');
@@ -114,6 +114,7 @@ class TokenUnitTestCase extends TokenTestHelper {
         '[site:slogan]',
         '[current-date:short]',
         '[current-user:name]',
+        '[current-user:ip-address]',
       ),
       'invalid tokens' => array(
         '[node:title:invalid]',
@@ -121,6 +122,7 @@ class TokenUnitTestCase extends TokenTestHelper {
         '[node:created:short:invalid]',
         '[invalid:title]',
         '[site:invalid]',
+        '[user:ip-address]',
         // Deprecated tokens
         '[node:tnid]',
         '[node:type]',
@@ -389,6 +391,7 @@ class TokenUserTestCase extends TokenTestHelper {
     $user_tokens = array(
       'picture' => theme('user_picture', array('account' => $this->account)),
       'picture:fid' => $this->account->picture->fid,
+      'ip-address' => NULL,
     );
     $this->assertTokens('user', $this->account, $user_tokens);
 
@@ -399,8 +402,15 @@ class TokenUserTestCase extends TokenTestHelper {
     $user_tokens = array(
       'picture' => NULL,
       'picture:fid' => NULL,
+      'ip-address' => NULL,
     );
     $this->assertTokens('user', $this->account, $user_tokens);
+
+    // The ip address token should work for the current user token type.
+    $tokens = array(
+      'ip-address' => ip_address(),
+    );
+    $this->assertTokens('current-user', NULL, $tokens);
   }
 }
 
