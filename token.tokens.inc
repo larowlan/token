@@ -35,15 +35,24 @@ function token_token_info_alter(&$info) {
     }
     $token_type = $entity_info['token type'];
 
-    // Add [entity:path] tokens if they do not already exist.
-    if (!isset($info['tokens'][$token_type]['path']) && (!empty($entity_info['uri callback']) || !empty($entity_info['bundles'][$entity]['uri callback']))) {
-      $info['tokens'][$token_type]['path'] = array(
-        'name' => t('Path'),
-        'description' => t('The URL alias of the @entity.', array('@entity' => drupal_strtolower($entity_info['label']))),
+    // Add [entity:url] tokens if they do not already exist.
+    // @todo Support entity:label
+    if (!isset($info['tokens'][$token_type]['url']) && (!empty($entity_info['uri callback']) || !empty($entity_info['bundles'][$entity]['uri callback']))) {
+      $info['tokens'][$token_type]['url'] = array(
+        'name' => t('URL'),
+        'description' => t('The URL of the @entity.', array('@entity' => drupal_strtolower($entity_info['label']))),
         'module' => 'token',
+        'type' => 'url',
       );
     }
   }
+
+  $info['tokens']['comment']['url']['type'] = 'url';
+  //$info['tokens']['file']['url']['type'] = 'url';
+  $info['tokens']['node']['url']['type'] = 'url';
+  $info['tokens']['term']['url']['type'] = 'url';
+  $info['tokens']['user']['url']['type'] = 'url';
+  // @todo Support other tokens not named 'url'
 }
 
 /**
@@ -91,6 +100,7 @@ function token_token_info() {
   $info['tokens']['content-type']['edit-url'] = array(
     'name' => t('Edit URL'),
     'description' => t("The URL of the content type's edit page."),
+    //'type' => 'url',
   );
 
   // Taxonomy term and vocabulary tokens.
@@ -98,6 +108,7 @@ function token_token_info() {
     $info['tokens']['term']['edit-url'] = array(
       'name' => t('Edit URL'),
       'description' => t("The URL of the taxonomy term's edit page."),
+      //'type' => 'url',
     );
 
     $info['tokens']['vocabulary']['machine-name'] = array(
@@ -107,6 +118,7 @@ function token_token_info() {
     $info['tokens']['vocabulary']['edit-url'] = array(
       'name' => t('Edit URL'),
       'description' => t("The URL of the vocabulary's edit page."),
+      //'type' => 'url',
     );
   }
 
@@ -122,11 +134,13 @@ function token_token_info() {
     'name' => t('Account cancellation URL'),
     'description' => t('The URL of the confirm delete page for the user account.'),
     'restricted' => TRUE,
+    //'type' => 'url',
   );
   $info['tokens']['user']['one-time-login-url'] = array(
     'name' => t('One-time login URL'),
     'description' => t('The URL of the one-time login page for the user account.'),
     'restricted' => TRUE,
+    //'type' => 'url',
   );
   if (variable_get('user_pictures', 0)) {
     $info['tokens']['user']['picture'] = array(
@@ -156,13 +170,10 @@ function token_token_info() {
     'name' => t('Title'),
     'description' => t('The title of the menu link.'),
   );
-  $info['tokens']['menu-link']['path'] = array(
-    'name' => t('Path'),
-    'description' => t('The URL alias of the menu link.'),
-  );
   $info['tokens']['menu-link']['url'] = array(
     'name' => t('URL'),
     'description' => t('The URL of the menu link.'),
+    'type' => 'url',
   );
   $info['tokens']['menu-link']['parent'] = array(
     'name' => t('Parent'),
@@ -184,13 +195,10 @@ function token_token_info() {
     'name' => t('Title'),
     'description' => t('The title of the current page.'),
   );
-  $info['tokens']['current-page']['path'] = array(
-    'name' => t('Path'),
-    'description' => t('The URL alias of the current page.'),
-  );
   $info['tokens']['current-page']['url'] = array(
     'name' => t('URL'),
     'description' => t('The URL of the current page.'),
+    'type' => 'url',
   );
   $info['tokens']['current-page']['page-number'] = array(
     'name' => t('Page number'),
@@ -200,6 +208,28 @@ function token_token_info() {
     'name' => t('Page argument'),
     'description' => t("The specific argument of the current page (e.g. 'arg:1' on the page 'node/1' returns '1')."),
     'dynamic' => TRUE,
+  );
+
+  $info['types']['url'] = array(
+    'name' => t('URL'),
+    'description' => t('Tokens related to URLs.'),
+    'needs-data' => 'url',
+  );
+  $info['tokens']['url']['path'] = array(
+    'name' => t('Internal path'),
+    'description' => t('The internal Drupal path of the URL.'),
+  );
+  $info['tokens']['url']['alias'] = array(
+    'name' => t('Alias'),
+    'description' => t('The alias of the URL.'),
+  );
+  $info['tokens']['url']['relative'] = array(
+    'name' => t('Relative URL'),
+    'description' => t('The relative URL.'),
+  );
+  $info['tokens']['url']['absolute'] = array(
+    'name' => t('Absolute URL'),
+    'description' => t('The absolute URL.'),
   );
 
   return $info;
@@ -226,6 +256,16 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
   // @todo Remove when http://drupal.org/node/943028 is fixed.
   if ($type == 'current-date') {
     $replacements += token_generate('date', $tokens, array('date' => REQUEST_TIME), $options);
+  }
+
+  // Comment tokens.
+  if ($type == 'comment' && !empty($data['comment'])) {
+    $comment = $data['comment'];
+
+    // Chained token relationships.
+    if (($url_tokens = token_find_with_prefix($tokens, 'url'))) {
+      $replacements += token_generate('url', $url_tokens, entity_uri('comment', $comment), $options);
+    }
   }
 
   // Node tokens.
@@ -256,6 +296,9 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
     if (($node_type_tokens = token_find_with_prefix($tokens, 'content-type')) && $node_type = node_type_load($node->type)) {
       $replacements += token_generate('content-type', $node_type_tokens, array('node_type' => $node_type), $options);
+    }
+    if (($url_tokens = token_find_with_prefix($tokens, 'url'))) {
+      $replacements += token_generate('url', $url_tokens, entity_uri('node', $node), $options);
     }
   }
 
@@ -299,6 +342,11 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           $replacements[$original] = url("taxonomy/term/{$term->tid}/edit", $url_options);
           break;
       }
+    }
+
+    // Chained token relationships.
+    if (($url_tokens = token_find_with_prefix($tokens, 'url'))) {
+      $replacements += token_generate('url', $url_tokens, entity_uri('taxonomy_term', $term), $options);
     }
   }
 
@@ -353,6 +401,9 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       $account->picture->description = '';
       $replacements += token_generate('file', $picture_tokens, array('file' => $account->picture), $options);
     }
+    if (($url_tokens = token_find_with_prefix($tokens, 'url'))) {
+      $replacements += token_generate('url', $url_tokens, entity_uri('user', $account), $options);
+    }
   }
 
   // Current user tokens.
@@ -384,10 +435,6 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
         case 'title':
           $replacements[$original] = $sanitize ? check_plain($link['title']) : $link['title'];
           break;
-        case 'path':
-          $alias = drupal_get_path_alias($link['href'], $language_code);
-          $replacements[$original] = $sanitize ? check_plain($alias) : $alias;
-          break;
         case 'url':
           $replacements[$original] = url($link['href'], $url_options);
           break;
@@ -411,6 +458,9 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     if (!empty($link['p1']) && $link['p1'] != $link['mlid'] && ($root_tokens = token_find_with_prefix($tokens, 'root')) && $root = token_menu_link_load($link['p1'])) {
       $replacements += token_generate('menu-link', $root_tokens, array('menu-link' => $root), $options);
     }
+    if ($url_tokens = token_find_with_prefix($tokens, 'url')) {
+      $replacements += token_generate('url', $url_tokens, array('path' => $link['href']), $options);
+    }
   }
 
   // Current page tokens.
@@ -421,10 +471,6 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       switch ($name) {
         case 'title':
           $replacements[$original] = drupal_get_title();
-          break;
-        case 'path':
-          $alias = drupal_get_path_alias($current_path, $language_code);
-          $replacements[$original] = $sanitize ? check_plain($alias) : $alias;
           break;
         case 'url':
           $replacements[$original] = url($current_path, $url_options);
@@ -448,6 +494,39 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
         }
       }
     }
+
+    // Chained token relationships.
+    if ($url_tokens = token_find_with_prefix($tokens, 'url')) {
+      $replacements += token_generate('url', $url_tokens, array('path' => $current_path), $options);
+    }
+  }
+
+  // URL tokens.
+  if ($type == 'url' && !empty($data['path'])) {
+    $path = $data['path'];
+
+    if (isset($data['options'])) {
+      // Merge in the URL options if available.
+      $url_options = $data['options'] + $url_options;
+    }
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'path':
+          $replacements[$original] = $sanitize ? check_plain($path) : $path;
+          break;
+        case 'alias':
+          $alias = drupal_get_path_alias($path, $language_code);
+          $replacements[$original] = $sanitize ? check_plain($alias) : $alias;
+          break;
+        case 'absolute':
+          $replacements[$original] = url($path, $url_options);
+          break;
+        case 'relative':
+          $replacements[$original] = url($path, array('absolute' => FALSE) + $url_options);
+          break;
+      }
+    }
   }
 
   // Entity tokens.
@@ -462,21 +541,17 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
-        // @todo Support entity:label
-        // @todo Support entity:url
-        case 'path':
-          $token_info = token_get_info($type, $name);
-          if (!isset($token_info['module']) || $token_info['module'] != 'token') {
-            // We must check that this token was added by token.module itself
-            // otherwise we may cause an array to be returned.
-            continue;
-          }
-          if ($uri = entity_uri($entity_type, $entity)) {
-            $alias = drupal_get_path_alias($uri['path'], $language_code);
-            $replacements[$original] = $sanitize ? check_plain($alias) : $alias;
+        case 'url':
+          if (_token_module($type, 'url') == 'token' && $uri = entity_uri($entity_type, $entity)) {
+            $replacements[$original] = url($uri['path'], $uri['options']);
           }
           break;
       }
+    }
+
+    // Chained token relationships.
+    if (($url_tokens = token_find_with_prefix($tokens, 'url')) && _token_module($type, 'url') == 'token') {
+      $replacements += token_generate('url', $url_tokens, entity_uri($entity_type, $entity), $options);
     }
   }
 

@@ -337,6 +337,15 @@ function token_get_info($token_type = NULL, $token = NULL) {
 }
 
 /**
+ * Return the module responsible for a token if defined in
+ * $info['tokens']['type']['module'].
+ */
+function _token_module($type, $name) {
+  $token_info = token_get_info($type, $name);
+  return isset($token_info['module']) ? $token_info['module'] : NULL;
+}
+
+/**
  * uasort() callback to sort tokens by the 'name' property.
  */
 function token_asort_tokens($token_a, $token_b) {

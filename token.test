@@ -21,7 +21,10 @@ class TokenTestHelper extends DrupalWebTestCase {
     $values = token_generate($type, $token_input, array($type => $object), $options);
     foreach ($tokens as $token => $expected) {
       if (!isset($expected)) {
-        $this->assertTrue(!isset($values[$token]) || $result['values'][$token] === $token, t("Token value for [@type:@token] was not generated.", array('@type' => $type, '@token' => $token)));
+        $this->assertTrue(!isset($values[$token]), t("Token value for [@type:@token] was not generated.", array('@type' => $type, '@token' => $token)));
+      }
+      elseif (!isset($values[$token])) {
+        $this->fail(t("Token value for [@type:@token] was not generated.", array('@type' => $type, '@token' => $token)));
       }
       else {
         $this->assertIdentical($values[$token], $expected, t("Token value for [@type:@token] was '@actual', expected value '@expected'.", array('@type' => $type, '@token' => $token, '@actual' => $values[$token], '@expected' => $expected)));
@@ -144,6 +147,64 @@ class TokenUnitTestCase extends TokenTestHelper {
   }
 }
 
+class TokenCommentTestCase extends TokenTestHelper {
+  public static function getInfo() {
+    return array(
+      'name' => 'Comment token tests',
+      'description' => 'Test the comment tokens.',
+      'group' => 'Token',
+    );
+  }
+
+  function testCommentTokens() {
+    $node = $this->drupalCreateNode(array('comment' => COMMENT_NODE_OPEN));
+
+    $parent_comment = new stdClass;
+    $parent_comment->nid = $node->nid;
+    $parent_comment->pid = 0;
+    $parent_comment->cid = NULL;
+    $parent_comment->uid = 0;
+    $parent_comment->name = 'anonymous user';
+    $parent_comment->mail = 'anonymous@example.com';
+    $parent_comment->subject = $this->randomName();
+    $parent_comment->timestamp = mt_rand($node->created, REQUEST_TIME);
+    $parent_comment->language = LANGUAGE_NONE;
+    $parent_comment->body[LANGUAGE_NONE][0] = $this->randomName();
+    comment_save($parent_comment);
+
+    $tokens = array(
+      'url' => url('comment/' . $parent_comment->cid, array('fragment' => 'comment-' . $parent_comment->cid, 'absolute' => TRUE)),
+      'url:absolute' => url('comment/' . $parent_comment->cid, array('fragment' => 'comment-' . $parent_comment->cid, 'absolute' => TRUE)),
+      'url:relative' => url('comment/' . $parent_comment->cid, array('fragment' => 'comment-' . $parent_comment->cid, 'absolute' => FALSE)),
+      'url:path' => 'comment/' . $parent_comment->cid,
+      'url:alias' => 'comment/' . $parent_comment->cid,
+      'parent:url:absolute' => NULL,
+    );
+    $this->assertTokens('comment', $parent_comment, $tokens);
+
+    $comment = new stdClass();
+    $comment->nid = $node->nid;
+    $comment->pid = $parent_comment->cid;
+    $comment->cid = NULL;
+    $comment->uid = 1;
+    $comment->subject = $this->randomName();
+    $comment->timestamp = mt_rand($parent_comment->created, REQUEST_TIME);
+    $comment->language = LANGUAGE_NONE;
+    $comment->body[LANGUAGE_NONE][0] = $this->randomName();
+    comment_save($comment);
+
+    $tokens = array(
+      'url' => url('comment/' . $comment->cid, array('fragment' => 'comment-' . $comment->cid, 'absolute' => TRUE)),
+      'url:absolute' => url('comment/' . $comment->cid, array('fragment' => 'comment-' . $comment->cid, 'absolute' => TRUE)),
+      'url:relative' => url('comment/' . $comment->cid, array('fragment' => 'comment-' . $comment->cid, 'absolute' => FALSE)),
+      'url:path' => 'comment/' . $comment->cid,
+      'url:alias' => 'comment/' . $comment->cid,
+      'parent:url:absolute' => url('comment/' . $parent_comment->cid, array('fragment' => 'comment-' . $parent_comment->cid, 'absolute' => TRUE)),
+    );
+    $this->assertTokens('comment', $comment, $tokens);
+  }
+}
+
 class TokenNodeTestCase extends TokenTestHelper {
   public static function getInfo() {
     return array(
@@ -159,7 +220,10 @@ class TokenNodeTestCase extends TokenTestHelper {
       'source' => NULL,
       'source:nid' => NULL,
       'log' => $source_node->log,
-      'path' => 'content/source-node',
+      'url:absolute' => url("node/{$source_node->nid}", array('absolute' => TRUE)),
+      'url:relative' => url("node/{$source_node->nid}", array('absolute' => FALSE)),
+      'url:path' => "node/{$source_node->nid}",
+      'url:alias' => 'content/source-node',
       'content-type' => 'Basic page',
       'content-type:name' => 'Basic page',
       'content-type:machine-name' => 'page',
@@ -178,7 +242,10 @@ class TokenNodeTestCase extends TokenTestHelper {
       'source' => $source_node->title,
       'source:nid' => $source_node->nid,
       'log' => '',
-      'path' => "node/{$translated_node->nid}",
+      'url:absolute' => url("node/{$translated_node->nid}", array('absolute' => TRUE)),
+      'url:relative' => url("node/{$translated_node->nid}", array('absolute' => FALSE)),
+      'url:path' => "node/{$translated_node->nid}",
+      'url:alias' => "node/{$translated_node->nid}",
       'content-type' => 'Article',
       'content-type:name' => 'Article',
       'content-type:machine-name' => 'article',
@@ -236,8 +303,11 @@ class TokenMenuTestCase extends TokenTestHelper {
       'menu:description' => 'The <em>Main</em> menu is used on many sites to show the major sections of the site, often in a top navigation bar.',
       'menu:menu-link-count' => 3, // Standard install creates one link.
       'menu:edit-url' => url("admin/structure/menu/manage/main-menu", array('absolute' => TRUE)),
-      'path' => 'root/parent',
       'url' => url('root/parent', array('absolute' => TRUE)),
+      'url:absolute' => url('root/parent', array('absolute' => TRUE)),
+      'url:relative' => url('root/parent', array('absolute' => FALSE)),
+      'url:path' => 'root/parent',
+      'url:alias' => 'root/parent',
       'edit-url' => url("admin/structure/menu/item/{$parent_link['mlid']}/edit", array('absolute' => TRUE)),
       'parent' => 'Root link',
       'parent:mlid' => $root_link['mlid'],
@@ -267,8 +337,8 @@ class TokenMenuTestCase extends TokenTestHelper {
       'menu-link:mlid' => $node->menu['mlid'],
       'menu-link:title' => 'Node link',
       'menu-link:menu' => 'Main menu',
-      'menu-link:path' => 'node/' . $node->nid,
       'menu-link:url' => url('node/' . $node->nid, array('absolute' => TRUE)),
+      'menu-link:url:path' => 'node/' . $node->nid,
       'menu-link:edit-url' => url("admin/structure/menu/item/{$node->menu['mlid']}/edit", array('absolute' => TRUE)),
       'menu-link:parent' => 'Parent link',
       'menu-link:parent:mlid' => $node->menu['plid'],
@@ -304,14 +374,22 @@ class TokenTaxonomyTestCase extends TokenTestHelper {
   function testTaxonomyTokens() {
     $parent_term = $this->addTerm($this->vocab, array('path' => array('alias' => 'parent-term')));
     $parent_term_tokens = array(
-      'path' => 'parent-term',
+      'url' => url("taxonomy/term/{$parent_term->tid}", array('absolute' => TRUE)),
+      'url:absolute' => url("taxonomy/term/{$parent_term->tid}", array('absolute' => TRUE)),
+      'url:relative' => url("taxonomy/term/{$parent_term->tid}", array('absolute' => FALSE)),
+      'url:path' => "taxonomy/term/{$parent_term->tid}",
+      'url:alias' => 'parent-term',
       'edit-url' => url("taxonomy/term/{$parent_term->tid}/edit", array('absolute' => TRUE)),
     );
     $this->assertTokens('term', $parent_term, $parent_term_tokens);
 
     $child_term = $this->addTerm($this->vocab, array('parent' => $parent_term->tid));
     $child_term_tokens = array(
-      'path' => "taxonomy/term/{$child_term->tid}",
+      'url' => url("taxonomy/term/{$child_term->tid}", array('absolute' => TRUE)),
+      'url:absolute' => url("taxonomy/term/{$child_term->tid}", array('absolute' => TRUE)),
+      'url:relative' => url("taxonomy/term/{$child_term->tid}", array('absolute' => FALSE)),
+      'url:path' => "taxonomy/term/{$child_term->tid}",
+      'url:alias' => "taxonomy/term/{$child_term->tid}",
       'edit-url' => url("taxonomy/term/{$child_term->tid}/edit", array('absolute' => TRUE)),
     );
     $this->assertTokens('term', $child_term, $child_term_tokens);
@@ -604,8 +682,11 @@ class TokenCurrentPageTestCase extends TokenTestHelper {
   function testCurrentPageTokens() {
     $tokens = array(
       '[current-page:title]' => 'Welcome to Drupal',
-      '[current-page:path]' => 'node',
       '[current-page:url]' => url('node', array('absolute' => TRUE)),
+      '[current-page:url:absolute]' => url('node', array('absolute' => TRUE)),
+      '[current-page:url:relative]' => url('node', array('absolute' => FALSE)),
+      '[current-page:url:path]' => 'node',
+      '[current-page:url:alias]' => 'node',
       '[current-page:page-number]' => 1,
       '[current-page:arg:0]' => 'node',
       '[current-page:arg:1]' => NULL,
@@ -615,8 +696,11 @@ class TokenCurrentPageTestCase extends TokenTestHelper {
     $node = $this->drupalCreateNode(array('title' => 'Node title', 'path' => array('alias' => 'node-alias')));
     $tokens = array(
       '[current-page:title]' => 'Node title',
-      '[current-page:path]' => 'node-alias',
       '[current-page:url]' => url("node/{$node->nid}", array('absolute' => TRUE)),
+      '[current-page:url:absolute]' => url("node/{$node->nid}", array('absolute' => TRUE)),
+      '[current-page:url:relative]' => url("node/{$node->nid}", array('absolute' => FALSE)),
+      '[current-page:url:path]' => "node/{$node->nid}",
+      '[current-page:url:alias]' => 'node-alias',
       '[current-page:page-number]' => 1,
       '[current-page:arg:0]' => 'node',
       '[current-page:arg:1]' => $node->nid,
