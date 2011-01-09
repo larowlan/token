@@ -481,7 +481,7 @@ function token_element_validate(&$element, &$form_state) {
   }
 
   $tokens = token_scan($value);
-  $title = empty($elements['#title']) ? $elements['#parents'][0] : $elements['#title'];
+  $title = empty($element['#title']) ? $element['#parents'][0] : $element['#title'];
   // @todo Find old Drupal 6 style tokens and add them to invalid tokens.
 
   // Validate if an element must have a minimum number of tokens.
