@@ -388,8 +388,14 @@ function token_get_global_token_types() {
  *   An array with the invalid tokens in their original raw forms.
  */
 function token_get_invalid_tokens_by_context($value, $valid_types = array()) {
-  // Add the token types that are always valid in global context.
-  $valid_types = array_merge($valid_types, token_get_global_token_types());
+  if (in_array('all', $valid_types)) {
+    $info = token_get_info();
+    $valid_types = array_keys($info['types']);
+  }
+  else {
+    // Add the token types that are always valid in global context.
+    $valid_types = array_merge($valid_types, token_get_global_token_types());
+  }
 
   $invalid_tokens = array();
   $value_tokens = is_string($value) ? token_scan($value) : $value;

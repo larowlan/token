@@ -116,8 +116,38 @@ class TokenUnitTestCase extends TokenTestHelper {
         '[site:name]',
         '[site:slogan]',
         '[current-date:short]',
-        '[current-user:name]',
+        '[current-user:uid]',
         '[current-user:ip-address]',
+      ),
+      'invalid tokens' => array(
+        '[node:title:invalid]',
+        '[node:created:invalid]',
+        '[node:created:short:invalid]',
+        '[invalid:title]',
+        '[site:invalid]',
+        '[user:ip-address]',
+        '[user:uid]',
+        '[comment:cid]',
+        // Deprecated tokens
+        '[node:tnid]',
+        '[node:type]',
+        '[node:type-name]',
+        '[date:short]',
+      ),
+      'types' => array('node'),
+    );
+    $tests[] = array(
+      'valid tokens' => array(
+        '[node:title]',
+        '[node:created:short]',
+        '[node:created:custom:invalid]',
+        '[node:created:custom:mm-YYYY]',
+        '[site:name]',
+        '[site:slogan]',
+        '[user:uid]',
+        '[comment:cid]',
+        '[current-date:short]',
+        '[current-user:uid]',
       ),
       'invalid tokens' => array(
         '[node:title:invalid]',
@@ -131,7 +161,7 @@ class TokenUnitTestCase extends TokenTestHelper {
         '[node:type]',
         '[node:type-name]',
       ),
-      'types' => array('node'),
+      'types' => array('all'),
     );
 
     foreach ($tests as $test) {
@@ -142,7 +172,7 @@ class TokenUnitTestCase extends TokenTestHelper {
 
       sort($invalid_tokens);
       sort($test['invalid tokens']);
-      $this->assertEqual($invalid_tokens, $test['invalid tokens'], 'Invalid tokens detected properly.');
+      $this->assertEqual($invalid_tokens, $test['invalid tokens'], 'Invalid tokens detected properly: ' . implode(', ', $invalid_tokens));
     }
   }
 }
