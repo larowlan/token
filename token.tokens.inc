@@ -851,6 +851,7 @@ function _token_profile_fields() {
   $fields = &drupal_static(__FUNCTION__);
 
   if (!isset($fields)) {
+    $fields = array();
     $results = db_query("SELECT name, title, category, type FROM {profile_field}");
     foreach ($results as $field) {
       $field->token_name = strtr($field->name, '_', '-');
