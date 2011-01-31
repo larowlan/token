@@ -916,3 +916,24 @@ function _token_menu_link_translate(&$item) {
 
   return $map;
 }
+
+/**
+ * Prepare a string for use as a valid token name.
+ *
+ * @param $name
+ *   The token name to clean.
+ * @return
+ *   The cleaned token name.
+ */
+function token_clean_token_name($name) {
+  static $names = array();
+
+  if (!isset($names[$name])) {
+    $cleaned_name = strtr($name, array(' ' => '-', '_' => '-', '/' => '-', '[' => '-', ']' => ''));
+    $cleaned_name = preg_replace('/[^\w\-]/i', '', $cleaned_name);
+    $cleaned_name = trim($cleaned_name, '-');
+    $names[$name] = $cleaned_name;
+  }
+
+  return $names[$name];
+}

@@ -854,7 +854,7 @@ function _token_profile_fields() {
     $fields = array();
     $results = db_query("SELECT name, title, category, type FROM {profile_field}");
     foreach ($results as $field) {
-      $field->token_name = strtr($field->name, '_', '-');
+      $field->token_name = token_clean_token_name($field->name);
       $fields[$field->token_name] = $field;
     }
   }
