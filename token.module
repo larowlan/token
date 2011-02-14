@@ -170,7 +170,7 @@ function token_form_alter(&$form, $form_state, $form_id) {
  * Clear token caches and static variables.
  */
 function token_clear_cache() {
-  cache_clear_all(NULL, 'cache_token');
+  cache_clear_all('*', 'cache_token', TRUE);
   drupal_static_reset('token_get_info');
   drupal_static_reset('token_get_global_token_types');
   drupal_static_reset('token_build_tree');
