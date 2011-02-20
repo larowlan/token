@@ -231,6 +231,10 @@ function token_token_info() {
     'name' => t('Absolute URL'),
     'description' => t('The absolute URL.'),
   );
+  $info['tokens']['url']['brief'] = array(
+    'name' => t('Brief URL'),
+    'description' => t('The URL without the protocol and trailing backslash.'),
+  );
 
   return $info;
 }
@@ -524,6 +528,9 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           break;
         case 'relative':
           $replacements[$original] = url($path, array('absolute' => FALSE) + $url_options);
+          break;
+        case 'brief':
+          $replacements[$original] = preg_replace(array('!^https?://!', '!/$!'), '', url($path, $url_options));
           break;
       }
     }
