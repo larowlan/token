@@ -772,3 +772,36 @@ class TokenCurrentPageTestCase extends TokenTestHelper {
     $this->assertPageTokens("node/{$node->nid}", $tokens);
   }
 }
+
+class TokenArrayTestCase extends TokenTestHelper {
+  public static function getInfo() {
+    return array(
+      'name' => 'Array token tests',
+      'description' => 'Test the array tokens.',
+      'group' => 'Token',
+    );
+  }
+
+  function testArrayTokens() {
+    $array = array(0 => 'a', 1 => 'b', 2 => 'c', 4 => 'd');
+
+    // Test the profile token values.
+    $tokens = array(
+      'first' => 'a',
+      'last' => 'd',
+      'value:0' => 'a',
+      'value:2' => 'c',
+      'count' => 4,
+      'keys' => '0, 1, 2, 4',
+      'keys:value:3' => '4',
+      'keys:join' => '0124',
+      'reversed' => 'd, c, b, a',
+      'reversed:keys' => '4, 2, 1, 0',
+      'join:/' => 'a/b/c/d',
+      'join' => 'abcd',
+      'join:, ' => 'a, b, c, d',
+      'join: ' => 'a b c d',
+    );
+    $this->assertTokens('array', $array, $tokens);
+  }
+}
