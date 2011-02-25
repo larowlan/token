@@ -1,4 +1,3 @@
-// $Id$
 
 /*
  * jQuery treeTable Plugin 2.3.0

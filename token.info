@@ -1,4 +1,3 @@
-; $Id$
 name = Token
 description = Provides a user interface for the Token API and some missing core tokens.
 core = 7.x
