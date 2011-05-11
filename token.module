@@ -10,6 +10,12 @@ define('TOKEN_MAX_DEPTH', 9);
  */
 function token_help($path, $arg) {
   if ($path == 'admin/help#token') {
+    if (current_path() != 'admin/help/token') {
+      // Because system_modules() executes hook_help() for each module to 'test'
+      // if they will return anything, but not actually display it, we want to
+      // return a TRUE value if this is not actually the help page.
+      return TRUE;
+    }
     $output = '<dl>';
     $output .= '<dt>' . t('List of the currently available tokens on this site') . '</dt>';
     $output .= '<dd>' . theme('token_tree', array('token_types' => 'all', 'click_insert' => FALSE, 'show_restricted' => TRUE)) . '</dd>';
