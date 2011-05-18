@@ -8,3 +8,11 @@
   padding-top: 0;
   padding-bottom: 0;
 }
+
+.token-group {
+  font-weight: bold;
+}
+
+.js .token-group {
+  font-weight: normal;
+}
