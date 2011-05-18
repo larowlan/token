@@ -307,10 +307,13 @@ function token_get_info($token_type = NULL, $token = NULL) {
 
       foreach (array_keys($token_info['types']) as $type_key) {
         if (isset($token_info['types'][$type_key]['type'])) {
+          $base_type = $token_info['types'][$type_key]['type'];
           // If this token type extends another token type, then merge in
           // the base token type's tokens.
-          $token_info['tokens'] += array($type_key => array());
-          $token_info['tokens'][$type_key] += $token_info['tokens'][$token_info['types'][$type_key]['type']];
+          if (isset($token_info['tokens'][$base_type])) {
+            $token_info['tokens'] += array($type_key => array());
+            $token_info['tokens'][$type_key] += $token_info['tokens'][$base_type];
+          }
         }
         else {
           // Add a 'type' value to each token type so we can properly use
@@ -734,7 +737,7 @@ function _token_build_tree($token_type, array $options) {
   );
 
   $info = token_get_info();
-  if ($options['depth'] <= 0 || !isset($info['types'][$token_type])) {
+  if ($options['depth'] <= 0 || !isset($info['types'][$token_type]) || !isset($info['tokens'][$token_type])) {
     return array();
   }
 
