@@ -11,15 +11,12 @@ class TokenTestHelper extends DrupalWebTestCase {
     parent::setUp($modules);
   }
 
-  function assertToken($type, $data, $token, $expected, array $options = array()) {
+  function assertToken($type, array $data, $token, $expected, array $options = array()) {
     $this->assertTokens($type, $data, array($token => $expected), $options);
   }
 
-  function assertTokens($type, $data, array $tokens, array $options = array()) {
+  function assertTokens($type, array $data, array $tokens, array $options = array()) {
     $token_input = drupal_map_assoc(array_keys($tokens));
-    if (!is_array($data)) {
-      $data = array($type => $data);
-    }
     $values = token_generate($type, $token_input, $data, $options);
     foreach ($tokens as $token => $expected) {
       if (!isset($expected)) {
@@ -34,11 +31,8 @@ class TokenTestHelper extends DrupalWebTestCase {
     }
   }
 
-  function assertNoTokens($type, $data, array $tokens, array $options = array()) {
+  function assertNoTokens($type, array $data, array $tokens, array $options = array()) {
     $token_input = drupal_map_assoc($tokens);
-    if (!is_array($data)) {
-      $data = array($type => $data);
-    }
     $values = token_generate($type, $token_input, $data, $options);
     foreach ($tokens as $token) {
       $this->assertTrue(!isset($values[$token]), t("Token value for [@type:@token] was not generated.", array('@type' => $type, '@token' => $token)));
@@ -242,7 +236,7 @@ class TokenCommentTestCase extends TokenTestHelper {
       'url:alias' => 'comment/' . $parent_comment->cid,
       'parent:url:absolute' => NULL,
     );
-    $this->assertTokens('comment', $parent_comment, $tokens);
+    $this->assertTokens('comment', array('comment' => $parent_comment), $tokens);
 
     $comment = new stdClass();
     $comment->nid = $node->nid;
@@ -263,7 +257,7 @@ class TokenCommentTestCase extends TokenTestHelper {
       'url:alias' => 'comment/' . $comment->cid,
       'parent:url:absolute' => url('comment/' . $parent_comment->cid, array('fragment' => 'comment-' . $parent_comment->cid, 'absolute' => TRUE)),
     );
-    $this->assertTokens('comment', $comment, $tokens);
+    $this->assertTokens('comment', array('comment' => $comment), $tokens);
   }
 }
 
@@ -297,7 +291,7 @@ class TokenNodeTestCase extends TokenTestHelper {
       'type' => 'page',
       'type-name' => 'Basic page',
     );
-    $this->assertTokens('node', $source_node, $tokens);
+    $this->assertTokens('node', array('node' => $source_node), $tokens);
 
     $translated_node = $this->drupalCreateNode(array('tnid' => $source_node->nid, 'type' => 'article'));
     $tokens = array(
@@ -319,7 +313,7 @@ class TokenNodeTestCase extends TokenTestHelper {
       'type-name' => 'Article',
       'tnid' => $source_node->nid,
     );
-    $this->assertTokens('node', $translated_node, $tokens);
+    $this->assertTokens('node', array('node' => $translated_node), $tokens);
   }
 }
 
@@ -408,7 +402,7 @@ class TokenMenuTestCase extends TokenTestHelper {
       'menu-link:root' => 'Root link',
       'menu-link:root:mlid' => $root_link['mlid'],
     );
-    $this->assertTokens('node', $node, $tokens);
+    $this->assertTokens('node', array('node' => $node), $tokens);
   }
 }
 
@@ -443,7 +437,7 @@ class TokenTaxonomyTestCase extends TokenTestHelper {
       'url:alias' => 'parent-term',
       'edit-url' => url("taxonomy/term/{$parent_term->tid}/edit", array('absolute' => TRUE)),
     );
-    $this->assertTokens('term', $parent_term, $parent_term_tokens);
+    $this->assertTokens('term', array('term' => $parent_term), $parent_term_tokens);
 
     $child_term = $this->addTerm($this->vocab, array('parent' => $parent_term->tid));
     $child_term_tokens = array(
@@ -454,7 +448,7 @@ class TokenTaxonomyTestCase extends TokenTestHelper {
       'url:alias' => "taxonomy/term/{$child_term->tid}",
       'edit-url' => url("taxonomy/term/{$child_term->tid}/edit", array('absolute' => TRUE)),
     );
-    $this->assertTokens('term', $child_term, $child_term_tokens);
+    $this->assertTokens('term', array('term' => $child_term), $child_term_tokens);
   }
 
   /**
@@ -466,7 +460,7 @@ class TokenTaxonomyTestCase extends TokenTestHelper {
       'machine-name' => 'tags',
       'edit-url' => url("admin/structure/taxonomy/{$vocabulary->machine_name}/edit", array('absolute' => TRUE)),
     );
-    $this->assertTokens('vocabulary', $vocabulary, $tokens);
+    $this->assertTokens('vocabulary', array('vocabulary' => $vocabulary), $tokens);
   }
 
   function addVocabulary(array $vocabulary = array()) {
@@ -533,7 +527,7 @@ class TokenUserTestCase extends TokenTestHelper {
       'picture:fid' => $this->account->picture->fid,
       'ip-address' => NULL,
     );
-    $this->assertTokens('user', $this->account, $user_tokens);
+    $this->assertTokens('user', array('user' => $this->account), $user_tokens);
 
     $edit = array('user_pictures' => FALSE);
     $this->drupalPost('admin/config/people/accounts', $edit, 'Save configuration');
@@ -544,13 +538,13 @@ class TokenUserTestCase extends TokenTestHelper {
       'picture:fid' => NULL,
       'ip-address' => NULL,
     );
-    $this->assertTokens('user', $this->account, $user_tokens);
+    $this->assertTokens('user', array('user' => $this->account), $user_tokens);
 
     // The ip address token should work for the current user token type.
     $tokens = array(
       'ip-address' => ip_address(),
     );
-    $this->assertTokens('current-user', NULL, $tokens);
+    $this->assertTokens('current-user', array(), $tokens);
   }
 }
 
@@ -663,7 +657,7 @@ class TokenProfileTestCase extends TokenTestHelper {
       'profile-date:raw' => '453859200',
       'profile-date:custom:Y' => '1984',
     );
-    $this->assertTokens('user', $account, $tokens);
+    $this->assertTokens('user', array('user' => $account), $tokens);
 
     // 'Un-select' the checkbox and select profile fields.
     $edit = array(
@@ -678,7 +672,7 @@ class TokenProfileTestCase extends TokenTestHelper {
       'profile-checkbox' => NULL,
       'profile-selection' => NULL,
     );
-    $this->assertTokens('user', $account, $tokens);
+    $this->assertTokens('user', array('user' => $account), $tokens);
   }
 
   /**
@@ -801,6 +795,6 @@ class TokenArrayTestCase extends TokenTestHelper {
       'join:, ' => 'a, b, c, d',
       'join: ' => 'a b c d',
     );
-    $this->assertTokens('array', $array, $tokens);
+    $this->assertTokens('array', array('array' => $array), $tokens);
   }
 }
