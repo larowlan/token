@@ -78,7 +78,7 @@ function token_token_info() {
   $info['types']['content-type'] = array(
     'name' => t('Content types'),
     'description' => t('Tokens related to content types.'),
-    'needs-data' => 'content-type',
+    'needs-data' => 'node_type',
   );
   $info['tokens']['content-type']['name'] = array(
     'name' => t('Name'),
@@ -671,6 +671,13 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     $data[$type] = $data[$entity_type];
     $options['recursive'] = TRUE;
     $replacements += module_invoke_all('tokens', $type, $tokens, $data, $options);
+  }
+
+  // If the token type specifics a 'needs-data' value, and the value is not
+  // present in $data, then throw an error.
+  $type_info = token_get_info($type);
+  if (!empty($type_info['needs-data']) && !isset($data[$type_info['needs-data']])) {
+    trigger_error(t('Attempting to perform token replacement for token type %type without required data', array('%type' => $type)), E_USER_WARNING);
   }
 
   return $replacements;
