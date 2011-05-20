@@ -218,7 +218,7 @@ function token_token_info() {
   $info['types']['url'] = array(
     'name' => t('URL'),
     'description' => t('Tokens related to URLs.'),
-    'needs-data' => 'url',
+    'needs-data' => 'path',
   );
   $info['tokens']['url']['path'] = array(
     'name' => t('Internal path'),
