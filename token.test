@@ -12,7 +12,7 @@ class TokenTestHelper extends DrupalWebTestCase {
   }
 
   function assertToken($type, array $data, $token, $expected, array $options = array()) {
-    $this->assertTokens($type, $data, array($token => $expected), $options);
+    return $this->assertTokens($type, $data, array($token => $expected), $options);
   }
 
   function assertTokens($type, array $data, array $tokens, array $options = array()) {
@@ -25,10 +25,15 @@ class TokenTestHelper extends DrupalWebTestCase {
       elseif (!isset($values[$token])) {
         $this->fail(t("Token value for [@type:@token] was not generated.", array('@type' => $type, '@token' => $token)));
       }
+      elseif (!empty($options['regex'])) {
+        $this->assertTrue(preg_match('/^' . $expected . '$/', $values[$token]), t("Token value for [@type:@token] was '@actual', matching regular expression pattern '@expected'.", array('@type' => $type, '@token' => $token, '@actual' => $values[$token], '@expected' => $expected)));
+      }
       else {
         $this->assertIdentical($values[$token], $expected, t("Token value for [@type:@token] was '@actual', expected value '@expected'.", array('@type' => $type, '@token' => $token, '@actual' => $values[$token], '@expected' => $expected)));
       }
     }
+
+    return $values;
   }
 
   function assertNoTokens($type, array $data, array $tokens, array $options = array()) {
@@ -37,6 +42,7 @@ class TokenTestHelper extends DrupalWebTestCase {
     foreach ($tokens as $token) {
       $this->assertTrue(!isset($values[$token]), t("Token value for [@type:@token] was not generated.", array('@type' => $type, '@token' => $token)));
     }
+    return $values;
   }
 
   function saveAlias($source, $alias, $language = LANGUAGE_NONE) {
@@ -796,5 +802,31 @@ class TokenArrayTestCase extends TokenTestHelper {
       'join: ' => 'a b c d',
     );
     $this->assertTokens('array', array('array' => $array), $tokens);
+  }
+}
+
+class TokenRandomTestCase extends TokenTestHelper {
+  public static function getInfo() {
+    return array(
+      'name' => 'Random token tests',
+      'description' => 'Test the random tokens.',
+      'group' => 'Token',
+    );
+  }
+
+  function testRandomTokens() {
+    $tokens = array(
+      'number' => '[0-9]{1,}',
+      'hash:md5' => '[0-9a-f]{32}',
+      'hash:sha1' => '[0-9a-f]{40}',
+      'hash:sha256' => '[0-9a-f]{64}',
+      'hash:invalid-algo' => NULL,
+    );
+
+    $first_set = $this->assertTokens('random', array(), $tokens, array('regex' => TRUE));
+    $second_set = $this->assertTokens('random', array(), $tokens, array('regex' => TRUE));
+    foreach ($first_set as $token => $value) {
+      $this->assertNotIdentical($first_set[$token], $second_set[$token]);
+    }
   }
 }

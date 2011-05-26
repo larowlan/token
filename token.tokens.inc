@@ -275,6 +275,21 @@ function token_token_info() {
     'dynamic' => TRUE,
   );
 
+  // Random tokens.
+  $info['types']['random'] = array(
+    'name' => t('Random'),
+    'description' => ('Tokens related to random data.'),
+  );
+  $info['tokens']['random']['number'] = array(
+    'name' => t('Number'),
+    'description' => t('A random number from 0 to @max.', array('@max' => mt_getrandmax())),
+  );
+  $info['tokens']['random']['hash'] = array(
+    'name' => t('Hash'),
+    'description' => t('A random hash. The possible hashing algorithms are: @hash-algos.', array('@hash-algos' => implode(', ', hash_algos()))),
+    'dynamic' => TRUE,
+  );
+
   return $info;
 }
 
@@ -663,6 +678,27 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
 
     // @todo Handle if the array values are not strings and could be chained.
+  }
+
+  // Random tokens.
+  if ($type == 'random') {
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'number':
+          $replacements[$original] = mt_rand();
+          break;
+      }
+    }
+
+    // [custom:hash:*] dynamic token.
+    if ($hash_tokens = token_find_with_prefix($tokens, 'hash')) {
+      $algos = hash_algos();
+      foreach ($hash_tokens as $name => $original) {
+        if (in_array($name, $algos)) {
+          $replacements[$original] = hash($name, drupal_random_bytes(55));
+        }
+      }
+    }
   }
 
   // If $type is a token type, $data[$type] is empty but $data[$entity_type] is
