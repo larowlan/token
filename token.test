@@ -743,7 +743,7 @@ class TokenCurrentPageTestCase extends TokenTestHelper {
 
   function testCurrentPageTokens() {
     $tokens = array(
-      '[current-page:title]' => 'Welcome to Drupal',
+      '[current-page:title]' => t('Welcome to @site-name', array('@site-name' => variable_get('site_name', 'Drupal'))),
       '[current-page:url]' => url('node', array('absolute' => TRUE)),
       '[current-page:url:absolute]' => url('node', array('absolute' => TRUE)),
       '[current-page:url:relative]' => url('node', array('absolute' => FALSE)),
@@ -752,6 +752,9 @@ class TokenCurrentPageTestCase extends TokenTestHelper {
       '[current-page:page-number]' => 1,
       '[current-page:arg:0]' => 'node',
       '[current-page:arg:1]' => NULL,
+      '[current-page:query:foo]' => NULL,
+      '[current-page:query:bar]' => NULL,
+      '[current-page:query:q]' => 'node',
     );
     $this->assertPageTokens('', $tokens);
 
@@ -767,8 +770,11 @@ class TokenCurrentPageTestCase extends TokenTestHelper {
       '[current-page:arg:0]' => 'node',
       '[current-page:arg:1]' => $node->nid,
       '[current-page:arg:2]' => NULL,
+      '[current-page:query:foo]' => 'bar',
+      '[current-page:query:bar]' => NULL,
+      '[current-page:query:q]' => 'node/1',
     );
-    $this->assertPageTokens("node/{$node->nid}", $tokens);
+    $this->assertPageTokens("node/{$node->nid}", $tokens, array(), array('url_options' => array('query' => array('foo' => 'bar'))));
   }
 }
 

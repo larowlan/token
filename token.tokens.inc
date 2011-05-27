@@ -213,6 +213,11 @@ function token_token_info() {
     'description' => t("The specific argument of the current page (e.g. 'arg:1' on the page 'node/1' returns '1')."),
     'dynamic' => TRUE,
   );
+  $info['tokens']['current-page']['query'] = array(
+    'name' => t('Query string value'),
+    'description' => t('The value of a specific query string field of the current page.'),
+    'dynamic' => TRUE,
+  );
 
   // URL tokens.
   $info['types']['url'] = array(
@@ -550,11 +555,21 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       }
     }
 
-    // Argument tokens.
+    // [current-page:arg] dynamic tokens.
     if ($arg_tokens = token_find_with_prefix($tokens, 'arg')) {
       foreach ($arg_tokens as $name => $original) {
         if (is_numeric($name) && ($arg = arg($name)) && isset($arg)) {
           $replacements[$original] = $sanitize ? check_plain($arg) : $arg;
+        }
+      }
+    }
+
+    // [current-page:query] dynamic tokens.
+    if ($query_tokens = token_find_with_prefix($tokens, 'query')) {
+      foreach ($query_tokens as $name => $original) {
+        // @todo Should this use filter_input()?
+        if (isset($_GET[$name])) {
+          $replacements[$original] = $sanitize ? check_plain($_GET[$name]) : $_GET[$name];
         }
       }
     }
