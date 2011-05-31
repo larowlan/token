@@ -165,6 +165,10 @@ function token_form_alter(&$form, $form_state, $form_id) {
     case 'profile_field_delete':
     // User picture form.
     case 'user_admin_settings':
+    // System date type form.
+    // @todo Remove when http://drupal.org/node/1173706 is fixed.
+    case 'system_add_date_format_type_form':
+    case 'system_delete_date_format_type_form':
       $form += array('#submit' => array());
       array_unshift($form['#submit'], 'token_clear_cache');
       break;

@@ -836,3 +836,25 @@ class TokenRandomTestCase extends TokenTestHelper {
     }
   }
 }
+
+/**
+ * @todo Remove when http://drupal.org/node/1173706 is fixed.
+ */
+class TokenDateTestCase extends TokenTestHelper {
+  public static function getInfo() {
+    return array(
+      'name' => 'Date token tests',
+      'description' => 'Test the date tokens.',
+      'group' => 'Token',
+    );
+  }
+
+  function testDateTokens() {
+    $tokens = array(
+      'token_test' => '1984',
+      'invalid_format' => NULL,
+    );
+
+    $this->assertTokens('date', array('date' => 453859200), $tokens);
+  }
+}

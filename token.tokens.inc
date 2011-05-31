@@ -52,6 +52,19 @@ function token_token_info_alter(&$info) {
   $info['tokens']['term']['url']['type'] = 'url';
   $info['tokens']['user']['url']['type'] = 'url';
   // @todo Support other tokens not named 'url'
+
+  // Add support for custom date formats.
+  // @todo Remove when http://drupal.org/node/1173706 is fixed.
+  $date_format_types = system_get_date_types();
+  foreach ($date_format_types as $date_format_type => $date_format_type_info) {
+    if (!isset($info['tokens']['date'][$date_format_type])) {
+      $info['tokens']['date'][$date_format_type] = array(
+        'name' => $date_format_type_info['title'],
+        'description' => t("A date in '@type' format. (%date)", array('@type' => $date_format_type, '%date' => format_date(REQUEST_TIME, $date_format_type))),
+        'module' => 'token',
+      );
+    }
+  }
 }
 
 /**
@@ -314,6 +327,19 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
   }
 
   $sanitize = !empty($options['sanitize']);
+
+  // Date tokens.
+  if ($type == 'date') {
+    $date = !empty($data['date']) ? $data['date'] : REQUEST_TIME;
+
+    // @todo Remove when http://drupal.org/node/1173706 is fixed.
+    $date_format_types = system_get_date_types();
+    foreach ($tokens as $name => $original) {
+      if (isset($date_format_types[$name]) && _token_module('date', $name) == 'token') {
+        $replacements[$original] = format_date($date, $name, '', NULL, $language_code);
+      }
+    }
+  }
 
   // Current date tokens.
   // @todo Remove when http://drupal.org/node/943028 is fixed.
