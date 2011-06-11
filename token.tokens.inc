@@ -761,6 +761,79 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 }
 
 /**
+ * Implements hook_tokens_alter().
+ *
+ * Fix existing core tokens that do not work correctly.
+ */
+function token_tokens_alter(array &$replacements, array $context) {
+  $options = $context['options'];
+
+  if (isset($options['language'])) {
+    $url_options['language'] = $options['language'];
+    $language_code = $options['language']->language;
+  }
+  else {
+    $language_code = NULL;
+  }
+  $sanitize = !empty($options['sanitize']);
+
+  // Comment token fixes.
+  if ($context['type'] == 'comment' && !empty($context['data']['comment'])) {
+    $comment = $context['data']['comment'];
+
+    foreach ($context['tokens'] as $name => $original) {
+      switch ($name) {
+        case 'name':
+        case 'author':
+          // @todo Remove when http://drupal.org/node/920056 is fixed.
+          if (!empty($comment->uid)) {
+            $account = user_load($comment->uid);
+          }
+          else {
+            $account = drupal_anonymous_user();
+            $account->name = $comment->name;
+          }
+          $name = format_username($account);
+          $replacements[$original] = $sanitize ? check_plain($name) : $name;
+          break;
+      }
+    }
+  }
+
+  // Node token fixes.
+  if ($context['type'] == 'node' && !empty($context['data']['node'])) {
+    $node = $context['data']['node'];
+
+    foreach ($context['tokens'] as $name => $original) {
+      switch ($name) {
+        case 'author':
+          // @todo Remove when http://drupal.org/node/1185842 is fixed.
+          $account = user_load($node->uid);
+          $name = format_username($account);
+          $replacements[$original] = $sanitize ? check_plain($name) : $name;
+          break;
+      }
+    }
+  }
+
+  // File token fixes.
+  if ($context['type'] == 'file' && !empty($context['data']['file'])) {
+    $file = $context['data']['file'];
+
+    foreach ($context['tokens'] as $name => $original) {
+      switch ($name) {
+        case 'owner':
+          // @todo Remove when http://drupal.org/node/978028 is fixed.
+          $account = user_load($file->uid);
+          $name = format_username($account);
+          $replacements[$original] = $sanitize ? check_plain($name) : $name;
+          break;
+      }
+    }
+  }
+}
+
+/**
  * Implements hook_token_info() on behalf of book.module.
  */
 function book_token_info() {
