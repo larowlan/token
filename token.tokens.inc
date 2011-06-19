@@ -21,6 +21,10 @@ function token_token_info_alter(&$info) {
   // Add a 'dynamic' key to any tokens that have chained but dynamic tokens.
   $info['tokens']['date']['custom']['dynamic'] = TRUE;
 
+  // The [file:size] may not always return in kilobytes.
+  // @todo Remove when http://drupal.org/node/1193044 is fixed.
+  $info['tokens']['file']['size']['description'] = t('The size of the file.');
+
   // Remove deprecated tokens from being listed.
   unset($info['tokens']['node']['tnid']);
   unset($info['tokens']['node']['type']);
@@ -138,6 +142,10 @@ function token_token_info() {
   $info['tokens']['file']['extension'] = array(
     'name' => t('Extension'),
     'description' => t('The extension of the file.'),
+  );
+  $info['tokens']['file']['size-raw'] = array(
+    'name' => t('File byte size'),
+    'description' => t('The size of the file, in bytes.'),
   );
 
   // User tokens.
@@ -465,6 +473,9 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
         case 'extension':
           $extension = pathinfo($file->filename, PATHINFO_EXTENSION);
           $replacements[$original] = $sanitize ? check_plain($extension) : $extension;
+          break;
+        case 'size-raw':
+          $replacements[$original] = (int) $file->filesize;
           break;
       }
     }

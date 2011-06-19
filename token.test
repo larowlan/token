@@ -531,6 +531,7 @@ class TokenUserTestCase extends TokenTestHelper {
     $user_tokens = array(
       'picture' => theme('user_picture', array('account' => $this->account)),
       'picture:fid' => $this->account->picture->fid,
+      'picture:size-raw' => 125,
       'ip-address' => NULL,
     );
     $this->assertTokens('user', array('user' => $this->account), $user_tokens);
