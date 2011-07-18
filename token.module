@@ -111,11 +111,6 @@ function token_menu() {
   return $items;
 }
 
-function token_type_load($token_type) {
-  $info = token_get_info();
-  return isset($info['types'][$token_type]) ? $info['types'][$token_type] : FALSE;
-}
-
 /**
  * Implements hook_theme().
  */
@@ -344,8 +339,7 @@ function token_get_info($token_type = NULL, $token = NULL) {
           }
         }
         else {
-          // Add a 'type' value to each token type so we can properly use
-          // token_type_load().
+          // Add a 'type' value to each token type.
           $token_info['types'][$type_key]['type'] = $type_key;
         }
       }
