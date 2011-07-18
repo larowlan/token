@@ -442,6 +442,7 @@ class TokenTaxonomyTestCase extends TokenTestHelper {
       'url:path' => "taxonomy/term/{$parent_term->tid}",
       'url:alias' => 'parent-term',
       'edit-url' => url("taxonomy/term/{$parent_term->tid}/edit", array('absolute' => TRUE)),
+      'root' => NULL,
     );
     $this->assertTokens('term', array('term' => $parent_term), $parent_term_tokens);
 
@@ -453,6 +454,8 @@ class TokenTaxonomyTestCase extends TokenTestHelper {
       'url:path' => "taxonomy/term/{$child_term->tid}",
       'url:alias' => "taxonomy/term/{$child_term->tid}",
       'edit-url' => url("taxonomy/term/{$child_term->tid}/edit", array('absolute' => TRUE)),
+      'root' => check_plain($parent_term->name),
+      'root:tid' => $parent_term->tid,
     );
     $this->assertTokens('term', array('term' => $child_term), $child_term_tokens);
   }

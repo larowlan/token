@@ -126,6 +126,11 @@ function token_token_info() {
       'description' => t("The URL of the taxonomy term's edit page."),
       //'type' => 'url',
     );
+    $info['tokens']['term']['root'] = array(
+      'name' => t('Root term'),
+      'description' => t("The root term of the taxonomy term."),
+      'type' => 'term',
+    );
 
     $info['tokens']['vocabulary']['machine-name'] = array(
       'name' => t('Machine-readable name'),
@@ -438,12 +443,27 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
         case 'edit-url':
           $replacements[$original] = url("taxonomy/term/{$term->tid}/edit", $url_options);
           break;
+
+        case 'root':
+          $parents = taxonomy_get_parents_all($term->tid);
+          $root_term = end($parents);
+          if ($root_term->tid != $term->tid) {
+            $replacements[$original] = $sanitize ? check_plain($root_term->name) : $root_term->name;
+          }
+          break;
       }
     }
 
     // Chained token relationships.
     if (($url_tokens = token_find_with_prefix($tokens, 'url'))) {
       $replacements += token_generate('url', $url_tokens, entity_uri('taxonomy_term', $term), $options);
+    }
+    if ($root_tokens = token_find_with_prefix($tokens, 'root')) {
+      $parents = taxonomy_get_parents_all($term->tid);
+      $root_term = end($parents);
+      if ($root_term->tid != $term->tid) {
+        $replacements += token_generate('term', $root_tokens, array('term' => $root_term), $options);
+      }
     }
   }
 
@@ -672,6 +692,9 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     if (($url_tokens = token_find_with_prefix($tokens, 'url')) && _token_module($type, 'url') == 'token') {
       $replacements += token_generate('url', $url_tokens, entity_uri($entity_type, $entity), $options);
     }
+
+    // @todo Pass through to an 'entity' token type generation?
+    // $replacements += token_generate('entity', $tokens, array('entity_type' => $entity_type, 'entity' => $entity), $options);
   }
 
   // Array tokens.
