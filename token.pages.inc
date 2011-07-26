@@ -160,7 +160,6 @@ function token_devel_token_object($entity_type, $entity) {
     'data' => array($entity_type => $entity),
   );
   $tree = token_build_tree($entity_type, $options);
-  ksort($tree);
   foreach ($tree as $token => $token_info) {
     if (!empty($token_info['restricted'])) {
       continue;
