@@ -778,11 +778,14 @@ function _token_build_tree($token_type, array $options) {
       // parent.
       $token_parents[] = $token_type;
     }
-    elseif (end($token_parents) == $token) {
+    elseif (in_array($token, array_slice($token_parents, 1))) {
       // Prevent duplicate recursive tokens. For example, this will prevent
-      // the tree from generating [comment:parent:parent] or deeper.
+      // the tree from generating the following tokens or deeper:
+      // [comment:parent:parent]
+      // [comment:parent:root:parent]
       continue;
     }
+
     $token_parents[] = $token;
     if (!empty($token_info['dynamic'])) {
       $token_parents[] = '?';
