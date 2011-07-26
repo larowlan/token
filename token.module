@@ -1054,3 +1054,39 @@ function token_render_array_value($value, array $options = array()) {
   }
   return $rendered;
 }
+
+/**
+ * Copy of drupal_render_cache_get() that does not care about request method.
+ */
+function token_render_cache_get($elements) {
+  if (!$cid = drupal_render_cid_create($elements)) {
+    return FALSE;
+  }
+  $bin = isset($elements['#cache']['bin']) ? $elements['#cache']['bin'] : 'cache';
+
+  if (!empty($cid) && $cache = cache_get($cid, $bin)) {
+    // Add additional libraries, JavaScript, CSS and other data attached
+    // to this element.
+    if (isset($cache->data['#attached'])) {
+      drupal_process_attached($cache->data);
+    }
+    // Return the rendered output.
+    return $cache->data['#markup'];
+  }
+  return FALSE;
+}
+
+/**
+ * Coyp of drupal_render_cache_set() that does not care about request method.
+ */
+function token_render_cache_set(&$markup, $elements) {
+  // This should only run of drupal_render_cache_set() did not.
+  if (in_array($_SERVER['REQUEST_METHOD'], array('GET', 'HEAD'))) {
+    return FALSE;
+  }
+
+  $original_method = $_SERVER['REQUEST_METHOD'];
+  $_SERVER['REQUEST_METHOD'] = 'GET';
+  drupal_render_cache_set($markup, $elements);
+  $_SERVER['REQUEST_METHOD'] = $original_method;
+}
