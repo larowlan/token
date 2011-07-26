@@ -40,7 +40,7 @@ function token_system_info_alter(&$info, $file, $type) {
  * Return an array of the core modules supported by token.module.
  */
 function _token_core_supported_modules() {
-  return array('book', 'menu', 'profile');
+  return array('book', 'field', 'menu', 'profile');
 }
 
 /**
@@ -176,6 +176,25 @@ function token_form_alter(&$form, $form_state, $form_id) {
 }
 
 /**
+ * Implements hook_field_info_alter().
+ */
+function token_field_info_alter(&$info) {
+  $defaults = array(
+    'taxonomy_term_reference' => 'taxonomy_term_reference_plain',
+    'number_integer' => 'number_unformatted',
+    'number_decimal' => 'number_unformatted',
+    'number_float' => 'number_unformatted',
+    'file' => 'file_url_plain',
+    'image' => 'file_url_plain',
+  );
+  foreach ($defaults as $field_type => $default_token_formatter) {
+    if (isset($info[$field_type])) {
+      $info[$field_type] += array('default_token_formatter' => $default_token_formatter);
+    }
+  }
+}
+
+/**
  * Implements hook_field_create_instance().
  */
 function token_field_create_instance($instance) {
@@ -208,6 +227,7 @@ function token_clear_cache() {
   drupal_static_reset('_token_profile_fields');
   drupal_static_reset('token_menu_link_load');
   drupal_static_reset('token_book_link_load');
+  drupal_static_reset('_token_field_info');
 }
 
 /**
