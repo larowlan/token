@@ -786,9 +786,12 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 
   // If the token type specifics a 'needs-data' value, and the value is not
   // present in $data, then throw an error.
-  $type_info = token_get_info($type);
-  if (!empty($type_info['needs-data']) && !isset($data[$type_info['needs-data']])) {
-    trigger_error(t('Attempting to perform token replacement for token type %type without required data', array('%type' => $type)), E_USER_WARNING);
+  if (!empty($GLOBALS['drupal_test_info']['test_run_id'])) {
+    // Only check when tests are running.
+    $type_info = token_get_info($type);
+    if (!empty($type_info['needs-data']) && !isset($data[$type_info['needs-data']])) {
+      trigger_error(t('Attempting to perform token replacement for token type %type without required data', array('%type' => $type)), E_USER_WARNING);
+    }
   }
 
   return $replacements;
