@@ -234,11 +234,6 @@ function token_token_info() {
     'name' => t('Page number'),
     'description' => t('The page number of the current page when viewing paged lists.'),
   );
-  $info['tokens']['current-page']['arg'] = array(
-    'name' => t('Page argument'),
-    'description' => t("The specific argument of the current page (e.g. 'arg:1' on the page 'node/1' returns '1')."),
-    'dynamic' => TRUE,
-  );
   $info['tokens']['current-page']['query'] = array(
     'name' => t('Query string value'),
     'description' => t('The value of a specific query string field of the current page.'),
@@ -252,12 +247,8 @@ function token_token_info() {
     'needs-data' => 'path',
   );
   $info['tokens']['url']['path'] = array(
-    'name' => t('Internal path'),
-    'description' => t('The internal Drupal path of the URL.'),
-  );
-  $info['tokens']['url']['alias'] = array(
-    'name' => t('Alias'),
-    'description' => t('The alias of the URL.'),
+    'name' => t('Path'),
+    'description' => t('The path component of the URL.'),
   );
   $info['tokens']['url']['relative'] = array(
     'name' => t('Relative URL'),
@@ -270,6 +261,16 @@ function token_token_info() {
   $info['tokens']['url']['brief'] = array(
     'name' => t('Brief URL'),
     'description' => t('The URL without the protocol and trailing backslash.'),
+  );
+  $info['tokens']['url']['unaliased'] = array(
+    'name' => t('Unaliased URL'),
+    'description' => t('The unaliased URL.'),
+    'type' => 'url',
+  );
+  $info['tokens']['url']['args'] = array(
+    'name' => t('Arguments'),
+    'description' => t("The specific argument of the current page (e.g. 'arg:1' on the page 'node/1' returns '1')."),
+    'type' => 'array',
   );
 
   // Array tokens.
@@ -617,6 +618,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       }
     }
 
+    // @deprecated
     // [current-page:arg] dynamic tokens.
     if ($arg_tokens = token_find_with_prefix($tokens, 'arg')) {
       foreach ($arg_tokens as $name => $original) {
@@ -654,9 +656,11 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'path':
-          $replacements[$original] = $sanitize ? check_plain($path) : $path;
+          $value = empty($url_options['alias']) ? drupal_get_path_alias($path, $language_code) : $path;
+          $replacements[$original] = $sanitize ? check_plain($value) : $value;
           break;
         case 'alias':
+          // @deprecated
           $alias = drupal_get_path_alias($path, $language_code);
           $replacements[$original] = $sanitize ? check_plain($alias) : $alias;
           break;
@@ -669,7 +673,28 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
         case 'brief':
           $replacements[$original] = preg_replace(array('!^https?://!', '!/$!'), '', url($path, $url_options));
           break;
+        case 'unaliased':
+          $replacements[$original] = url($path, array('alias' => TRUE) + $url_options);
+          break;
+        case 'args':
+          $value = empty($url_options['alias']) ? drupal_get_path_alias($path, $language_code) : $path;
+          $replacements[$original] = token_render_array(arg(NULL, $args), $options);
+          break;
       }
+    }
+
+    // [url:arg:*] chained tokens.
+    if ($arg_tokens = token_find_with_prefix($tokens, 'args')) {
+      $value = empty($url_options['alias']) ? drupal_get_path_alias($path, $language_code) : $path;
+      $replacements += token_generate('array', $arg_tokens, array('array' => arg(NULL, $value)), $options);
+    }
+
+    // [url:unaliased:*] chained tokens.
+    if ($unaliased_tokens = token_find_with_prefix($tokens, 'unaliased')) {
+      $unaliased_token_data['path'] = $path;
+      $unaliased_token_data['options'] = isset($data['options']) ? $data['options'] : array();
+      $unaliased_token_data['options']['alias'] = TRUE;
+      $replacements += token_generate('url', $unaliased_tokens, $unaliased_token_data, $options);
     }
   }
 

@@ -201,9 +201,20 @@ class TokenURLTestCase extends TokenTestHelper {
     $tokens = array(
       'absolute' => 'http://example.com/first-node',
       'relative' => base_path() . 'first-node',
-      'path' => 'node/1',
-      'alias' => 'first-node',
+      'path' => 'first-node',
       'brief' => 'example.com/first-node',
+      'args:value:0' => 'first-node',
+      'args:value:1' => NULL,
+      'args:value:N' => NULL,
+      'unaliased' => 'http://example.com/node/1',
+      'unaliased:relative' => base_path() . 'node/1',
+      'unaliased:path' => 'node/1',
+      'unaliased:brief' => 'example.com/node/1',
+      'unaliased:args:value:0' => 'node',
+      'unaliased:args:value:1' => '1',
+      'unaliased:args:value:2' => NULL,
+      // Deprecated tokens.
+      'alias' => 'first-node',
     );
     $this->assertTokens('url', array('path' => 'node/1', 'options' => array('base_url' => 'http://example.com')), $tokens);
   }
@@ -239,7 +250,6 @@ class TokenCommentTestCase extends TokenTestHelper {
       'url:absolute' => url('comment/' . $parent_comment->cid, array('fragment' => 'comment-' . $parent_comment->cid, 'absolute' => TRUE)),
       'url:relative' => url('comment/' . $parent_comment->cid, array('fragment' => 'comment-' . $parent_comment->cid, 'absolute' => FALSE)),
       'url:path' => 'comment/' . $parent_comment->cid,
-      'url:alias' => 'comment/' . $parent_comment->cid,
       'parent:url:absolute' => NULL,
     );
     $this->assertTokens('comment', array('comment' => $parent_comment), $tokens);
@@ -260,7 +270,6 @@ class TokenCommentTestCase extends TokenTestHelper {
       'url:absolute' => url('comment/' . $comment->cid, array('fragment' => 'comment-' . $comment->cid, 'absolute' => TRUE)),
       'url:relative' => url('comment/' . $comment->cid, array('fragment' => 'comment-' . $comment->cid, 'absolute' => FALSE)),
       'url:path' => 'comment/' . $comment->cid,
-      'url:alias' => 'comment/' . $comment->cid,
       'parent:url:absolute' => url('comment/' . $parent_comment->cid, array('fragment' => 'comment-' . $parent_comment->cid, 'absolute' => TRUE)),
     );
     $this->assertTokens('comment', array('comment' => $comment), $tokens);
@@ -282,10 +291,10 @@ class TokenNodeTestCase extends TokenTestHelper {
       'source' => NULL,
       'source:nid' => NULL,
       'log' => $source_node->log,
+      'url:path' => 'content/source-node',
       'url:absolute' => url("node/{$source_node->nid}", array('absolute' => TRUE)),
       'url:relative' => url("node/{$source_node->nid}", array('absolute' => FALSE)),
-      'url:path' => "node/{$source_node->nid}",
-      'url:alias' => 'content/source-node',
+      'url:unaliased:path' => "node/{$source_node->nid}",
       'content-type' => 'Basic page',
       'content-type:name' => 'Basic page',
       'content-type:machine-name' => 'page',
@@ -296,6 +305,7 @@ class TokenNodeTestCase extends TokenTestHelper {
       'tnid' => 0,
       'type' => 'page',
       'type-name' => 'Basic page',
+      'url:alias' => 'content/source-node',
     );
     $this->assertTokens('node', array('node' => $source_node), $tokens);
 
@@ -304,10 +314,10 @@ class TokenNodeTestCase extends TokenTestHelper {
       'source' => $source_node->title,
       'source:nid' => $source_node->nid,
       'log' => '',
+      'url:path' => "node/{$translated_node->nid}",
       'url:absolute' => url("node/{$translated_node->nid}", array('absolute' => TRUE)),
       'url:relative' => url("node/{$translated_node->nid}", array('absolute' => FALSE)),
-      'url:path' => "node/{$translated_node->nid}",
-      'url:alias' => "node/{$translated_node->nid}",
+      'url:unaliased:path' => "node/{$translated_node->nid}",
       'content-type' => 'Article',
       'content-type:name' => 'Article',
       'content-type:machine-name' => 'article',
@@ -318,6 +328,7 @@ class TokenNodeTestCase extends TokenTestHelper {
       'type' => 'article',
       'type-name' => 'Article',
       'tnid' => $source_node->nid,
+      'url:alias' => "node/{$translated_node->nid}",
     );
     $this->assertTokens('node', array('node' => $translated_node), $tokens);
   }
@@ -439,10 +450,12 @@ class TokenTaxonomyTestCase extends TokenTestHelper {
       'url' => url("taxonomy/term/{$parent_term->tid}", array('absolute' => TRUE)),
       'url:absolute' => url("taxonomy/term/{$parent_term->tid}", array('absolute' => TRUE)),
       'url:relative' => url("taxonomy/term/{$parent_term->tid}", array('absolute' => FALSE)),
-      'url:path' => "taxonomy/term/{$parent_term->tid}",
-      'url:alias' => 'parent-term',
+      'url:path' => 'parent-term',
+      'url:unaliased:path' => "taxonomy/term/{$parent_term->tid}",
       'edit-url' => url("taxonomy/term/{$parent_term->tid}/edit", array('absolute' => TRUE)),
       'root' => NULL,
+      // Deprecated tokens
+      'url:alias' => 'parent-term',
     );
     $this->assertTokens('term', array('term' => $parent_term), $parent_term_tokens);
 
@@ -452,10 +465,12 @@ class TokenTaxonomyTestCase extends TokenTestHelper {
       'url:absolute' => url("taxonomy/term/{$child_term->tid}", array('absolute' => TRUE)),
       'url:relative' => url("taxonomy/term/{$child_term->tid}", array('absolute' => FALSE)),
       'url:path' => "taxonomy/term/{$child_term->tid}",
-      'url:alias' => "taxonomy/term/{$child_term->tid}",
+      'url:unaliased:path' => "taxonomy/term/{$child_term->tid}",
       'edit-url' => url("taxonomy/term/{$child_term->tid}/edit", array('absolute' => TRUE)),
       'root' => check_plain($parent_term->name),
       'root:tid' => $parent_term->tid,
+      // Deprecated tokens
+      'url:alias' => "taxonomy/term/{$child_term->tid}",
     );
     $this->assertTokens('term', array('term' => $child_term), $child_term_tokens);
   }
@@ -752,13 +767,16 @@ class TokenCurrentPageTestCase extends TokenTestHelper {
       '[current-page:url:absolute]' => url('node', array('absolute' => TRUE)),
       '[current-page:url:relative]' => url('node', array('absolute' => FALSE)),
       '[current-page:url:path]' => 'node',
-      '[current-page:url:alias]' => 'node',
+      '[current-page:url:args:value:0]' => 'node',
+      '[current-page:url:args:value:1]' => NULL,
+      '[current-page:url:unaliased]' => url('node', array('absolute' => TRUE, 'alias' => TRUE)),
       '[current-page:page-number]' => 1,
-      '[current-page:arg:0]' => 'node',
-      '[current-page:arg:1]' => NULL,
       '[current-page:query:foo]' => NULL,
       '[current-page:query:bar]' => NULL,
       '[current-page:query:q]' => 'node',
+      // Deprecated tokens
+      '[current-page:arg:0]' => 'node',
+      '[current-page:arg:1]' => NULL,
     );
     $this->assertPageTokens('', $tokens);
 
@@ -768,15 +786,21 @@ class TokenCurrentPageTestCase extends TokenTestHelper {
       '[current-page:url]' => url("node/{$node->nid}", array('absolute' => TRUE)),
       '[current-page:url:absolute]' => url("node/{$node->nid}", array('absolute' => TRUE)),
       '[current-page:url:relative]' => url("node/{$node->nid}", array('absolute' => FALSE)),
-      '[current-page:url:path]' => "node/{$node->nid}",
       '[current-page:url:alias]' => 'node-alias',
+      '[current-page:url:args:value:0]' => 'node-alias',
+      '[current-page:url:args:value:1]' => NULL,
+      '[current-page:url:unaliased]' => url("node/{$node->nid}", array('absolute' => TRUE, 'alias' => TRUE)),
+      '[current-page:url:unaliased:args:value:0]' => 'node',
+      '[current-page:url:unaliased:args:value:1]' => $node->nid,
+      '[current-page:url:unaliased:args:value:2]' => NULL,
       '[current-page:page-number]' => 1,
-      '[current-page:arg:0]' => 'node',
-      '[current-page:arg:1]' => $node->nid,
-      '[current-page:arg:2]' => NULL,
       '[current-page:query:foo]' => 'bar',
       '[current-page:query:bar]' => NULL,
       '[current-page:query:q]' => 'node/1',
+      // Deprecated tokens
+      '[current-page:arg:0]' => 'node',
+      '[current-page:arg:1]' => 1,
+      '[current-page:arg:2]' => NULL,
     );
     $this->assertPageTokens("node/{$node->nid}", $tokens, array(), array('url_options' => array('query' => array('foo' => 'bar'))));
   }
