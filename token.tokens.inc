@@ -1205,6 +1205,13 @@ function _token_field_info($field_name = NULL) {
 
             // Find which label is most commonly used.
             foreach ($field['bundles'][$entity] as $bundle) {
+              // For some reason fields may still say they are attached to
+              // bundles that do not exist. We need to skip them.
+              // @see http://drupal.org/node/1252566
+              if (!isset($entity_info[$entity]['bundles'][$bundle])) {
+                continue;
+              }
+
               $info[$key]['labels'][] = $instances[$entity][$bundle][$key]['label'];
               $info[$key]['bundles'][$token_type][$bundle] = $entity_info[$entity]['bundles'][$bundle]['label'];
             }
