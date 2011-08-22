@@ -1201,7 +1201,6 @@ function _token_field_info($field_name = NULL) {
             }
 
             $info[$key]['token types'][] = $token_type;
-            $info[$key]['formatter'] = isset($type_info[$field['type']]['default_token_formatter']) ? $type_info[$field['type']]['default_token_formatter'] : $type_info[$field['type']]['default_formatter'];
 
             // Find which label is most commonly used.
             foreach ($field['bundles'][$entity] as $bundle) {
@@ -1265,11 +1264,6 @@ function field_token_info_alter(&$info) {
         'name' => $field['label'],
         'description' => $field['description'],
         'module' => 'token',
-        'field settings' => array(
-          'display' => array(
-            'type' => $field['formatter'],
-          ),
-        ),
       );
     }
   }
@@ -1308,10 +1302,8 @@ function field_tokens($type, $tokens, array $data = array(), array $options = ar
           continue;
         }
 
-        $display = isset($token_info['field settings']['display']) ? $token_info['field settings']['display'] : array();
-        $display += array('label' => FALSE);
-        $field_output = field_view_field($entity_type, $entity, $field_name, $display, $langcode);
-        $field_output['#display_settings'] = $display;
+        $field_output = field_view_field($entity_type, $entity, $field_name, 'token', $langcode);
+        $field_output['#token_options'] = $options;
         $field_output['#pre_render'][] = 'token_pre_render_field_token';
         $replacements[$original] = drupal_render($field_output);
       }
@@ -1338,7 +1330,7 @@ function token_pre_render_field_token(&$elements) {
   $deltas = element_get_visible_children($elements);
   $count = count($deltas);
   if ($count > 1) {
-    $join = isset($elements['#display_settings']['join']) ? $elements['#display_settings']['join'] : ", ";
+    $join = isset($elements['#token_options']['join']) ? $elements['#token_options']['join'] : ", ";
     foreach ($deltas as $index => $delta) {
       // Do not add a suffix to the last item.
       if ($index < ($count - 1)) {

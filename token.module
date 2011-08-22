@@ -195,6 +195,28 @@ function token_field_info_alter(&$info) {
 }
 
 /**
+ * Implements hook_field_display_alter().
+ */
+function token_field_display_alter(&$display, $context) {
+  if ($context['view_mode'] == 'token') {
+    $view_mode_settings = field_view_mode_settings($context['instance']['entity_type'], $context['instance']['bundle']);
+    // If the token view mode fell back to the 'default' view mode, then
+    // use the default token formatter.
+    if (empty($view_mode_settings[$context['view_mode']]['custom_settings'])) {
+      $field_type_info = field_info_field_types($context['field']['type']);
+      if (!empty($field_type_info['default_token_formatter'])) {
+        $display['type'] = $field_type_info['default_token_formatter'];
+
+        $formatter_info = field_info_formatter_types($display['type']);
+        $display['settings'] = isset($formatter_info['settings']) ? $formatter_info['settings'] : array();
+        $display['settings']['label'] = 'hidden';
+        $display['module'] = $formatter_info['module'];
+      }
+    }
+  }
+}
+
+/**
  * Implements hook_field_create_instance().
  */
 function token_field_create_instance($instance) {
@@ -271,6 +293,14 @@ function token_get_entity_mapping($value_type = 'token', $value = NULL) {
  */
 function token_entity_info_alter(&$info) {
   foreach (array_keys($info) as $entity_type) {
+    // Add a token view mode if it does not already exist.
+    if (!empty($info[$entity_type]['view modes']) && !isset($info[$entity_type]['view modes']['token'])) {
+      $info[$entity_type]['view modes']['token'] = array(
+        'label' => t('Tokens'),
+        'custom settings' => FALSE,
+      );
+    }
+
     if (!empty($info[$entity_type]['token type'])) {
       // If the entity's token type is already defined, great!
       continue;
