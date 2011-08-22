@@ -661,7 +661,7 @@ function token_form_user_admin_settings_alter(&$form, &$form_state) {
 
     // Remove the crummy default token help text.
     if (!empty($element['#description'])) {
-      $element['#description'] = trim(str_replace($email_token_help, '', $element['#description']));
+      $element['#description'] = trim(str_replace($email_token_help, t('The list of available tokens that can be used in e-mails is provided below.'), $element['#description']));
     }
 
     switch ($key) {
@@ -698,15 +698,15 @@ function token_form_user_admin_settings_alter(&$form, &$form_state) {
         $element[$sub_key] += array('#token_types' => array('user'));
       }
     }
-
-    // Add the token tree UI.
-    $element['token_tree'] = array(
-      '#theme' => 'token_tree',
-      '#token_types' => array('user'),
-      '#show_restricted' => TRUE,
-      '#weight' => 100,
-    );
   }
+
+  // Add the token tree UI.
+  $form['token_tree'] = array(
+    '#theme' => 'token_tree',
+    '#token_types' => array('user'),
+    '#show_restricted' => TRUE,
+    '#weight' => 90,
+  );
 }
 
 /**
