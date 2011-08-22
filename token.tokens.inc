@@ -1201,6 +1201,8 @@ function _token_field_info($field_name = NULL) {
             }
 
             $info[$key]['token types'][] = $token_type;
+            $info[$key]['labels'] = array();
+            $info[$key]['bundles'] = array();
 
             // Find which label is most commonly used.
             foreach ($field['bundles'][$entity] as $bundle) {
