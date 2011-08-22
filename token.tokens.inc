@@ -1206,8 +1206,9 @@ function _token_field_info($field_name = NULL) {
 
             // Find which label is most commonly used.
             foreach ($field['bundles'][$entity] as $bundle) {
-              // For some reason fields may still say they are attached to
-              // bundles that do not exist. We need to skip them.
+              // Field information will included fields attached to disabled
+              // bundles, so check that the bundle exists before provided a
+              // token for it.
               // @see http://drupal.org/node/1252566
               if (!isset($entity_info[$entity]['bundles'][$bundle])) {
                 continue;
