@@ -305,6 +305,11 @@ function token_token_info() {
     'description' => t('The values of the array joined together with a custom string in-between each value.'),
     'dynamic' => TRUE,
   );
+  $info['tokens']['array']['value'] = array(
+    'name' => t('Value'),
+    'description' => t('The specific value of the array.'),
+    'dynamic' => TRUE,
+  );
 
   // Random tokens.
   $info['types']['random'] = array(
@@ -736,7 +741,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       }
     }
 
-    // Dynamic tokens.
+    // [array:value:*] dynamic tokens.
     if ($value_tokens = token_find_with_prefix($tokens, 'value')) {
       foreach ($value_tokens as $key => $original) {
         if (isset($array[$key])) {
@@ -744,6 +749,8 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
         }
       }
     }
+
+    // [array:join:*] dynamic tokens.
     if ($join_tokens = token_find_with_prefix($tokens, 'join')) {
       foreach ($join_tokens as $join => $original) {
         $replacements[$original] = token_render_array($array, array('join' => $join) + $options);
