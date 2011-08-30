@@ -108,7 +108,28 @@ function token_menu() {
     );
   }
 
+  // Admin menu callback to clear token caches.
+  $items['token/flush-cache'] = array(
+    'page callback' => 'token_flush_cache_callback',
+    'access arguments' => array('flush caches'),
+    'type' => MENU_CALLBACK,
+    'file' => 'token.pages.inc',
+  );
+
   return $items;
+}
+
+/**
+ * Implements hook_admin_menu_output_alter().
+ */
+function token_admin_menu_output_alter(&$content) {
+  $content['icon']['icon']['flush-cache']['token'] = array(
+    '#title' => t('Token registry'),
+    '#href' => 'token/flush-cache',
+    '#options' => array(
+      'query' => drupal_get_destination() + array('token' => drupal_get_token('token/flush-cache')),
+    ),
+  );
 }
 
 function token_type_load($token_type) {
