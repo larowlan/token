@@ -886,40 +886,6 @@ function _token_build_tree($token_type, array $options) {
 }
 
 /**
- * Find tokens that have been declared twice by different modules.
- */
-function token_find_duplicate_tokens() {
-  $all_tokens = array();
-
-  foreach (module_implements('token_info') as $module) {
-    $module_token_info = module_invoke($module, 'token_info');
-    if (in_array($module, _token_core_supported_modules())) {
-      $module = 'token';
-    }
-    if (!empty($module_token_info['types'])) {
-      foreach (array_keys($module_token_info['types']) as $type) {
-        $all_tokens['type:' . $type][] = $module;
-      }
-    }
-    if (!empty($module_token_info['tokens'])) {
-      foreach ($module_token_info['tokens'] as $type => $tokens) {
-        foreach (array_keys($tokens) as $token) {
-          $all_tokens[$type . ':' . $token][] = $module;
-        }
-      }
-    }
-  }
-
-  foreach ($all_tokens as $token => $modules) {
-    if (count($modules) < 2) {
-      unset($all_tokens[$token]);
-    }
-  }
-
-  return $all_tokens;
-}
-
-/**
  * Get a translated menu link by its mlid, without access checking.
  *
  * This function is a copy of menu_link_load() but with its own cache and a
