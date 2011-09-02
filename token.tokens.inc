@@ -30,7 +30,17 @@ function token_token_info_alter(&$info) {
   unset($info['tokens']['node']['type']);
   unset($info['tokens']['node']['type-name']);
 
-  // Add [token:path] tokens for any URI-able entities.
+  // Support 'url' type tokens for core tokens.
+  if (isset($info['tokens']['comment']['url']) && module_exists('comment')) {
+    $info['tokens']['comment']['url']['type'] = 'url';
+  }
+  $info['tokens']['node']['url']['type'] = 'url';
+  if (isset($info['tokens']['term']['url']) && module_exists('taxonomy')) {
+    $info['tokens']['term']['url']['type'] = 'url';
+  }
+  $info['tokens']['user']['url']['type'] = 'url';
+
+  // Add [token:url] tokens for any URI-able entities.
   $entities = entity_get_info();
   foreach ($entities as $entity => $entity_info) {
     if (!isset($entity_info['token type'])) {
@@ -40,7 +50,7 @@ function token_token_info_alter(&$info) {
 
     // Add [entity:url] tokens if they do not already exist.
     // @todo Support entity:label
-    if (!isset($info['tokens'][$token_type]['url']) && (!empty($entity_info['uri callback']) || !empty($entity_info['bundles'][$entity]['uri callback']))) {
+    if (!isset($info['tokens'][$token_type]['url']) && !empty($entity_info['uri callback'])) {
       $info['tokens'][$token_type]['url'] = array(
         'name' => t('URL'),
         'description' => t('The URL of the @entity.', array('@entity' => drupal_strtolower($entity_info['label']))),
@@ -49,13 +59,6 @@ function token_token_info_alter(&$info) {
       );
     }
   }
-
-  $info['tokens']['comment']['url']['type'] = 'url';
-  //$info['tokens']['file']['url']['type'] = 'url';
-  $info['tokens']['node']['url']['type'] = 'url';
-  $info['tokens']['term']['url']['type'] = 'url';
-  $info['tokens']['user']['url']['type'] = 'url';
-  // @todo Support other tokens not named 'url'
 
   // Add support for custom date formats.
   // @todo Remove when http://drupal.org/node/1173706 is fixed.
