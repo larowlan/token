@@ -681,7 +681,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           break;
         case 'args':
           $value = empty($url_options['alias']) ? drupal_get_path_alias($path, $language_code) : $path;
-          $replacements[$original] = token_render_array(arg(NULL, $args), $options);
+          $replacements[$original] = token_render_array(arg(NULL, $value), $options);
           break;
       }
     }
