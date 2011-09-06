@@ -16,31 +16,41 @@ class TokenTestHelper extends DrupalWebTestCase {
   }
 
   function assertTokens($type, array $data, array $tokens, array $options = array()) {
-    $token_input = drupal_map_assoc(array_keys($tokens));
-    $values = token_generate($type, $token_input, $data, $options);
-    foreach ($tokens as $token => $expected) {
+    $input = $this->mapTokenNames($type, array_keys($tokens));
+    $replacements = token_generate($type, $input, $data, $options);
+    foreach ($tokens as $name => $expected) {
+      $token = $input[$name];
       if (!isset($expected)) {
-        $this->assertTrue(!isset($values[$token]), t("Token value for [@type:@token] was not generated.", array('@type' => $type, '@token' => $token)));
+        $this->assertTrue(!isset($values[$token]), t("Token value for @token was not generated.", array('@type' => $type, '@token' => $token)));
       }
-      elseif (!isset($values[$token])) {
-        $this->fail(t("Token value for [@type:@token] was not generated.", array('@type' => $type, '@token' => $token)));
+      elseif (!isset($replacements[$token])) {
+        $this->fail(t("Token value for @token was not generated.", array('@type' => $type, '@token' => $token)));
       }
       elseif (!empty($options['regex'])) {
-        $this->assertTrue(preg_match('/^' . $expected . '$/', $values[$token]), t("Token value for [@type:@token] was '@actual', matching regular expression pattern '@expected'.", array('@type' => $type, '@token' => $token, '@actual' => $values[$token], '@expected' => $expected)));
+        $this->assertTrue(preg_match('/^' . $expected . '$/', $replacements[$token]), t("Token value for @token was '@actual', matching regular expression pattern '@expected'.", array('@type' => $type, '@token' => $token, '@actual' => $replacements[$token], '@expected' => $expected)));
       }
       else {
-        $this->assertIdentical($values[$token], $expected, t("Token value for [@type:@token] was '@actual', expected value '@expected'.", array('@type' => $type, '@token' => $token, '@actual' => $values[$token], '@expected' => $expected)));
+        $this->assertIdentical($replacements[$token], $expected, t("Token value for @token was '@actual', expected value '@expected'.", array('@type' => $type, '@token' => $token, '@actual' => $replacements[$token], '@expected' => $expected)));
       }
     }
 
-    return $values;
+    return $replacements;
+  }
+
+  function mapTokenNames($type, array $tokens = array()) {
+    $return = array();
+    foreach ($tokens as $token) {
+      $return[$token] = "[$type:$token]";
+    }
+    return $return;
   }
 
   function assertNoTokens($type, array $data, array $tokens, array $options = array()) {
-    $token_input = drupal_map_assoc($tokens);
-    $values = token_generate($type, $token_input, $data, $options);
-    foreach ($tokens as $token) {
-      $this->assertTrue(!isset($values[$token]), t("Token value for [@type:@token] was not generated.", array('@type' => $type, '@token' => $token)));
+    $input = $this->mapTokenNames($type, $tokens);
+    $replacements = token_generate($type, $input, $data, $options);
+    foreach ($tokens as $name) {
+      $token = $input[$name];
+      $this->assertTrue(!isset($replacements[$token]), t("Token value for @token was not generated.", array('@type' => $type, '@token' => $token)));
     }
     return $values;
   }
