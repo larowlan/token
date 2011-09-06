@@ -46,7 +46,11 @@ function token_token_info_alter(&$info) {
     if (!isset($entity_info['token type'])) {
       continue;
     }
+
     $token_type = $entity_info['token type'];
+    if (!isset($info['types'][$token_type]) || !isset($info['tokens'][$token_type])) {
+      continue;
+    }
 
     // Add [entity:url] tokens if they do not already exist.
     // @todo Support entity:label
@@ -1290,6 +1294,11 @@ function field_token_info_alter(&$info) {
     foreach (array_keys($field['bundles']) as $token_type) {
       // If a token already exists for this field, then don't add it.
       if (isset($info['tokens'][$token_type][$field_name])) {
+        continue;
+      }
+
+      // Ensure the tokens exist.
+      if (!isset($info['types'][$token_type]) || !isset($info['tokens'][$token_type])) {
         continue;
       }
 
