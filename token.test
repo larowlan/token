@@ -551,6 +551,8 @@ class TokenUserTestCase extends TokenTestHelper {
       'picture:fid' => $this->account->picture->fid,
       'picture:size-raw' => 125,
       'ip-address' => NULL,
+      'roles' => implode(', ', $this->account->roles),
+      'roles:keys' => implode(', ', array_keys($this->account->roles)),
     );
     $this->assertTokens('user', array('user' => $this->account), $user_tokens);
 
@@ -558,10 +560,16 @@ class TokenUserTestCase extends TokenTestHelper {
     $this->drupalPost('admin/config/people/accounts', $edit, 'Save configuration');
     $this->assertText('The configuration options have been saved.');
 
+    // Remove the simpletest-created user role.
+    user_role_delete(end($this->account->roles));
+    $this->account = user_load($this->account->uid, TRUE);
+
     $user_tokens = array(
       'picture' => NULL,
       'picture:fid' => NULL,
       'ip-address' => NULL,
+      'roles' => 'authenticated user',
+      'roles:keys' => (string) DRUPAL_AUTHENTICATED_RID,
     );
     $this->assertTokens('user', array('user' => $this->account), $user_tokens);
 
@@ -570,6 +578,12 @@ class TokenUserTestCase extends TokenTestHelper {
       'ip-address' => ip_address(),
     );
     $this->assertTokens('current-user', array(), $tokens);
+
+    $tokens = array(
+      'roles' => 'anonymous user',
+      'roles:keys' => (string) DRUPAL_ANONYMOUS_RID,
+    );
+    $this->assertTokens('user', array('user' => drupal_anonymous_user()), $tokens);
   }
 }
 
