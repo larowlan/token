@@ -744,23 +744,25 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
   if ($type == 'array' && !empty($data['array']) && is_array($data['array'])) {
     $array = $data['array'];
 
+    $sort = isset($options['array sort']) ? $options['array sort'] : TRUE;
+    $keys = element_children($array, $sort);
+
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'first':
-          $first = reset($array);
-          $replacements[$original] = token_render_array_value($first, $options);
-          reset($array);
+          $value = $array[$keys[0]];
+          $value = is_array($value) ? render($value) : (string) $value;
+          $replacements[$original] = $sanitize ? check_plain($value) : $value;
           break;
         case 'last':
-          $last = end($array);
-          $replacements[$original] = token_render_array_value($last, $options);
-          reset($array);
+          $value = $array[$keys[count($keys) - 1]];
+          $value = is_array($value) ? render($value) : (string) $value;
+          $replacements[$original] = $sanitize ? check_plain($value) : $value;
           break;
         case 'count':
-          $replacements[$original] = count($array);
+          $replacements[$original] = count($keys);
           break;
         case 'keys':
-          $keys = array_keys($array);
           $replacements[$original] = token_render_array($keys, $options);
           break;
         case 'reversed':
@@ -776,7 +778,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     // [array:value:*] dynamic tokens.
     if ($value_tokens = token_find_with_prefix($tokens, 'value')) {
       foreach ($value_tokens as $key => $original) {
-        if (isset($array[$key])) {
+        if ($key[0] !== '#' && isset($array[$key])) {
           $replacements[$original] = token_render_array_value($array[$key], $options);
         }
       }
@@ -789,12 +791,14 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       }
     }
 
-    // Chained token relationships.
+    // [array:keys:*] chained tokens.
     if ($key_tokens = token_find_with_prefix($tokens, 'keys')) {
-      $replacements += token_generate('array', $key_tokens, array('array' => array_keys($array)), $options);
+      $replacements += token_generate('array', $key_tokens, array('array' => $keys), $options);
     }
+
+    // [array:reversed:*] chained tokens.
     if ($reversed_tokens = token_find_with_prefix($tokens, 'reversed')) {
-      $replacements += token_generate('array', $reversed_tokens, array('array' => array_reverse($array, TRUE)), $options);
+      $replacements += token_generate('array', $reversed_tokens, array('array' => array_reverse($array, TRUE)), array('array sort' => FALSE) + $options);
     }
 
     // @todo Handle if the array values are not strings and could be chained.
