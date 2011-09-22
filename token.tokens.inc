@@ -609,7 +609,8 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'title':
-          $replacements[$original] = drupal_get_title();
+          $title = drupal_get_title();
+          $replacements[$original] = $sanitize ? $title : decode_entities($title);
           break;
         case 'url':
           $replacements[$original] = url($current_path, $url_options);
