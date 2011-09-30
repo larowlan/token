@@ -207,6 +207,9 @@ function token_field_info_alter(&$info) {
     'number_float' => 'number_unformatted',
     'file' => 'file_url_plain',
     'image' => 'file_url_plain',
+    'text' => 'text_default',
+    'text_long' => 'text_default',
+    'text_with_summary' => 'text_default',
   );
   foreach ($defaults as $field_type => $default_token_formatter) {
     if (isset($info[$field_type])) {
