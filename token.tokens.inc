@@ -1245,8 +1245,7 @@ function _token_field_info($field_name = NULL) {
             }
 
             $info[$key]['token types'][] = $token_type;
-            $info[$key]['labels'] = array();
-            $info[$key]['bundles'] = array();
+            $info[$key] += array('labels' => array(), 'bundles' => array());
 
             // Find which label is most commonly used.
             foreach ($field['bundles'][$entity] as $bundle) {
@@ -1261,20 +1260,24 @@ function _token_field_info($field_name = NULL) {
               $info[$key]['labels'][] = $instances[$entity][$bundle][$key]['label'];
               $info[$key]['bundles'][$token_type][$bundle] = $entity_info[$entity]['bundles'][$bundle]['label'];
             }
-            $labels = array_count_values($info[$key]['labels']);
-            arsort($labels);
-            $info[$key]['label'] = key($labels);
+          }
+        }
 
-            // Generate a description for the token.
-            $info[$key]['description'] = t('@type field.', array('@type' => $type_info[$field['type']]['label']));
-            if ($also_known_as = array_unique(array_diff($info[$key]['labels'], array($info[$key]['label'])))) {
-              $info[$key]['description'] .= ' ' . t('Also known as %labels.', array('%labels' => implode(', ', $also_known_as)));
-            }
+        if (isset($info[$key])) {
+          $labels = array_count_values($info[$key]['labels']);
+          arsort($labels);
+          $info[$key]['label'] = key($labels);
+
+          // Generate a description for the token.
+          $info[$key]['description'] = t('@type field.', array('@type' => $type_info[$field['type']]['label']));
+          if ($also_known_as = array_unique(array_diff($info[$key]['labels'], array($info[$key]['label'])))) {
+            $info[$key]['description'] .= ' ' . t('Also known as %labels.', array('%labels' => implode(', ', $also_known_as)));
           }
         }
       }
 
       drupal_alter('token_field_info', $info);
+      cache_set('field:info', $info, 'cache_token');
     }
   }
 
