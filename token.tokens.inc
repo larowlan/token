@@ -526,7 +526,10 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           }
           break;
         case 'roles':
-          $replacements[$original] = token_render_array($account->roles, $options);
+          // The roles array may be set from checkbox values so ensure it always
+          // has 'proper' data with the role names.
+          $roles = array_intersect_key(user_roles(), $account->roles);
+          $replacements[$original] = token_render_array($roles, $options);
           break;
       }
     }
@@ -541,7 +544,10 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       $replacements += token_generate('url', $url_tokens, entity_uri('user', $account), $options);
     }
     if ($role_tokens = token_find_with_prefix($tokens, 'roles')) {
-      $replacements += token_generate('array', $role_tokens, array('array' => $account->roles), $options);
+      // The roles array may be set from checkbox values so ensure it always
+      // has 'proper' data with the role names.
+      $roles = array_intersect_key(user_roles(), $account->roles);
+      $replacements += token_generate('array', $role_tokens, array('array' => $roles), $options);
     }
   }
 
