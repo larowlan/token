@@ -147,7 +147,7 @@ function token_theme() {
       'file' => 'token.pages.inc',
     ),
     'token_tree' => array(
-      'variables' => array('token_types' => array(), 'global_types' => TRUE, 'click_insert' => TRUE, 'show_restricted' => FALSE, 'recursion_limit' => 4),
+      'variables' => array('token_types' => array(), 'global_types' => TRUE, 'click_insert' => TRUE, 'show_restricted' => FALSE, 'recursion_limit' => 3),
       'file' => 'token.pages.inc',
     ),
   );
