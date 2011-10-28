@@ -1038,7 +1038,9 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
 
   // Node tokens.
   if ($type == 'node' && !empty($data['node'])) {
-    $node = $data['node'];
+    // We need to clone the node as menu_node_prepare() may cause data loss.
+    // @see http://drupal.org/node/1317926
+    $node = clone $data['node'];
 
     if (!isset($node->menu)) {
       // Nodes do not have their menu links loaded via menu_node_load().
