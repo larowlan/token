@@ -397,6 +397,9 @@ class TokenMenuTestCase extends TokenTestHelper {
       'parent:title' => 'Root link',
       'parent:menu' => 'Main menu',
       'parent:parent' => NULL,
+      'parents' => 'Root link',
+      'parents:count' => 1,
+      'parents:keys' => $root_link['mlid'],
       'root' => 'Root link',
       'root:mlid' => $root_link['mlid'],
       'root:parent' => NULL,
@@ -426,6 +429,9 @@ class TokenMenuTestCase extends TokenTestHelper {
       'menu-link:parent' => 'Parent link',
       'menu-link:parent:mlid' => $node->menu['plid'],
       'menu-link:parent:mlid' => $parent_link['mlid'],
+      'menu-link:parents' => 'Root link, Parent link',
+      'menu-link:parents:count' => 2,
+      'menu-link:parents:keys' => $root_link['mlid'] . ', ' . $parent_link['mlid'],
       'menu-link:root' => 'Root link',
       'menu-link:root:mlid' => $root_link['mlid'],
     );
@@ -463,34 +469,48 @@ class TokenTaxonomyTestCase extends TokenTestHelper {
    * Test the additional taxonomy term tokens.
    */
   function testTaxonomyTokens() {
-    $parent_term = $this->addTerm($this->vocab, array('path' => array('alias' => 'parent-term')));
-    $parent_term_tokens = array(
+    $root_term = $this->addTerm($this->vocab, array('name' => 'Root term', 'path' => array('alias' => 'root-term')));
+    $tokens = array(
+      'url' => url("taxonomy/term/{$root_term->tid}", array('absolute' => TRUE)),
+      'url:absolute' => url("taxonomy/term/{$root_term->tid}", array('absolute' => TRUE)),
+      'url:relative' => url("taxonomy/term/{$root_term->tid}", array('absolute' => FALSE)),
+      'url:path' => 'root-term',
+      'url:unaliased:path' => "taxonomy/term/{$root_term->tid}",
+      'edit-url' => url("taxonomy/term/{$root_term->tid}/edit", array('absolute' => TRUE)),
+      'parents' => NULL,
+      'parents:count' => NULL,
+      'parents:keys' => NULL,
+      'root' => NULL,
+      // Deprecated tokens
+      'url:alias' => 'root-term',
+    );
+    $this->assertTokens('term', array('term' => $root_term), $tokens);
+
+    $parent_term = $this->addTerm($this->vocab, array('name' => 'Parent term', 'parent' => $root_term->tid));
+    $tokens = array(
       'url' => url("taxonomy/term/{$parent_term->tid}", array('absolute' => TRUE)),
       'url:absolute' => url("taxonomy/term/{$parent_term->tid}", array('absolute' => TRUE)),
       'url:relative' => url("taxonomy/term/{$parent_term->tid}", array('absolute' => FALSE)),
-      'url:path' => 'parent-term',
+      'url:path' => "taxonomy/term/{$parent_term->tid}",
       'url:unaliased:path' => "taxonomy/term/{$parent_term->tid}",
       'edit-url' => url("taxonomy/term/{$parent_term->tid}/edit", array('absolute' => TRUE)),
-      'root' => NULL,
+      'parents' => 'Root term',
+      'parents:count' => 1,
+      'parents:keys' => $root_term->tid,
+      'root' => check_plain($root_term->name),
+      'root:tid' => $root_term->tid,
       // Deprecated tokens
-      'url:alias' => 'parent-term',
+      'url:alias' => "taxonomy/term/{$parent_term->tid}",
     );
-    $this->assertTokens('term', array('term' => $parent_term), $parent_term_tokens);
+    $this->assertTokens('term', array('term' => $parent_term), $tokens);
 
-    $child_term = $this->addTerm($this->vocab, array('parent' => $parent_term->tid));
-    $child_term_tokens = array(
-      'url' => url("taxonomy/term/{$child_term->tid}", array('absolute' => TRUE)),
-      'url:absolute' => url("taxonomy/term/{$child_term->tid}", array('absolute' => TRUE)),
-      'url:relative' => url("taxonomy/term/{$child_term->tid}", array('absolute' => FALSE)),
-      'url:path' => "taxonomy/term/{$child_term->tid}",
-      'url:unaliased:path' => "taxonomy/term/{$child_term->tid}",
-      'edit-url' => url("taxonomy/term/{$child_term->tid}/edit", array('absolute' => TRUE)),
-      'root' => check_plain($parent_term->name),
-      'root:tid' => $parent_term->tid,
-      // Deprecated tokens
-      'url:alias' => "taxonomy/term/{$child_term->tid}",
+    $term = $this->addTerm($this->vocab, array('name' => 'Test term', 'parent' => $parent_term->tid));
+    $tokens = array(
+      'parents' => 'Root term, Parent term',
+      'parents:count' => 2,
+      'parents:keys' => implode(', ', array($root_term->tid, $parent_term->tid)),
     );
-    $this->assertTokens('term', array('term' => $child_term), $child_term_tokens);
+    $this->assertTokens('term', array('term' => $term), $tokens);
   }
 
   /**
