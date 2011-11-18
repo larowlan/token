@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Test integration for the token module.
+ */
+
+/**
  * Helper test class with some added functions for testing.
  */
 class TokenTestHelper extends DrupalWebTestCase {
