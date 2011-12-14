@@ -894,14 +894,8 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 function token_tokens_alter(array &$replacements, array $context) {
   $options = $context['options'];
 
-  if (isset($options['language'])) {
-    $url_options['language'] = $options['language'];
-    $language_code = $options['language']->language;
-  }
-  else {
-    $language_code = NULL;
-  }
   $sanitize = !empty($options['sanitize']);
+  $langcode = !empty($options['language']->language) ? $options['language']->language : NULL;
 
   // Comment token fixes.
   if ($context['type'] == 'comment' && !empty($context['data']['comment'])) {
@@ -933,10 +927,12 @@ function token_tokens_alter(array &$replacements, array $context) {
     foreach ($context['tokens'] as $name => $original) {
       switch ($name) {
         case 'author':
-          // @todo Remove when http://drupal.org/node/1185842 is fixed.
-          $account = user_load($node->uid);
-          $name = format_username($account);
-          $replacements[$original] = $sanitize ? check_plain($name) : $name;
+          // http://drupal.org/node/1185842 was fixed in core release 7.9.
+          if (version_compare(VERSION, '7.9', '<')) {
+            $account = user_load($node->uid);
+            $name = format_username($account);
+            $replacements[$original] = $sanitize ? check_plain($name) : $name;
+          }
           break;
       }
     }
@@ -949,10 +945,12 @@ function token_tokens_alter(array &$replacements, array $context) {
     foreach ($context['tokens'] as $name => $original) {
       switch ($name) {
         case 'owner':
-          // @todo Remove when http://drupal.org/node/978028 is fixed.
-          $account = user_load($file->uid);
-          $name = format_username($account);
-          $replacements[$original] = $sanitize ? check_plain($name) : $name;
+          // http://drupal.org/node/978028 was fixed in core release 7.7.
+          if (version_compare(VERSION, '7.7', '<')) {
+            $account = user_load($file->uid);
+            $name = format_username($account);
+            $replacements[$original] = $sanitize ? check_plain($name) : $name;
+          }
           break;
       }
     }
