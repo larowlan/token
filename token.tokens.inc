@@ -1069,29 +1069,22 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
 
   // Node tokens.
   if ($type == 'node' && !empty($data['node'])) {
-    // We need to clone the node as menu_node_prepare() may cause data loss.
-    // @see http://drupal.org/node/1317926
-    $node = clone $data['node'];
+    $node = $data['node'];
 
-    if (!isset($node->menu)) {
-      // Nodes do not have their menu links loaded via menu_node_load().
-      menu_node_prepare($node);
-    }
-
-    if (!empty($node->menu['mlid'])) {
-      $link = token_menu_link_load($node->menu['mlid']);
-
-      foreach ($tokens as $name => $original) {
-        switch ($name) {
-          case 'menu-link':
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'menu-link':
+          if ($link = token_node_menu_link_load($node)) {
             $replacements[$original] = $sanitize ? check_plain($link['title']) : $link['title'];
-            break;
-        }
+          }
+          break;
       }
 
       // Chained token relationships.
       if ($menu_tokens = token_find_with_prefix($tokens, 'menu-link')) {
-        $replacements += token_generate('menu-link', $menu_tokens, array('menu-link' => $link), $options);
+        if ($link = token_node_menu_link_load($node)) {
+          $replacements += token_generate('menu-link', $menu_tokens, array('menu-link' => $link), $options);
+        }
       }
     }
   }
