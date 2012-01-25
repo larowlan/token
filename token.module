@@ -273,6 +273,7 @@ function token_clear_cache() {
   drupal_static_reset('_token_profile_fields');
   drupal_static_reset('token_menu_link_load');
   drupal_static_reset('token_book_link_load');
+  drupal_static_reset('token_node_menu_link_load');
   drupal_static_reset('_token_field_info');
 }
 
