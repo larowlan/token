@@ -1298,7 +1298,7 @@ function _token_field_info($field_name = NULL) {
         if (isset($info[$key])) {
           $labels = array_count_values($info[$key]['labels']);
           arsort($labels);
-          $info[$key]['label'] = key($labels);
+          $info[$key]['label'] = check_plain(key($labels));
 
           // Generate a description for the token.
           $info[$key]['description'] = t('@type field.', array('@type' => $type_info[$field['type']]['label']));
@@ -1348,6 +1348,7 @@ function field_token_info_alter(&$info) {
       }
 
       $info['tokens'][$token_type][$field_name] = array(
+        // Note that label and description have already been sanitized by _token_field_info().
         'name' => $field['label'],
         'description' => $field['description'],
         'module' => 'token',
