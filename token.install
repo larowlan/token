@@ -52,9 +52,11 @@ function token_schema() {
  * Add the cache_token table.
  */
 function token_update_7000() {
-  $schema['cache_token'] = drupal_get_schema_unprocessed('system', 'cache');
-  $schema['cache_token']['description'] = 'Cache table for token information.';
-  db_create_table('cache_token', $schema['cache_token']);
+  if (!db_table_exists('cache_token')) {
+    $schema = drupal_get_schema_unprocessed('system', 'cache');
+    $schema['description'] = 'Cache table for token information.';
+    db_create_table('cache_token', $schema);
+  }
 }
 
 /**
