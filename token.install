@@ -273,7 +273,7 @@ function token_get_token_problems() {
       'label' => t('The following tokens or token types are not defined as arrays:'),
     ),
     'missing-info' => array(
-      'label' => t('The following tokens or token types are missing required name and description information:'),
+      'label' => t('The following tokens or token types are missing required name and/or description information:'),
     ),
     'type-no-tokens' => array(
       'label' => t('The following token types do not have any tokens defined:'),
