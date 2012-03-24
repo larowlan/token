@@ -1,6 +1,5 @@
 name = Token Test
 description = Testing module for token functionality.
 package = Testing
-core = 7.x
-files[] = token_test.module
+core = 8.x
 hidden = TRUE

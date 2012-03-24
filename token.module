@@ -402,7 +402,7 @@ function token_get_info($token_type = NULL, $token = NULL) {
   if (empty($token_info)) {
     $cid = "info:{$language->language}";
 
-    if ($cache = cache_get($cid, 'cache_token')) {
+    if ($cache = cache('cache_token')->get($cid)) {
       $token_info = $cache->data;
     }
     else {
@@ -432,7 +432,7 @@ function token_get_info($token_type = NULL, $token = NULL) {
       }
 
       // Store info in cache for future use.
-      cache_set($cid, $token_info, 'cache_token');
+      cache('cache_token')->set($cid, $token_info);
     }
   }
 
@@ -777,13 +777,13 @@ function token_build_tree($token_type, array $options = array()) {
   // If we do not have this base tree in the static cache, check {cache_token}
   // otherwise generate and store it in the cache.
   if (!isset($trees[$tree_cid])) {
-    if ($cache = cache_get($tree_cid, 'cache_token')) {
+    if ($cache = cache('cache_token')->get($tree_cid)) {
       $trees[$tree_cid] = $cache->data;
     }
     else {
       $options['parents'] = array();
       $trees[$tree_cid] = _token_build_tree($token_type, $options);
-      cache_set($tree_cid, $trees[$tree_cid], 'cache_token');
+      cache('cache_token')->set($tree_cid, $trees[$tree_cid]);
     }
   }
 
@@ -1059,7 +1059,7 @@ function token_render_cache_get($elements) {
   }
   $bin = isset($elements['#cache']['bin']) ? $elements['#cache']['bin'] : 'cache';
 
-  if (!empty($cid) && $cache = cache_get($cid, $bin)) {
+  if (!empty($cid) && $cache = cache($bin)->get($cid)) {
     // Add additional libraries, JavaScript, CSS and other data attached
     // to this element.
     if (isset($cache->data['#attached'])) {

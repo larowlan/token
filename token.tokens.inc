@@ -1255,7 +1255,7 @@ function _token_field_info($field_name = NULL) {
   $info = &drupal_static(__FUNCTION__);
 
   if (!isset($fields)) {
-    if ($cached = cache_get('field:info', 'cache_token')) {
+    if ($cached = cache('cache_token')->get('field:info')) {
       $info = $cached->data;
     }
     else {
@@ -1309,7 +1309,7 @@ function _token_field_info($field_name = NULL) {
       }
 
       drupal_alter('token_field_info', $info);
-      cache_set('field:info', $info, 'cache_token');
+      cache('cache_token')->set('field:info', $info);
     }
   }
 
