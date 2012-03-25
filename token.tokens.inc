@@ -785,7 +785,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     $array = $data['array'];
 
     $sort = isset($options['array sort']) ? $options['array sort'] : TRUE;
-    $keys = element_children($array, $sort);
+    $keys = token_element_children($array, $sort);
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
