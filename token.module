@@ -265,7 +265,7 @@ function token_field_delete_instance($instance) {
  * Clear token caches and static variables.
  */
 function token_clear_cache() {
-  cache_clear_all('*', 'cache_token', TRUE);
+  cache('cache_token')->flush();
   drupal_static_reset('token_get_info');
   drupal_static_reset('token_get_global_token_types');
   drupal_static_reset('token_get_entity_mapping');
