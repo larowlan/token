@@ -64,7 +64,7 @@ class TokenTestHelper extends DrupalWebTestCase {
     return $values;
   }
 
-  function saveAlias($source, $alias, $language = LANGUAGE_NONE) {
+  function saveAlias($source, $alias, $language = LANGUAGE_NOT_SPECIFIED) {
     $alias = array(
       'source' => $source,
       'alias' => $alias,
@@ -74,7 +74,7 @@ class TokenTestHelper extends DrupalWebTestCase {
     return $alias;
   }
 
-  function saveEntityAlias($entity_type, $entity, $alias, $language = LANGUAGE_NONE) {
+  function saveEntityAlias($entity_type, $entity, $alias, $language = LANGUAGE_NOT_SPECIFIED) {
     $uri = entity_uri($entity_type, $entity);
     return $this->saveAlias($uri['path'], $alias, $language);
   }
@@ -264,8 +264,8 @@ class TokenCommentTestCase extends TokenTestHelper {
     $parent_comment->mail = 'anonymous@example.com';
     $parent_comment->subject = $this->randomName();
     $parent_comment->timestamp = mt_rand($node->created, REQUEST_TIME);
-    $parent_comment->language = LANGUAGE_NONE;
-    $parent_comment->body[LANGUAGE_NONE][0] = $this->randomName();
+    $parent_comment->language = LANGUAGE_NOT_SPECIFIED;
+    $parent_comment->body[LANGUAGE_NOT_SPECIFIED][0] = $this->randomName();
     comment_save($parent_comment);
 
     $tokens = array(
@@ -284,8 +284,8 @@ class TokenCommentTestCase extends TokenTestHelper {
     $comment->uid = 1;
     $comment->subject = $this->randomName();
     $comment->timestamp = mt_rand($parent_comment->created, REQUEST_TIME);
-    $comment->language = LANGUAGE_NONE;
-    $comment->body[LANGUAGE_NONE][0] = $this->randomName();
+    $comment->language = LANGUAGE_NOT_SPECIFIED;
+    $comment->body[LANGUAGE_NOT_SPECIFIED][0] = $this->randomName();
     comment_save($comment);
 
     $tokens = array(
