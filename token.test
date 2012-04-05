@@ -698,6 +698,34 @@ class TokenEntityTestCase extends TokenTestHelper {
     taxonomy_term_save($term);
     return $term;
   }
+
+  /**
+   * Test the [entity:original:*] tokens.
+   */
+  function testEntityOriginal() {
+    $node = $this->drupalCreateNode(array('title' => 'Original title'));
+
+    $tokens = array(
+      'nid' => $node->nid,
+      'title' => 'Original title',
+      'original' => NULL,
+      'original:nid' => NULL,
+    );
+    $this->assertTokens('node', array('node' => $node), $tokens);
+
+    // Emulate the original entity property that would be available from
+    // node_save() and change the title for the node.
+    $node->original = entity_load_unchanged('node', $node->nid);
+    $node->title = 'New title';
+
+    $tokens = array(
+      'nid' => $node->nid,
+      'title' => 'New title',
+      'original' => 'Original title',
+      'original:nid' => $node->nid,
+    );
+    $this->assertTokens('node', array('node' => $node), $tokens);
+  }
 }
 
 /**

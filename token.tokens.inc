@@ -62,6 +62,16 @@ function token_token_info_alter(&$info) {
         'type' => 'url',
       );
     }
+
+    // Add [entity:original] tokens if they do not already exist.
+    if (!isset($info['tokens'][$token_type]['original'])) {
+      $info['tokens'][$token_type]['original'] = array(
+        'name' => t('Original @entity', array('@entity' => drupal_strtolower($entity_info['label']))),
+        'description' => t('The original @entity data if the @entity is being updated or saved.', array('@entity' => drupal_strtolower($entity_info['label']))),
+        'module' => 'token',
+        'type' => $token_type,
+      );
+    }
   }
 
   // Add support for custom date formats.
@@ -762,12 +772,24 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
             $replacements[$original] = url($uri['path'], $uri['options']);
           }
           break;
+
+        case 'original':
+          if (_token_module($type, 'original') == 'token' && !empty($entity->original)) {
+            $label = entity_label($entity_type, $entity->original);
+            $replacements[$original] = $sanitize ? check_plain($label) : $label;
+          }
+          break;
       }
     }
 
-    // Chained token relationships.
+    // [entity:url:*] chained tokens.
     if (($url_tokens = token_find_with_prefix($tokens, 'url')) && _token_module($type, 'url') == 'token') {
       $replacements += token_generate('url', $url_tokens, entity_uri($entity_type, $entity), $options);
+    }
+
+    // [entity:original:*] chained tokens.
+    if (($original_tokens = token_find_with_prefix($tokens, 'original')) && _token_module($type, 'original') == 'token' && !empty($entity->original)) {
+      $replacements += token_generate($type, $original_tokens, array($type => $entity->original), $options);
     }
 
     // Pass through to an generic 'entity' token type generation.
