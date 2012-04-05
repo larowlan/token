@@ -1398,8 +1398,13 @@ function field_tokens($type, $tokens, array $data = array(), array $options = ar
   // Entity tokens.
   if ($type == 'entity' && !empty($data['entity_type']) && !empty($data['entity']) && !empty($data['token_type'])) {
     $entity_type = $data['entity_type'];
+
     // The field API does weird stuff to the entity, so let's clone it.
     $entity = clone $data['entity'];
+
+    // Reset the prepared view flag in case token generation is called from
+    // inside field_attach_view().
+    unset($entity->_field_view_prepared);
 
     list(, , $bundle) = entity_extract_ids($entity_type, $entity);
     $fields = field_info_instances($entity_type, $bundle);
