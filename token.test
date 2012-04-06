@@ -1052,8 +1052,6 @@ class TokenFileTestCase extends TokenTestHelper {
 }
 
 class TokenBlockTestCase extends TokenTestHelper {
-  //protected $profile = 'standard';
-
   public static function getInfo() {
     return array(
       'name' => 'Block token tests',
