@@ -293,7 +293,9 @@ function token_field_delete_instance($instance) {
  * Clear token caches and static variables.
  */
 function token_clear_cache() {
-  cache_clear_all('*', 'cache_token', TRUE);
+  if (db_table_exists('cache_token')) {
+    cache_clear_all('*', 'cache_token', TRUE);
+  }
   drupal_static_reset('token_get_info');
   drupal_static_reset('token_get_global_token_types');
   drupal_static_reset('token_get_entity_mapping');
@@ -397,7 +399,9 @@ function token_module_implements_alter(&$implementations, $hook) {
  * Implements hook_flush_caches().
  */
 function token_flush_caches() {
-  return array('cache_token');
+  if (db_table_exists('cache_token')) {
+    return array('cache_token');
+  }
 }
 
 /**
