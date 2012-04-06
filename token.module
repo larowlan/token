@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Enhances the token API in core: adds a browseable UI, missing tokens, etc.
+ */
+
+/**
  * The maximum depth for token tree recursion.
  */
 define('TOKEN_MAX_DEPTH', 9);
@@ -480,8 +485,16 @@ function token_get_info($token_type = NULL, $token = NULL) {
 }
 
 /**
- * Return the module responsible for a token if defined in
- * $info['tokens']['type']['module'].
+ * Return the module responsible for a token.
+ *
+ * @param string $type
+ *   The token type.
+ * @param string $name
+ *   The token name.
+ *
+ * @return mixed
+ *   The value of $info['tokens'][$type][$name]['module'] from token_get_info(),
+ *   or NULL if the value does not exist.
  */
 function _token_module($type, $name) {
   $token_info = token_get_info($type, $name);
@@ -857,7 +870,7 @@ function token_flatten_tree($tree) {
     $result[$token] = $token_info;
     if (isset($token_info['children']) && is_array($token_info['children'])) {
       $result += token_flatten_tree($token_info['children']);
-      //unset($result[$token]['children']);
+      // unset($result[$token]['children']);
     }
   }
   return $result;
