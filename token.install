@@ -220,11 +220,11 @@ function _token_upgrade_token_date_list($old_token, $new_token) {
  * @return
  *   A string with the tokens upgraded
  *
- * @see _token_upgrade_token_list();
+ * @see _token_upgrade_token_list()
  */
 function token_update_token_text($text, $updates = array(), $leading = '[', $trailing = ']') {
   $updates += _token_upgrade_token_list();
-  $regex = '/' . preg_quote($leading, '/') . '([^\s]*)' . preg_quote($trailing, '/') . ']/';
+  $regex = '/' . preg_quote($leading, '/') . '([^\s]*)' . preg_quote($trailing, '/') . '/';
   preg_match_all($regex, $text, $matches);
 
   foreach ($matches[1] as $index => $old_token) {
