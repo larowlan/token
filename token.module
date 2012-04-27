@@ -230,6 +230,15 @@ function token_form_block_admin_configure_alter(&$form, $form_state) {
 }
 
 /**
+ * Implements hook_widget_form_alter().
+ */
+function token_field_widget_form_alter(&$element, &$form_state, $context) {
+  if (!empty($element['#description']) && is_string($element['#description'])) {
+    $element['#description'] = token_replace($element['#description']);
+  }
+}
+
+/**
  * Implements hook_field_info_alter().
  */
 function token_field_info_alter(&$info) {
@@ -243,6 +252,10 @@ function token_field_info_alter(&$info) {
     'text' => 'text_default',
     'text_long' => 'text_default',
     'text_with_summary' => 'text_default',
+    'list_integer' => 'list_default',
+    'list_float' => 'list_default',
+    'list_text' => 'list_default',
+    'list_boolean' => 'list_default',
   );
   foreach ($defaults as $field_type => $default_token_formatter) {
     if (isset($info[$field_type])) {
@@ -691,7 +704,11 @@ function token_form_field_ui_field_edit_form_alter(&$form, $form_state) {
       '#token_types' => array(),
       '#weight' => $form['instance']['settings']['file_directory']['#weight'] + 0.5,
     );
+    $form['instance']['settings']['file_directory']['#description'] .= ' ' . t('This field supports tokens.');
   }
+
+  // Note that the description is tokenized via token_field_widget_form_alter().
+  $form['instance']['description']['#description'] .= '<br />' . t('This field supports tokens.');
 }
 
 /**
