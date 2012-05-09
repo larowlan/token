@@ -583,7 +583,7 @@ class TokenUserTestCase extends TokenTestHelper {
 
     // Enable user pictures.
     variable_set('user_pictures', 1);
-    variable_set('user_picture_file_size', 0);
+    variable_set('user_picture_file_size', '');
 
     // Set up the pictures directory.
     $picture_path = file_default_scheme() . '://' . variable_get('user_picture_path', 'pictures');
