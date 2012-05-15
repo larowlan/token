@@ -1415,15 +1415,10 @@ function field_tokens($type, $tokens, array $data = array(), array $options = ar
         continue;
       }
 
-      // Replace the [entity:field-name] token.
-      if (isset($tokens[$field_name])) {
+      // Replace the [entity:field-name] token only if token module added this
+      // token.
+      if (isset($tokens[$field_name]) && _token_module($data['token_type'], $field_name) == 'token') {
         $original = $tokens[$field_name];
-
-        // Assert that this field was added by token.module.
-        $token_info = token_get_info($data['token_type'], $field_name);
-        if (!isset($token_info['module']) || $token_info['module'] != 'token') {
-          continue;
-        }
 
         $field_output = field_view_field($entity_type, $entity, $field_name, 'token', $langcode);
         $field_output['#token_options'] = $options;
