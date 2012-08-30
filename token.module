@@ -11,7 +11,7 @@
 define('TOKEN_MAX_DEPTH', 9);
 
 /**
- * Impelements hook_help().
+ * Implements hook_help().
  */
 function token_help($path, $arg) {
   if ($path == 'admin/help#token') {
