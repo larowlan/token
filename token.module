@@ -182,7 +182,6 @@ function token_theme() {
     ),
     'file' => 'token.pages.inc',
   );
-  $info['token_tree_link']['variables'] += $info['token_tree']['variables'];
 
   return $info;
 }
