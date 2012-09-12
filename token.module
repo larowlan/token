@@ -442,9 +442,11 @@ function token_entity_info_alter(&$info) {
  * Adds missing token support for core modules.
  */
 function token_module_implements_alter(&$implementations, $hook) {
-  if ($hook == 'tokens' || $hook == 'token_info') {
+  module_load_include('inc', 'token', 'token.tokens');
+
+  if ($hook == 'tokens' || $hook == 'token_info' || $hook == 'token_info_alter' || $hook == 'tokens_alter') {
     foreach (_token_core_supported_modules() as $module) {
-      if (module_exists($module)) {
+      if (module_exists($module) && function_exists($module . '_' . $hook)) {
         $implementations[$module] = FALSE;
       }
     }
