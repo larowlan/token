@@ -377,23 +377,26 @@ function token_clear_cache() {
  * @see token_entity_info_alter()
  * @see http://drupal.org/node/737726
  */
-function token_get_entity_mapping($value_type = 'token', $value = NULL) {
+function token_get_entity_mapping($value_type = 'token', $value = NULL, $fallback = FALSE) {
   $mapping = &drupal_static(__FUNCTION__, array());
 
   if (empty($mapping)) {
     foreach (entity_get_info() as $entity_type => $info) {
       $mapping[$entity_type] = !empty($info['token type']) ? $info['token type'] : $entity_type;
     }
+    // Allow modules to alter the mapping array.
+    drupal_alter('token_entity_mapping', $mapping);
   }
 
   if (!isset($value)) {
     return $mapping;
   }
   elseif ($value_type == 'token') {
-    return array_search($value, $mapping);
+    $return = array_search($value, $mapping);
+    return $return !== FALSE ? $return : ($fallback ? $value : FALSE);
   }
   elseif ($value_type == 'entity') {
-    return isset($mapping[$value]) ? $mapping[$value] : FALSE;
+    return isset($mapping[$value]) ? $mapping[$value] : ($fallback ? $value : FALSE);
   }
 }
 
