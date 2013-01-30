@@ -749,17 +749,21 @@ function token_form_field_ui_field_edit_form_alter(&$form, $form_state) {
   if (($form['#field']['type'] == 'file' || $form['#field']['type'] == 'image') && isset($form['instance']['settings']['file_directory']) && !module_exists('filefield_paths')) {
     // GAH! We can only support global tokens in the upload file directory path.
     $form['instance']['settings']['file_directory']['#element_validate'][] = 'token_element_validate';
-    $form['instance']['settings']['file_directory']['#token_types'] = array();
-    $form['instance']['settings']['token_tree'] = array(
-      '#theme' => 'token_tree',
-      '#token_types' => array(),
-      '#weight' => $form['instance']['settings']['file_directory']['#weight'] + 0.5,
-    );
+    $form['instance']['settings']['file_directory'] += array('#token_types' => array());
     $form['instance']['settings']['file_directory']['#description'] .= ' ' . t('This field supports tokens.');
   }
 
   // Note that the description is tokenized via token_field_widget_form_alter().
   $form['instance']['description']['#description'] .= '<br />' . t('This field supports tokens.');
+  $form['instance']['description']['#element_validate'][] = 'token_element_validate';
+  $form['instance']['description'] += array('#token_types' => array());
+
+  $form['instance']['settings']['token_tree'] = array(
+    '#theme' => 'token_tree',
+    '#token_types' => array(),
+    '#dialog' => TRUE,
+    '#weight' => $form['instance']['description']['#weight'] + 0.5,
+  );
 }
 
 /**
@@ -778,6 +782,7 @@ function token_form_system_actions_configure_alter(&$form, $form_state) {
       $form['token_tree'] = array(
         '#theme' => 'token_tree',
         '#token_types' => 'all',
+        '#dialog' => TRUE,
         '#weight' => 100,
       );
       // @todo Add token validation to the action fields that can use tokens.
@@ -839,10 +844,11 @@ function token_form_user_admin_settings_alter(&$form, &$form_state) {
   }
 
   // Add the token tree UI.
-  $form['token_tree'] = array(
+  $form['email']['token_tree'] = array(
     '#theme' => 'token_tree',
     '#token_types' => array('user'),
     '#show_restricted' => TRUE,
+    '#dialog' => TRUE,
     '#weight' => 90,
   );
 }
