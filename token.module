@@ -266,7 +266,7 @@ function token_form_block_admin_configure_alter(&$form, $form_state) {
   $form['settings']['title']['#description'] .= ' ' . t('This field supports tokens.');
   // @todo Figure out why this token validation does not seem to be working here.
   $form['settings']['title']['#element_validate'][] = 'token_element_validate';
-  $form['settings']['title']['#token_types'] = array();
+  $form['settings']['title'] += array('#token_types' => array());
 }
 
 /**
