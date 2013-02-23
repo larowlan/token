@@ -78,6 +78,7 @@ function token_menu() {
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
     'file' => 'token.pages.inc',
+    'theme callback' => 'ajax_base_page_theme',
   );
 
   // Devel token pages.
