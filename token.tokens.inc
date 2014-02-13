@@ -697,8 +697,9 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     if ($query_tokens = token_find_with_prefix($tokens, 'query')) {
       foreach ($query_tokens as $name => $original) {
         // @todo Should this use filter_input()?
-        if (isset($_GET[$name])) {
-          $replacements[$original] = $sanitize ? String::checkPlain($_GET[$name]) : $_GET[$name];
+        if (\Drupal::request()->query->has($name)) {
+          $value = \Drupal::request()->query->get($name);
+          $replacements[$original] = $sanitize ? String::checkPlain($value) : $value;
         }
       }
     }
