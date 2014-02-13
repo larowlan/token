@@ -10,7 +10,6 @@
  */
 function token_requirements($phase = 'runtime') {
   $requirements = array();
-  $t = get_t();
 
   if ($phase == 'runtime') {
     // Check for various token definition problems.
@@ -28,10 +27,10 @@ function token_requirements($phase = 'runtime') {
     }
     if (!empty($token_problems)) {
       $requirements['token_problems'] = array(
-        'title' => $t('Tokens'),
-        'value' => $t('Problems detected'),
+        'title' => t('Tokens'),
+        'value' => t('Problems detected'),
         'severity' => REQUIREMENT_WARNING,
-        'description' => '<p>' . implode('</p><p>', $token_problems) . '</p>', //theme('item_list', array('items' => $token_problems)),
+        'description' => '<p>' . implode('</p><p>', $token_problems) . '</p>',
       );
     }
   }
