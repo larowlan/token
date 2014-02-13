@@ -39,15 +39,6 @@ function token_requirements($phase = 'runtime') {
 }
 
 /**
- * Implements hook_schema().
- */
-function token_schema() {
-  $schema['cache_token'] = drupal_get_schema_unprocessed('system', 'cache');
-  $schema['cache_token']['description'] = 'Cache table for token information.';
-  return $schema;
-}
-
-/**
  * Build a list of Drupal 6 tokens and their Drupal 7 token names.
  */
 function _token_upgrade_token_list() {
