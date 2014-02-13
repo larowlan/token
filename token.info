@@ -1,4 +1,0 @@
-name = Token
-description = Provides a user interface for the Token API and some missing core tokens.
-core = 8.x
-files[] = token.test
