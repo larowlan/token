@@ -215,7 +215,7 @@ function token_devel_token_object($entity_type, $entity) {
  * Page callback to clear the token registry caches.
  */
 function token_flush_cache_callback() {
-  if (!isset($_GET['token']) || !drupal_valid_token($_GET['token'], current_path())) {
+  if (!isset($_GET['token']) || !\Drupal::csrfToken()->validate($_GET['token'], current_path())) {
     return MENU_NOT_FOUND;
   }
 
