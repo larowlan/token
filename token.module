@@ -74,7 +74,7 @@ function token_menu() {
   );*/
 
   // Devel token pages.
-  if (module_exists('devel')) {
+  if (\Drupal::moduleHandler()->module_exists('devel')) {
     $items['node/%node/devel/token'] = array(
       'title' => 'Tokens',
       'page callback' => 'token_devel_token_object',
@@ -132,7 +132,7 @@ function token_admin_menu_output_alter(&$content) {
     '#title' => t('Token registry'),
     '#href' => 'token/flush-cache',
     '#options' => array(
-      'query' => drupal_get_destination() + array('token' => drupal_get_token('token/flush-cache')),
+      'query' => drupal_get_destination() + array('token' => \Drupal::csrfToken()->get('token/flush-cache')),
     ),
   );
 }
@@ -339,7 +339,7 @@ function token_get_entity_mapping($value_type = 'token', $value = NULL) {
   $mapping = &drupal_static(__FUNCTION__, array());
 
   if (empty($mapping)) {
-    foreach (entity_get_info() as $entity_type => $info) {
+    foreach (\Drupal::entityManager()->getDefinitions() as $entity_type => $info) {
       $mapping[$entity_type] = !empty($info['token type']) ? $info['token type'] : $entity_type;
     }
   }
@@ -402,7 +402,7 @@ function token_entity_info_alter(&$info) {
 function token_module_implements_alter(&$implementations, $hook) {
   if ($hook == 'tokens' || $hook == 'token_info') {
     foreach (_token_core_supported_modules() as $module) {
-      if (module_exists($module)) {
+      if (\Drupal::moduleHandler()->moduleExists($module)) {
         $implementations[$module] = TRUE;
       }
     }
@@ -662,22 +662,22 @@ function token_element_validate(&$element, &$form_state) {
   // Validate if an element must have a minimum number of tokens.
   if (isset($element['#min_tokens']) && count($tokens) < $element['#min_tokens']) {
     // @todo Change this error message to include the minimum number.
-    $error = format_plural($element['#min_tokens'], 'The %element-title cannot contain fewer than one token.', 'The %element-title must contain at least @count tokens.', array('%element-title' => $title));
-    form_error($element, $error);
+    $error = \Drupal::translation()->formatPlural($element['#min_tokens'], 'The %element-title cannot contain fewer than one token.', 'The %element-title must contain at least @count tokens.', array('%element-title' => $title));
+    \Drupal::formBuilder()->setError($element, $error);
   }
 
   // Validate if an element must have a maximum number of tokens.
   if (isset($element['#max_tokens']) && count($tokens) > $element['#max_tokens']) {
     // @todo Change this error message to include the maximum number.
-    $error = format_plural($element['#max_tokens'], 'The %element-title must contain as most one token.', 'The %element-title must contain at most @count tokens.', array('%element-title' => $title));
-    form_error($element, $error);
+    $error = \Drupal::translation()->formatPlural($element['#max_tokens'], 'The %element-title must contain as most one token.', 'The %element-title must contain at most @count tokens.', array('%element-title' => $title));
+    \Drupal::formBuilder()->setError($element, $error);
   }
 
   // Check if the field defines specific token types.
   if (!empty($element['#token_types'])) {
     $invalid_tokens = token_get_invalid_tokens_by_context($tokens, $element['#token_types']);
     if ($invalid_tokens) {
-      form_error($element, t('The %element-title is using the following invalid tokens: @invalid-tokens.', array('%element-title' => $title, '@invalid-tokens' => implode(', ', $invalid_tokens))));
+      \Drupal::formBuilder()->setError($element, t('The %element-title is using the following invalid tokens: @invalid-tokens.', array('%element-title' => $title, '@invalid-tokens' => implode(', ', $invalid_tokens))));
     }
   }
 
@@ -743,7 +743,7 @@ function token_form_system_actions_configure_alter(&$form, $form_state) {
 function token_form_user_admin_settings_alter(&$form, &$form_state) {
   $email_token_help = t('Available variables are: [site:name], [site:url], [user:name], [user:mail], [site:login-url], [site:url-brief], [user:edit-url], [user:one-time-login-url], [user:cancel-url].');
 
-  foreach (element_children($form) as $key) {
+  foreach (Element::children($form) as $key) {
     $element = &$form[$key];
 
     // Remove the crummy default token help text.
@@ -770,7 +770,7 @@ function token_form_user_admin_settings_alter(&$form, &$form_state) {
         continue 2;
     }
 
-    foreach (element_children($element) as $sub_key) {
+    foreach (Element::children($element) as $sub_key) {
       if (!isset($element[$sub_key]['#type'])) {
         continue;
       }
@@ -1058,7 +1058,7 @@ function _token_menu_link_translate(&$item) {
   // options array. For performance reasons we only invoke this hook if the link
   // has the 'alter' flag set in the options array.
   if (!empty($item['options']['alter'])) {
-    drupal_alter('translated_menu_link', $item, $map);
+    \Drupal::moduleHandler()->alter('translated_menu_link', $item, $map);
   }
 
   return $map;
@@ -1107,7 +1107,7 @@ function token_render_array(array $array, array $options = array()) {
 function token_render_array_value($value, array $options = array()) {
   $rendered = is_array($value) ? render($value) : (string) $value;
   if (!empty($options['sanitize'])) {
-    $rendered = check_plain($rendered);
+    $rendered = String::checkPlain($rendered);
   }
   return $rendered;
 }

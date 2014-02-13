@@ -31,17 +31,17 @@ function token_token_info_alter(&$info) {
   unset($info['tokens']['node']['type-name']);
 
   // Support 'url' type tokens for core tokens.
-  if (isset($info['tokens']['comment']['url']) && module_exists('comment')) {
+  if (isset($info['tokens']['comment']['url']) && \Drupal::moduleHandler()->moduleExists('comment')) {
     $info['tokens']['comment']['url']['type'] = 'url';
   }
   $info['tokens']['node']['url']['type'] = 'url';
-  if (isset($info['tokens']['term']['url']) && module_exists('taxonomy')) {
+  if (isset($info['tokens']['term']['url']) && \Drupal::moduleHandler()->moduleExists('taxonomy')) {
     $info['tokens']['term']['url']['type'] = 'url';
   }
   $info['tokens']['user']['url']['type'] = 'url';
 
   // Add [token:url] tokens for any URI-able entities.
-  $entities = entity_get_info();
+  $entities = \Drupal::entityManager()->getDefinitions();
   foreach ($entities as $entity => $entity_info) {
     if (!isset($entity_info['token type'])) {
       continue;
@@ -137,7 +137,7 @@ function token_token_info() {
   );
 
   // Taxonomy term and vocabulary tokens.
-  if (module_exists('taxonomy')) {
+  if (\Drupal::moduleHandler()->moduleExists('taxonomy')) {
     $info['tokens']['term']['edit-url'] = array(
       'name' => t('Edit URL'),
       'description' => t("The URL of the taxonomy term's edit page."),
@@ -424,7 +424,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           break;
         case 'content-type':
           $type_name = node_type_get_name($node);
-          $replacements[$original] = $sanitize ? check_plain($type_name) : $type_name;
+          $replacements[$original] = $sanitize ? String::checkPlain($type_name) : $type_name;
           break;
       }
     }
@@ -448,7 +448,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'name':
-          $replacements[$original] = $sanitize ? check_plain($node_type->name) : $node_type->name;
+          $replacements[$original] = $sanitize ? String::checkPlain($node_type->name) : $node_type->name;
           break;
         case 'machine-name':
           // This is a machine name so does not ever need to be sanitized.
@@ -491,7 +491,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           $parents = taxonomy_get_parents_all($term->tid);
           $root_term = end($parents);
           if ($root_term->tid != $term->tid) {
-            $replacements[$original] = $sanitize ? check_plain($root_term->name) : $root_term->name;
+            $replacements[$original] = $sanitize ? String::checkPlain($root_term->name) : $root_term->name;
           }
           break;
       }
@@ -541,11 +541,11 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       switch ($name) {
         case 'basename':
           $basename = pathinfo($file->uri, PATHINFO_BASENAME);
-          $replacements[$original] = $sanitize ? check_plain($basename) : $basename;
+          $replacements[$original] = $sanitize ? String::checkPlain($basename) : $basename;
           break;
         case 'extension':
           $extension = pathinfo($file->uri, PATHINFO_EXTENSION);
-          $replacements[$original] = $sanitize ? check_plain($extension) : $extension;
+          $replacements[$original] = $sanitize ? String::checkPlain($extension) : $extension;
           break;
         case 'size-raw':
           $replacements[$original] = (int) $file->filesize;
@@ -597,7 +597,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       switch ($name) {
         case 'ip-address':
           $ip = ip_address();
-          $replacements[$original] = $sanitize ? check_plain($ip) : $ip;
+          $replacements[$original] = $sanitize ? String::checkPlain($ip) : $ip;
           break;
       }
     }
@@ -618,14 +618,14 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           $replacements[$original] = $link['mlid'];
           break;
         case 'title':
-          $replacements[$original] = $sanitize ? check_plain($link['title']) : $link['title'];
+          $replacements[$original] = $sanitize ? String::checkPlain($link['title']) : $link['title'];
           break;
         case 'url':
           $replacements[$original] = url($link['href'], $url_options);
           break;
         case 'parent':
           if (!empty($link['plid']) && $parent = token_menu_link_load($link['plid'])) {
-            $replacements[$original] = $sanitize ? check_plain($parent['title']) : $parent['title'];
+            $replacements[$original] = $sanitize ? String::checkPlain($parent['title']) : $parent['title'];
           }
           break;
         case 'parents':
@@ -635,7 +635,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           break;
         case 'root';
           if (!empty($link['p1']) && $link['p1'] != $link['mlid'] && $root = token_menu_link_load($link['p1'])) {
-            $replacements[$original] = $sanitize ? check_plain($root['title']) : $root['title'];
+            $replacements[$original] = $sanitize ? String::checkPlain($root['title']) : $root['title'];
           }
           break;
       }
@@ -688,7 +688,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     if ($arg_tokens = token_find_with_prefix($tokens, 'arg')) {
       foreach ($arg_tokens as $name => $original) {
         if (is_numeric($name) && ($arg = arg($name)) && isset($arg)) {
-          $replacements[$original] = $sanitize ? check_plain($arg) : $arg;
+          $replacements[$original] = $sanitize ? String::checkPlain($arg) : $arg;
         }
       }
     }
@@ -698,7 +698,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       foreach ($query_tokens as $name => $original) {
         // @todo Should this use filter_input()?
         if (isset($_GET[$name])) {
-          $replacements[$original] = $sanitize ? check_plain($_GET[$name]) : $_GET[$name];
+          $replacements[$original] = $sanitize ? String::checkPlain($_GET[$name]) : $_GET[$name];
         }
       }
     }
@@ -722,12 +722,12 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       switch ($name) {
         case 'path':
           $value = empty($url_options['alias']) ? drupal_get_path_alias($path, $language_code) : $path;
-          $replacements[$original] = $sanitize ? check_plain($value) : $value;
+          $replacements[$original] = $sanitize ? String::checkPlain($value) : $value;
           break;
         case 'alias':
           // @deprecated
           $alias = drupal_get_path_alias($path, $language_code);
-          $replacements[$original] = $sanitize ? check_plain($alias) : $alias;
+          $replacements[$original] = $sanitize ? String::checkPlain($alias) : $alias;
           break;
         case 'absolute':
           $replacements[$original] = url($path, $url_options);
@@ -784,7 +784,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
         case 'original':
           if (_token_module($type, 'original') == 'token' && !empty($entity->original)) {
             $label = entity_label($entity_type, $entity->original);
-            $replacements[$original] = $sanitize ? check_plain($label) : $label;
+            $replacements[$original] = $sanitize ? String::checkPlain($label) : $label;
           }
           break;
       }
@@ -822,12 +822,12 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
         case 'first':
           $value = $array[$keys[0]];
           $value = is_array($value) ? render($value) : (string) $value;
-          $replacements[$original] = $sanitize ? check_plain($value) : $value;
+          $replacements[$original] = $sanitize ? String::checkPlain($value) : $value;
           break;
         case 'last':
           $value = $array[$keys[count($keys) - 1]];
           $value = is_array($value) ? render($value) : (string) $value;
-          $replacements[$original] = $sanitize ? check_plain($value) : $value;
+          $replacements[$original] = $sanitize ? String::checkPlain($value) : $value;
           break;
         case 'count':
           $replacements[$original] = count($keys);
@@ -944,7 +944,7 @@ function token_tokens_alter(array &$replacements, array $context) {
             $account->name = $comment->name;
           }
           $name = format_username($account);
-          $replacements[$original] = $sanitize ? check_plain($name) : $name;
+          $replacements[$original] = $sanitize ? String::checkPlain($name) : $name;
           break;
       }
     }
@@ -961,7 +961,7 @@ function token_tokens_alter(array &$replacements, array $context) {
           if (version_compare(VERSION, '7.9', '<')) {
             $account = user_load($node->uid);
             $name = format_username($account);
-            $replacements[$original] = $sanitize ? check_plain($name) : $name;
+            $replacements[$original] = $sanitize ? String::checkPlain($name) : $name;
           }
           break;
       }
@@ -979,7 +979,7 @@ function token_tokens_alter(array &$replacements, array $context) {
           if (version_compare(VERSION, '7.7', '<')) {
             $account = user_load($file->uid);
             $name = format_username($account);
-            $replacements[$original] = $sanitize ? check_plain($name) : $name;
+            $replacements[$original] = $sanitize ? String::checkPlain($name) : $name;
           }
           break;
       }
@@ -1016,7 +1016,7 @@ function book_tokens($type, $tokens, array $data = array(), array $options = arr
       foreach ($tokens as $name => $original) {
         switch ($name) {
           case 'book':
-            $replacements[$original] = $sanitize ? check_plain($link['title']) : $link['title'];
+            $replacements[$original] = $sanitize ? String::checkPlain($link['title']) : $link['title'];
             break;
         }
       }
@@ -1105,7 +1105,7 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
       switch ($name) {
         case 'menu-link':
           if ($link = token_node_menu_link_load($node)) {
-            $replacements[$original] = $sanitize ? check_plain($link['title']) : $link['title'];
+            $replacements[$original] = $sanitize ? String::checkPlain($link['title']) : $link['title'];
           }
           break;
       }
@@ -1127,7 +1127,7 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
       switch ($name) {
         case 'menu':
           if ($menu = menu_load($link['menu_name'])) {
-            $replacements[$original] = $sanitize ? check_plain($menu['title']) : $menu['title'];
+            $replacements[$original] = $sanitize ? String::checkPlain($menu['title']) : $menu['title'];
           }
           break;
         case 'edit-url':
@@ -1149,7 +1149,7 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'name':
-          $replacements[$original] = $sanitize ? check_plain($menu['title']) : $menu['title'];
+          $replacements[$original] = $sanitize ? String::checkPlain($menu['title']) : $menu['title'];
           break;
         case 'machine-name':
           // This is a machine name so does not ever need to be sanitized.
@@ -1183,7 +1183,7 @@ function profile_token_info() {
 
   foreach (_token_profile_fields() as $field) {
     $info['tokens']['user'][$field->token_name] = array(
-      'name' => check_plain($field->title),
+      'name' => String::checkPlain($field->title),
       'description' => t('@category @type field.', array('@category' => drupal_ucfirst($field->category), '@type' => $field->type)),
     );
 
@@ -1234,7 +1234,7 @@ function profile_tokens($type, $tokens, array $data = array(), array $options = 
             break;
           case 'checkbox':
             // Checkbox field if checked should return the text.
-            $replacements[$original] = $sanitize ? check_plain($profile_fields[$name]->title) : $profile_fields[$name]->title;
+            $replacements[$original] = $sanitize ? String::checkPlain($profile_fields[$name]->title) : $profile_fields[$name]->title;
             break;
           case 'list':
             $value = preg_split("/[,\n\r]/", $value);
@@ -1242,7 +1242,7 @@ function profile_tokens($type, $tokens, array $data = array(), array $options = 
             $value = implode(', ', $value);
             // Intentionally fall through to the default condition.
           default:
-            $replacements[$original] = $sanitize ? check_plain($value) : $value;
+            $replacements[$original] = $sanitize ? String::checkPlain($value) : $value;
             break;
         }
       }
@@ -1292,9 +1292,9 @@ function _token_field_info($field_name = NULL) {
       $info = array();
 
       $fields = field_info_fields();
-      $instances = field_info_instances();
+      $instances = Field::fieldInfo()->getInstances();
       $type_info = field_info_field_types();
-      $entity_info = entity_get_info();
+      $entity_info = \Drupal::entityManager()->getDefinitions();
 
       foreach ($fields as $field) {
         $key = $field['field_name'];
@@ -1328,7 +1328,7 @@ function _token_field_info($field_name = NULL) {
         if (isset($info[$key])) {
           $labels = array_count_values($info[$key]['labels']);
           arsort($labels);
-          $info[$key]['label'] = check_plain(key($labels));
+          $info[$key]['label'] = String::checkPlain(key($labels));
 
           // Generate a description for the token.
           $info[$key]['description'] = t('@type field.', array('@type' => $type_info[$field['type']]['label']));
@@ -1338,7 +1338,7 @@ function _token_field_info($field_name = NULL) {
         }
       }
 
-      drupal_alter('token_field_info', $info);
+      \Drupal::moduleHandler()->alter('token_field_info', $info);
       cache('cache_token')->set('field:info', $info);
     }
   }
@@ -1407,7 +1407,7 @@ function field_tokens($type, $tokens, array $data = array(), array $options = ar
     unset($entity->_field_view_prepared);
 
     list(, , $bundle) = entity_extract_ids($entity_type, $entity);
-    $fields = field_info_instances($entity_type, $bundle);
+    $fields = Field::fieldInfo()->getBundleInstances($entity_type, $bundle);
 
     foreach (array_keys($fields) as $field_name) {
       // Do not continue if the field is empty.
@@ -1450,7 +1450,7 @@ function token_pre_render_field_token(&$elements) {
 
   // Prevent multi-value fields from appearing smooshed together by appending
   // a join suffix to all but the last value.
-  $deltas = element_get_visible_children($elements);
+  $deltas = Element::getVisibleChildren($elements);
   $count = count($deltas);
   if ($count > 1) {
     $join = isset($elements['#token_options']['join']) ? $elements['#token_options']['join'] : ", ";
