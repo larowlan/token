@@ -726,12 +726,12 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'path':
-          $value = empty($url_options['alias']) ? drupal_get_path_alias($path, $language_code) : $path;
+          $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getPathAlias($path, $language_code) : $path;
           $replacements[$original] = $sanitize ? String::checkPlain($value) : $value;
           break;
         case 'alias':
           // @deprecated
-          $alias = drupal_get_path_alias($path, $language_code);
+          $alias = \Drupal::service('path.alias_manager')->getPathAlias($path, $language_code);
           $replacements[$original] = $sanitize ? String::checkPlain($alias) : $alias;
           break;
         case 'absolute':
@@ -747,7 +747,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           $replacements[$original] = url($path, array('alias' => TRUE) + $url_options);
           break;
         case 'args':
-          $value = empty($url_options['alias']) ? drupal_get_path_alias($path, $language_code) : $path;
+          $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getPathAlias($path, $language_code) : $path;
           $replacements[$original] = token_render_array(arg(NULL, $value), $options);
           break;
       }
@@ -755,7 +755,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 
     // [url:arg:*] chained tokens.
     if ($arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'args')) {
-      $value = empty($url_options['alias']) ? drupal_get_path_alias($path, $language_code) : $path;
+      $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getPathAlias($path, $language_code) : $path;
       $replacements += \Drupal::token()->generate('array', $arg_tokens, array('array' => arg(NULL, $value)), $options);
     }
 
