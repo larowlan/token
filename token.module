@@ -210,7 +210,7 @@ function token_block_view_alter(&$data, $block) {
   if (!empty($block->title) && $block->title != '<none>') {
     // Perform unsanitized token replacement since _block_render_blocks() will
     // call check_plain() on $block->title.
-    $block->title = token_replace($block->title, array(), array('sanitize' => FALSE));
+    $block->title = \Drupal::token()->replace($block->title, array(), array('sanitize' => FALSE));
   }
 }
 
@@ -236,7 +236,7 @@ function token_form_block_admin_configure_alter(&$form, $form_state) {
  */
 function token_field_widget_form_alter(&$element, &$form_state, $context) {
   if (!empty($element['#description']) && is_string($element['#description'])) {
-    $element['#description'] = token_replace($element['#description']);
+    $element['#description'] = \Drupal::token()->replace($element['#description']);
   }
 }
 
@@ -458,7 +458,7 @@ function token_get_info($token_type = NULL, $token = NULL) {
       $token_info = $cache->data;
     }
     else {
-      $token_info = token_info();
+      $token_info = \Drupal::token()->getInfo();
 
       foreach (array_keys($token_info['types']) as $type_key) {
         if (isset($token_info['types'][$type_key]['type'])) {
@@ -569,7 +569,7 @@ function token_get_invalid_tokens_by_context($value, $valid_types = array()) {
   }
 
   $invalid_tokens = array();
-  $value_tokens = is_string($value) ? token_scan($value) : $value;
+  $value_tokens = is_string($value) ? \Drupal::token()->scan($value) : $value;
 
   foreach ($value_tokens as $type => $tokens) {
     if (!in_array($type, $valid_types)) {
@@ -620,7 +620,7 @@ function token_get_invalid_tokens($type, $tokens) {
       }
       else {
         // Resursively check the chained tokens.
-        $sub_tokens = token_find_with_prefix(array($token => $full_token), $parts[0]);
+        $sub_tokens = \Drupal::token()->findWithPrefix(array($token => $full_token), $parts[0]);
         $invalid_tokens = array_merge($invalid_tokens, token_get_invalid_tokens($sub_token_info['type'], $sub_tokens));
       }
     }
@@ -657,7 +657,7 @@ function token_element_validate(&$element, &$form_state) {
     return $element;
   }
 
-  $tokens = token_scan($value);
+  $tokens = \Drupal::token()->scan($value);
   $title = empty($element['#title']) ? $element['#parents'][0] : $element['#title'];
   // @todo Find old Drupal 6 style tokens and add them to invalid tokens.
 
@@ -870,7 +870,7 @@ function token_build_tree($token_type, array $options = array()) {
       }
     }
     if (!empty($token_values)) {
-      $token_values = token_generate($token_type, $token_values, $options['data']);
+      $token_values = \Drupal::token()->generate($token_type, $token_values, $options['data']);
       foreach ($token_values as $token => $replacement) {
         $tree[$token]['value'] = $replacement;
       }

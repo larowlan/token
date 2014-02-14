@@ -228,7 +228,7 @@ function token_autocomplete() {
   $args = func_get_args();
   $string = implode('/', $args);
 
-  $token_info = token_info();
+  $token_info = \Drupal::token()->getInfo();
 
   preg_match_all('/\[([^\s\]:]*):?([^\s\]]*)?\]?/', $string, $matches);
   $types = $matches[1];
@@ -246,7 +246,7 @@ function token_autocomplete() {
 }
 
 function token_autocomplete_type($string = '') {
-  $token_info = token_info();
+  $token_info = \Drupal::token()->getInfo();
   $types = $token_info['types'];
   $matches = array();
 

@@ -396,7 +396,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
   // Current date tokens.
   // @todo Remove when http://drupal.org/node/943028 is fixed.
   if ($type == 'current-date') {
-    $replacements += token_generate('date', $tokens, array('date' => REQUEST_TIME), $options);
+    $replacements += \Drupal::token()->generate('date', $tokens, array('date' => REQUEST_TIME), $options);
   }
 
   // Comment tokens.
@@ -404,8 +404,8 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     $comment = $data['comment'];
 
     // Chained token relationships.
-    if (($url_tokens = token_find_with_prefix($tokens, 'url'))) {
-      $replacements += token_generate('url', $url_tokens, entity_uri('comment', $comment), $options);
+    if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url'))) {
+      $replacements += \Drupal::token()->generate('url', $url_tokens, entity_uri('comment', $comment), $options);
     }
   }
 
@@ -432,14 +432,14 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
 
     // Chained token relationships.
-    if (!empty($node->tnid) && ($source_tokens = token_find_with_prefix($tokens, 'source')) && $source_node = node_load($node->tnid)) {
-      $replacements += token_generate('node', $source_tokens, array('node' => $source_node), $options);
+    if (!empty($node->tnid) && ($source_tokens = \Drupal::token()->findWithPrefix($tokens, 'source')) && $source_node = node_load($node->tnid)) {
+      $replacements += \Drupal::token()->generate('node', $source_tokens, array('node' => $source_node), $options);
     }
-    if (($node_type_tokens = token_find_with_prefix($tokens, 'content-type')) && $node_type = node_type_load($node->type)) {
-      $replacements += token_generate('content-type', $node_type_tokens, array('node_type' => $node_type), $options);
+    if (($node_type_tokens = \Drupal::token()->findWithPrefix($tokens, 'content-type')) && $node_type = node_type_load($node->type)) {
+      $replacements += \Drupal::token()->generate('content-type', $node_type_tokens, array('node_type' => $node_type), $options);
     }
-    if (($url_tokens = token_find_with_prefix($tokens, 'url'))) {
-      $replacements += token_generate('url', $url_tokens, entity_uri('node', $node), $options);
+    if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url'))) {
+      $replacements += \Drupal::token()->generate('url', $url_tokens, entity_uri('node', $node), $options);
     }
   }
 
@@ -500,20 +500,20 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
 
     // Chained token relationships.
-    if (($url_tokens = token_find_with_prefix($tokens, 'url'))) {
-      $replacements += token_generate('url', $url_tokens, entity_uri('taxonomy_term', $term), $options);
+    if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url'))) {
+      $replacements += \Drupal::token()->generate('url', $url_tokens, entity_uri('taxonomy_term', $term), $options);
     }
     // [term:parents:*] chained tokens.
-    if ($parents_tokens = token_find_with_prefix($tokens, 'parents')) {
+    if ($parents_tokens = \Drupal::token()->findWithPrefix($tokens, 'parents')) {
       if ($parents = token_taxonomy_term_load_all_parents($term->tid)) {
-        $replacements += token_generate('array', $parents_tokens, array('array' => $parents), $options);
+        $replacements += \Drupal::token()->generate('array', $parents_tokens, array('array' => $parents), $options);
       }
     }
-    if ($root_tokens = token_find_with_prefix($tokens, 'root')) {
+    if ($root_tokens = \Drupal::token()->findWithPrefix($tokens, 'root')) {
       $parents = taxonomy_get_parents_all($term->tid);
       $root_term = end($parents);
       if ($root_term->tid != $term->tid) {
-        $replacements += token_generate('term', $root_tokens, array('term' => $root_term), $options);
+        $replacements += \Drupal::token()->generate('term', $root_tokens, array('term' => $root_term), $options);
       }
     }
   }
@@ -577,19 +577,19 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
 
     // Chained token relationships.
-    if (variable_get('user_pictures', 0) && !empty($account->picture) && ($picture_tokens = token_find_with_prefix($tokens, 'picture'))) {
+    if (variable_get('user_pictures', 0) && !empty($account->picture) && ($picture_tokens = \Drupal::token()->findWithPrefix($tokens, 'picture'))) {
       // @todo Remove when core bug http://drupal.org/node/978028 is fixed.
       $account->picture->description = '';
-      $replacements += token_generate('file', $picture_tokens, array('file' => $account->picture), $options);
+      $replacements += \Drupal::token()->generate('file', $picture_tokens, array('file' => $account->picture), $options);
     }
-    if ($url_tokens = token_find_with_prefix($tokens, 'url')) {
-      $replacements += token_generate('url', $url_tokens, entity_uri('user', $account), $options);
+    if ($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url')) {
+      $replacements += \Drupal::token()->generate('url', $url_tokens, entity_uri('user', $account), $options);
     }
-    if ($role_tokens = token_find_with_prefix($tokens, 'roles')) {
+    if ($role_tokens = \Drupal::token()->findWithPrefix($tokens, 'roles')) {
       // The roles array may be set from checkbox values so ensure it always
       // has 'proper' data with the role names.
       $roles = array_intersect_key(user_roles(), $account->roles);
-      $replacements += token_generate('array', $role_tokens, array('array' => $roles), $options);
+      $replacements += \Drupal::token()->generate('array', $role_tokens, array('array' => $roles), $options);
     }
   }
 
@@ -644,20 +644,20 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
 
     // Chained token relationships.
-    if (!empty($link['plid']) && ($source_tokens = token_find_with_prefix($tokens, 'parent')) && $parent = token_menu_link_load($link['plid'])) {
-      $replacements += token_generate('menu-link', $source_tokens, array('menu-link' => $parent), $options);
+    if (!empty($link['plid']) && ($source_tokens = \Drupal::token()->findWithPrefix($tokens, 'parent')) && $parent = token_menu_link_load($link['plid'])) {
+      $replacements += \Drupal::token()->generate('menu-link', $source_tokens, array('menu-link' => $parent), $options);
     }
     // [menu-link:parents:*] chained tokens.
-    if ($parents_tokens = token_find_with_prefix($tokens, 'parents')) {
+    if ($parents_tokens = \Drupal::token()->findWithPrefix($tokens, 'parents')) {
       if ($parents = token_menu_link_load_all_parents($link['mlid'])) {
-        $replacements += token_generate('array', $parents_tokens, array('array' => $parents), $options);
+        $replacements += \Drupal::token()->generate('array', $parents_tokens, array('array' => $parents), $options);
       }
     }
-    if (!empty($link['p1']) && $link['p1'] != $link['mlid'] && ($root_tokens = token_find_with_prefix($tokens, 'root')) && $root = token_menu_link_load($link['p1'])) {
-      $replacements += token_generate('menu-link', $root_tokens, array('menu-link' => $root), $options);
+    if (!empty($link['p1']) && $link['p1'] != $link['mlid'] && ($root_tokens = \Drupal::token()->findWithPrefix($tokens, 'root')) && $root = token_menu_link_load($link['p1'])) {
+      $replacements += \Drupal::token()->generate('menu-link', $root_tokens, array('menu-link' => $root), $options);
     }
-    if ($url_tokens = token_find_with_prefix($tokens, 'url')) {
-      $replacements += token_generate('url', $url_tokens, array('path' => $link['href']), $options);
+    if ($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url')) {
+      $replacements += \Drupal::token()->generate('url', $url_tokens, array('path' => $link['href']), $options);
     }
   }
 
@@ -687,7 +687,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 
     // @deprecated
     // [current-page:arg] dynamic tokens.
-    if ($arg_tokens = token_find_with_prefix($tokens, 'arg')) {
+    if ($arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'arg')) {
       foreach ($arg_tokens as $name => $original) {
         if (is_numeric($name) && ($arg = arg($name)) && isset($arg)) {
           $replacements[$original] = $sanitize ? String::checkPlain($arg) : $arg;
@@ -696,7 +696,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
 
     // [current-page:query] dynamic tokens.
-    if ($query_tokens = token_find_with_prefix($tokens, 'query')) {
+    if ($query_tokens = \Drupal::token()->findWithPrefix($tokens, 'query')) {
       foreach ($query_tokens as $name => $original) {
         // @todo Should this use filter_input()?
         if (\Drupal::request()->query->has($name)) {
@@ -707,8 +707,8 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
 
     // Chained token relationships.
-    if ($url_tokens = token_find_with_prefix($tokens, 'url')) {
-      $replacements += token_generate('url', $url_tokens, array('path' => $current_path), $options);
+    if ($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url')) {
+      $replacements += \Drupal::token()->generate('url', $url_tokens, array('path' => $current_path), $options);
     }
   }
 
@@ -752,17 +752,17 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
 
     // [url:arg:*] chained tokens.
-    if ($arg_tokens = token_find_with_prefix($tokens, 'args')) {
+    if ($arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'args')) {
       $value = empty($url_options['alias']) ? drupal_get_path_alias($path, $language_code) : $path;
-      $replacements += token_generate('array', $arg_tokens, array('array' => arg(NULL, $value)), $options);
+      $replacements += \Drupal::token()->generate('array', $arg_tokens, array('array' => arg(NULL, $value)), $options);
     }
 
     // [url:unaliased:*] chained tokens.
-    if ($unaliased_tokens = token_find_with_prefix($tokens, 'unaliased')) {
+    if ($unaliased_tokens = \Drupal::token()->findWithPrefix($tokens, 'unaliased')) {
       $unaliased_token_data['path'] = $path;
       $unaliased_token_data['options'] = isset($data['options']) ? $data['options'] : array();
       $unaliased_token_data['options']['alias'] = TRUE;
-      $replacements += token_generate('url', $unaliased_tokens, $unaliased_token_data, $options);
+      $replacements += \Drupal::token()->generate('url', $unaliased_tokens, $unaliased_token_data, $options);
     }
   }
 
@@ -794,13 +794,13 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
 
     // [entity:url:*] chained tokens.
-    if (($url_tokens = token_find_with_prefix($tokens, 'url')) && _token_module($type, 'url') == 'token') {
-      $replacements += token_generate('url', $url_tokens, entity_uri($entity_type, $entity), $options);
+    if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url')) && _token_module($type, 'url') == 'token') {
+      $replacements += \Drupal::token()->generate('url', $url_tokens, entity_uri($entity_type, $entity), $options);
     }
 
     // [entity:original:*] chained tokens.
-    if (($original_tokens = token_find_with_prefix($tokens, 'original')) && _token_module($type, 'original') == 'token' && !empty($entity->original)) {
-      $replacements += token_generate($type, $original_tokens, array($type => $entity->original), $options);
+    if (($original_tokens = \Drupal::token()->findWithPrefix($tokens, 'original')) && _token_module($type, 'original') == 'token' && !empty($entity->original)) {
+      $replacements += \Drupal::token()->generate($type, $original_tokens, array($type => $entity->original), $options);
     }
 
     // Pass through to an generic 'entity' token type generation.
@@ -810,7 +810,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       'token_type' => $type,
     );
     // @todo Investigate passing through more data like everything from entity_extract_ids().
-    $replacements += token_generate('entity', $tokens, $entity_data, $options);
+    $replacements += \Drupal::token()->generate('entity', $tokens, $entity_data, $options);
   }
 
   // Array tokens.
@@ -849,7 +849,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
 
     // [array:value:*] dynamic tokens.
-    if ($value_tokens = token_find_with_prefix($tokens, 'value')) {
+    if ($value_tokens = \Drupal::token()->findWithPrefix($tokens, 'value')) {
       foreach ($value_tokens as $key => $original) {
         if ($key[0] !== '#' && isset($array[$key])) {
           $replacements[$original] = token_render_array_value($array[$key], $options);
@@ -858,20 +858,20 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
 
     // [array:join:*] dynamic tokens.
-    if ($join_tokens = token_find_with_prefix($tokens, 'join')) {
+    if ($join_tokens = \Drupal::token()->findWithPrefix($tokens, 'join')) {
       foreach ($join_tokens as $join => $original) {
         $replacements[$original] = token_render_array($array, array('join' => $join) + $options);
       }
     }
 
     // [array:keys:*] chained tokens.
-    if ($key_tokens = token_find_with_prefix($tokens, 'keys')) {
-      $replacements += token_generate('array', $key_tokens, array('array' => $keys), $options);
+    if ($key_tokens = \Drupal::token()->findWithPrefix($tokens, 'keys')) {
+      $replacements += \Drupal::token()->generate('array', $key_tokens, array('array' => $keys), $options);
     }
 
     // [array:reversed:*] chained tokens.
-    if ($reversed_tokens = token_find_with_prefix($tokens, 'reversed')) {
-      $replacements += token_generate('array', $reversed_tokens, array('array' => array_reverse($array, TRUE)), array('array sort' => FALSE) + $options);
+    if ($reversed_tokens = \Drupal::token()->findWithPrefix($tokens, 'reversed')) {
+      $replacements += \Drupal::token()->generate('array', $reversed_tokens, array('array' => array_reverse($array, TRUE)), array('array sort' => FALSE) + $options);
     }
 
     // @todo Handle if the array values are not strings and could be chained.
@@ -888,7 +888,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
 
     // [custom:hash:*] dynamic token.
-    if ($hash_tokens = token_find_with_prefix($tokens, 'hash')) {
+    if ($hash_tokens = \Drupal::token()->findWithPrefix($tokens, 'hash')) {
       $algos = hash_algos();
       foreach ($hash_tokens as $name => $original) {
         if (in_array($name, $algos)) {
@@ -1025,8 +1025,8 @@ function book_tokens($type, $tokens, array $data = array(), array $options = arr
       }
 
       // Chained token relationships.
-      if ($book_tokens = token_find_with_prefix($tokens, 'book')) {
-        $replacements += token_generate('menu-link', $book_tokens, array('menu-link' => $link), $options);
+      if ($book_tokens = \Drupal::token()->findWithPrefix($tokens, 'book')) {
+        $replacements += \Drupal::token()->generate('menu-link', $book_tokens, array('menu-link' => $link), $options);
       }
     }
   }
@@ -1114,9 +1114,9 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
       }
 
       // Chained token relationships.
-      if ($menu_tokens = token_find_with_prefix($tokens, 'menu-link')) {
+      if ($menu_tokens = \Drupal::token()->findWithPrefix($tokens, 'menu-link')) {
         if ($link = token_node_menu_link_load($node)) {
-          $replacements += token_generate('menu-link', $menu_tokens, array('menu-link' => $link), $options);
+          $replacements += \Drupal::token()->generate('menu-link', $menu_tokens, array('menu-link' => $link), $options);
         }
       }
     }
@@ -1140,8 +1140,8 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
     }
 
     // Chained token relationships.
-    if (($menu_tokens = token_find_with_prefix($tokens, 'menu')) && $menu = menu_load($link['menu_name'])) {
-      $replacements += token_generate('menu', $menu_tokens, array('menu' => $menu), $options);
+    if (($menu_tokens = \Drupal::token()->findWithPrefix($tokens, 'menu')) && $menu = menu_load($link['menu_name'])) {
+      $replacements += \Drupal::token()->generate('menu', $menu_tokens, array('menu' => $menu), $options);
     }
   }
 
@@ -1253,9 +1253,9 @@ function profile_tokens($type, $tokens, array $data = array(), array $options = 
 
     // Chained token relationships.
     foreach ($profile_fields as $field) {
-      if ($field->type == 'date' && isset($account->{$field->name}) && $field_tokens = token_find_with_prefix($tokens, $field->token_name)) {
+      if ($field->type == 'date' && isset($account->{$field->name}) && $field_tokens = \Drupal::token()->findWithPrefix($tokens, $field->token_name)) {
         $date = $account->{$field->name};
-        $replacements += token_generate('date', $field_tokens, array('date' => gmmktime(0, 0, 0, $date['month'], $date['day'], $date['year'])), $options);
+        $replacements += \Drupal::token()->generate('date', $field_tokens, array('date' => gmmktime(0, 0, 0, $date['month'], $date['day'], $date['year'])), $options);
       }
     }
   }
