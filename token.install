@@ -39,6 +39,31 @@ function token_requirements($phase = 'runtime') {
 }
 
 /**
+ * Implements hook_install().
+ */
+function token_install() {
+  // Create a token view mode for each entity type.
+  $info = \Drupal::entityManager()->getDefinitions();
+  foreach ($info as $entity_type => $entity_type_info) {
+    // We're only interested in entity types with a view builder.
+    if (!$entity_type_info->getViewBuilderClass()) {
+      continue;
+    }
+    // Try to find a token view mode for that entity type.
+    $storage_controller = \Drupal::entityManager()->getStorageController('view_mode');
+    // Add a token view mode if it does not already exist.
+    if (!$storage_controller->load("$entity_type.token")) {
+      $storage_controller->create(array(
+        'targetEntityType' => $entity_type,
+        'id' => "$entity_type.token",
+        'status' => TRUE,
+        'label' => t('Token'),
+      ))->save();
+    }
+  }
+}
+
+/**
  * Build a list of Drupal 6 tokens and their Drupal 7 token names.
  */
 function _token_upgrade_token_list() {

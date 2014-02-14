@@ -368,15 +368,7 @@ function token_get_entity_mapping($value_type = 'token', $value = NULL) {
  */
 function token_entity_info_alter(&$info) {
   foreach (array_keys($info) as $entity_type) {
-    // Add a token view mode if it does not already exist.
-    if (!empty($info[$entity_type]['view modes']) && !isset($info[$entity_type]['view modes']['token'])) {
-      $info[$entity_type]['view modes']['token'] = array(
-        'label' => t('Tokens'),
-        'custom settings' => FALSE,
-      );
-    }
-
-    if (!empty($info[$entity_type]['token type'])) {
+    if ($info[$entity_type]->get('token type')) {
       // If the entity's token type is already defined, great!
       continue;
     }
@@ -386,15 +378,20 @@ function token_entity_info_alter(&$info) {
       case 'taxonomy_term':
       case 'taxonomy_vocabulary':
         // Stupid taxonomy token types...
-        $info[$entity_type]['token type'] = str_replace('taxonomy_', '', $entity_type);
+        $info[$entity_type]->set('token type', str_replace('taxonomy_', '', $entity_type));
         break;
+
       default:
         // By default the token type is the same as the entity type.
-        $info[$entity_type]['token type'] = $entity_type;
+        $info[$entity_type]->set('token type', $entity_type);
         break;
     }
   }
 }
+
+/**
+ * Implements hook_entity_view_modes_info().
+ */
 
 /**
  * Implements hook_module_implements_alter().
