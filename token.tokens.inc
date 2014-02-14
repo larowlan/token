@@ -6,6 +6,7 @@
  */
 use Drupal\Component\Utility\String;
 use Drupal\Core\Render\Element;
+use Drupal\field\Field;
 
 /**
  * Implements hook_token_info_alter().
