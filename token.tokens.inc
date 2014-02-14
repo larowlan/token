@@ -82,6 +82,7 @@ function token_token_info_alter(&$info) {
   // @todo Remove when http://drupal.org/node/1173706 is fixed.
   $date_format_types = \Drupal::entityManager()->getStorageController('date_format')->loadMultiple();
   foreach ($date_format_types as $date_format_type => $date_format_type_info) {
+    /* @var \Drupal\system\Entity\DateFormat $date_format_type_info */
     if (!isset($info['tokens']['date'][$date_format_type])) {
       $info['tokens']['date'][$date_format_type] = array(
         'name' => $date_format_type_info->label(),
@@ -401,6 +402,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 
   // Comment tokens.
   if ($type == 'comment' && !empty($data['comment'])) {
+    /* @var \Drupal\comment\CommentInterface $comment */
     $comment = $data['comment'];
 
     // Chained token relationships.
@@ -411,21 +413,22 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 
   // Node tokens.
   if ($type == 'node' && !empty($data['node'])) {
+    /* @var \Drupal\node\NodeInterface $node */
     $node = $data['node'];
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'source':
           if (!empty($node->tnid) && $source_node = node_load($node->tnid)) {
-            $title = $source_node->title;
+            $title = $source_node->label();
             $replacements[$original] = $sanitize ? filter_xss($title) : $title;
           }
           break;
         case 'log':
-          $replacements[$original] = $sanitize ? filter_xss($node->log) : $node->log;
+          $replacements[$original] = $sanitize ? filter_xss($node->log->value) : $node->log->value;
           break;
         case 'content-type':
-          $type_name = node_type_get_name($node);
+          $type_name = \Drupal::entityManager()->getStorageController('node_type')->load($node->getType())->label();
           $replacements[$original] = $sanitize ? String::checkPlain($type_name) : $type_name;
           break;
       }
@@ -475,24 +478,25 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 
   // Taxonomy term tokens.
   if ($type == 'term' && !empty($data['term'])) {
+    /* @var \Drupal\taxonomy\TermInterface $term */
     $term = $data['term'];
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'edit-url':
-          $replacements[$original] = url("taxonomy/term/{$term->tid}/edit", $url_options);
+          $replacements[$original] = url("taxonomy/term/{$term->id()}/edit", $url_options);
           break;
 
         case 'parents':
-          if ($parents = token_taxonomy_term_load_all_parents($term->tid)) {
+          if ($parents = token_taxonomy_term_load_all_parents($term->id())) {
             $replacements[$original] = token_render_array($parents, $options);
           }
           break;
 
         case 'root':
-          $parents = taxonomy_term_load_parents_all($term->tid);
+          $parents = taxonomy_term_load_parents_all($term->id());
           $root_term = end($parents);
-          if ($root_term->tid != $term->tid) {
+          if ($root_term->tid != $term->id()) {
             $replacements[$original] = $sanitize ? String::checkPlain($root_term->name) : $root_term->name;
           }
           break;
@@ -505,14 +509,14 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
     // [term:parents:*] chained tokens.
     if ($parents_tokens = \Drupal::token()->findWithPrefix($tokens, 'parents')) {
-      if ($parents = token_taxonomy_term_load_all_parents($term->tid)) {
+      if ($parents = token_taxonomy_term_load_all_parents($term->id())) {
         $replacements += \Drupal::token()->generate('array', $parents_tokens, array('array' => $parents), $options);
       }
     }
     if ($root_tokens = \Drupal::token()->findWithPrefix($tokens, 'root')) {
-      $parents = taxonomy_term_load_parents_all($term->tid);
+      $parents = taxonomy_term_load_parents_all($term->id());
       $root_term = end($parents);
-      if ($root_term->tid != $term->tid) {
+      if ($root_term->tid != $term->id()) {
         $replacements += \Drupal::token()->generate('term', $root_tokens, array('term' => $root_term), $options);
       }
     }
@@ -558,6 +562,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 
   // User tokens.
   if ($type == 'user' && !empty($data['user'])) {
+    /* @var \Drupal\user\UserInterface $account */
     $account = $data['user'];
 
     foreach ($tokens as $name => $original) {
@@ -569,7 +574,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
         case 'roles':
           // The roles array may be set from checkbox values so ensure it always
           // has 'proper' data with the role names.
-          $roles = array_intersect_key(user_roles(), $account->roles);
+          $roles = array_intersect_key(user_roles(), $account->getRoles());
           $replacements[$original] = token_render_array($roles, $options);
           break;
       }
@@ -585,7 +590,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     if ($role_tokens = \Drupal::token()->findWithPrefix($tokens, 'roles')) {
       // The roles array may be set from checkbox values so ensure it always
       // has 'proper' data with the role names.
-      $roles = array_intersect_key(user_roles(), $account->roles);
+      $roles = array_intersect_key(user_roles(), $account->getRoles());
       $replacements += \Drupal::token()->generate('array', $role_tokens, array('array' => $roles), $options);
     }
   }
@@ -765,6 +770,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 
   // Entity tokens.
   if (!empty($data[$type]) && $entity_type = token_get_entity_mapping('token', $type)) {
+    /* @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = $data[$type];
 
     // Sometimes taxonomy terms are not properly loaded.
@@ -943,7 +949,7 @@ function token_tokens_alter(array &$replacements, array $context) {
             $account = drupal_anonymous_user();
             $account->name = $comment->name;
           }
-          $name = format_username($account);
+          $name = $account->getUsername();
           $replacements[$original] = $sanitize ? String::checkPlain($name) : $name;
           break;
       }
@@ -957,12 +963,9 @@ function token_tokens_alter(array &$replacements, array $context) {
     foreach ($context['tokens'] as $name => $original) {
       switch ($name) {
         case 'author':
-          // http://drupal.org/node/1185842 was fixed in core release 7.9.
-          if (version_compare(VERSION, '7.9', '<')) {
-            $account = user_load($node->uid);
-            $name = format_username($account);
-            $replacements[$original] = $sanitize ? String::checkPlain($name) : $name;
-          }
+          $account = user_load($node->uid);
+          $name = $account->getUsername();
+          $replacements[$original] = $sanitize ? String::checkPlain($name) : $name;
           break;
       }
     }
@@ -975,12 +978,9 @@ function token_tokens_alter(array &$replacements, array $context) {
     foreach ($context['tokens'] as $name => $original) {
       switch ($name) {
         case 'owner':
-          // http://drupal.org/node/978028 was fixed in core release 7.7.
-          if (version_compare(VERSION, '7.7', '<')) {
-            $account = user_load($file->uid);
-            $name = format_username($account);
-            $replacements[$original] = $sanitize ? String::checkPlain($name) : $name;
-          }
+          $account = user_load($file->uid);
+          $name = $account->getUsername();
+          $replacements[$original] = $sanitize ? String::checkPlain($name) : $name;
           break;
       }
     }
@@ -1400,13 +1400,14 @@ function field_tokens($type, $tokens, array $data = array(), array $options = ar
     $entity_type = $data['entity_type'];
 
     // The field API does weird stuff to the entity, so let's clone it.
+    /* @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = clone $data['entity'];
 
     // Reset the prepared view flag in case token generation is called from
     // inside field_attach_view().
     unset($entity->_field_view_prepared);
 
-    list(, , $bundle) = entity_extract_ids($entity_type, $entity);
+    $bundle = $entity->bundle();
     $fields = Field::fieldInfo()->getBundleInstances($entity_type, $bundle);
 
     foreach (array_keys($fields) as $field_name) {
