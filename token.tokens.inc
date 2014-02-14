@@ -406,7 +406,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 
     // Chained token relationships.
     if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url'))) {
-      $replacements += \Drupal::token()->generate('url', $url_tokens, entity_uri('comment', $comment), $options);
+      $replacements += \Drupal::token()->generate('url', $url_tokens, $comment->urlInfo(), $options);
     }
   }
 
@@ -440,7 +440,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       $replacements += \Drupal::token()->generate('content-type', $node_type_tokens, array('node_type' => $node_type), $options);
     }
     if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url'))) {
-      $replacements += \Drupal::token()->generate('url', $url_tokens, entity_uri('node', $node), $options);
+      $replacements += \Drupal::token()->generate('url', $url_tokens, $node->urlInfo(), $options);
     }
   }
 
@@ -502,7 +502,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 
     // Chained token relationships.
     if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url'))) {
-      $replacements += \Drupal::token()->generate('url', $url_tokens, entity_uri('taxonomy_term', $term), $options);
+      $replacements += \Drupal::token()->generate('url', $url_tokens, $term->urlInfo(), $options);
     }
     // [term:parents:*] chained tokens.
     if ($parents_tokens = \Drupal::token()->findWithPrefix($tokens, 'parents')) {
@@ -584,7 +584,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       $replacements += \Drupal::token()->generate('file', $picture_tokens, array('file' => $account->picture), $options);
     }
     if ($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url')) {
-      $replacements += \Drupal::token()->generate('url', $url_tokens, entity_uri('user', $account), $options);
+      $replacements += \Drupal::token()->generate('url', $url_tokens, $account->urlInfo(), $options);
     }
     if ($role_tokens = \Drupal::token()->findWithPrefix($tokens, 'roles')) {
       // The roles array may be set from checkbox values so ensure it always
@@ -780,14 +780,14 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'url':
-          if (_token_module($type, 'url') == 'token' && $uri = entity_uri($entity_type, $entity)) {
+          if (_token_module($type, 'url') == 'token' && $uri = $entity->urlInfo()) {
             $replacements[$original] = url($uri['path'], $uri['options']);
           }
           break;
 
         case 'original':
           if (_token_module($type, 'original') == 'token' && !empty($entity->original)) {
-            $label = entity_label($entity_type, $entity->original);
+            $label = $entity->original->label();
             $replacements[$original] = $sanitize ? String::checkPlain($label) : $label;
           }
           break;
@@ -796,7 +796,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 
     // [entity:url:*] chained tokens.
     if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url')) && _token_module($type, 'url') == 'token') {
-      $replacements += \Drupal::token()->generate('url', $url_tokens, entity_uri($entity_type, $entity), $options);
+      $replacements += \Drupal::token()->generate('url', $url_tokens, $entity->urlInfo(), $options);
     }
 
     // [entity:original:*] chained tokens.
