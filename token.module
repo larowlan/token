@@ -74,7 +74,7 @@ function token_menu() {
   );*/
 
   // Devel token pages.
-  if (\Drupal::moduleHandler()->module_exists('devel')) {
+  if (\Drupal::moduleHandler()->moduleExists('devel')) {
     $items['node/%node/devel/token'] = array(
       'title' => 'Tokens',
       'page callback' => 'token_devel_token_object',
@@ -695,7 +695,7 @@ function token_element_validate_token_context(&$element, &$form_state) {
  * Implements hook_form_FORM_ID_alter().
  */
 function token_form_field_ui_field_edit_form_alter(&$form, $form_state) {
-  if (($form['#field']['type'] == 'file' || $form['#field']['type'] == 'image') && isset($form['instance']['settings']['file_directory']) && !module_exists('filefield_paths')) {
+  if (($form['#field']['type'] == 'file' || $form['#field']['type'] == 'image') && isset($form['instance']['settings']['file_directory']) && !\Drupal::moduleHandler()->moduleExists('filefield_paths')) {
     // GAH! We can only support global tokens in the upload file directory path.
     $form['instance']['settings']['file_directory']['#element_validate'][] = 'token_element_validate';
     $form['instance']['settings']['file_directory']['#token_types'] = array();
