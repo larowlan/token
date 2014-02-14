@@ -489,7 +489,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           break;
 
         case 'root':
-          $parents = taxonomy_get_parents_all($term->tid);
+          $parents = taxonomy_term_load_parents_all($term->tid);
           $root_term = end($parents);
           if ($root_term->tid != $term->tid) {
             $replacements[$original] = $sanitize ? String::checkPlain($root_term->name) : $root_term->name;
@@ -509,7 +509,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       }
     }
     if ($root_tokens = \Drupal::token()->findWithPrefix($tokens, 'root')) {
-      $parents = taxonomy_get_parents_all($term->tid);
+      $parents = taxonomy_term_load_parents_all($term->tid);
       $root_term = end($parents);
       if ($root_term->tid != $term->tid) {
         $replacements += \Drupal::token()->generate('term', $root_tokens, array('term' => $root_term), $options);
