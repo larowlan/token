@@ -342,7 +342,7 @@ function token_get_entity_mapping($value_type = 'token', $value = NULL) {
 
   if (empty($mapping)) {
     foreach (\Drupal::entityManager()->getDefinitions() as $entity_type => $info) {
-      $mapping[$entity_type] = !empty($info['token type']) ? $info['token type'] : $entity_type;
+      $mapping[$entity_type] = $info->get('token type') ? $info->get('token type') : $entity_type;
     }
   }
 
