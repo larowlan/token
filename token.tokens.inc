@@ -1297,7 +1297,7 @@ function _token_field_info($field_name = NULL) {
 
       $fields = field_info_fields();
       $instances = Field::fieldInfo()->getInstances();
-      $type_info = field_info_field_types();
+      $type_info = \Drupal::service('plugin.manager.field.field_type')->getDefinitions();
       $entity_info = \Drupal::entityManager()->getDefinitions();
 
       foreach ($fields as $field) {
