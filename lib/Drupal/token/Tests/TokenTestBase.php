@@ -6,7 +6,9 @@
  */
 namespace Drupal\token\Tests;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\simpletest\WebTestBase;
+use Drupal\Core\Language\Language;
 
 /**
  * Helper test class with some added functions for testing.
@@ -14,14 +16,7 @@ use Drupal\simpletest\WebTestBase;
 class TokenTestBase extends WebTestBase {
   protected $profile = 'testing';
 
-  public function setUp($modules = array()) {
-    $modules[] = 'path';
-    $modules[] = 'token';
-    $modules[] = 'token_test';
-    parent::setUp($modules);
-
-    variable_set('clean_url', 1);
-  }
+  protected static $modules = array('path', 'token', 'token_test');
 
   function assertToken($type, array $data, $token, $expected, array $options = array()) {
     return $this->assertTokens($type, $data, array($token => $expected), $options);
@@ -29,7 +24,7 @@ class TokenTestBase extends WebTestBase {
 
   function assertTokens($type, array $data, array $tokens, array $options = array()) {
     $input = $this->mapTokenNames($type, array_keys($tokens));
-    $replacements = token_generate($type, $input, $data, $options);
+    $replacements = \Drupal::token()->generate($input, $data, $options);
     foreach ($tokens as $name => $expected) {
       $token = $input[$name];
       if (!isset($expected)) {
@@ -59,7 +54,7 @@ class TokenTestBase extends WebTestBase {
 
   function assertNoTokens($type, array $data, array $tokens, array $options = array()) {
     $input = $this->mapTokenNames($type, $tokens);
-    $replacements = token_generate($type, $input, $data, $options);
+    $replacements = \Drupal::token()->generate($type, $input, $data, $options);
     foreach ($tokens as $name) {
       $token = $input[$name];
       $this->assertTrue(!isset($replacements[$token]), t("Token value for @token was not generated.", array('@type' => $type, '@token' => $token)));
@@ -67,18 +62,18 @@ class TokenTestBase extends WebTestBase {
     return $values;
   }
 
-  function saveAlias($source, $alias, $language = LANGUAGE_NOT_SPECIFIED) {
+  function saveAlias($source, $alias, $language = Language::LANGCODE_NOT_SPECIFIED) {
     $alias = array(
       'source' => $source,
       'alias' => $alias,
       'language' => $language,
     );
-    path_save($alias);
+    \Drupal::service('path.crud')->save($alias['source'], $alias['alias']);
     return $alias;
   }
 
-  function saveEntityAlias($entity_type, $entity, $alias, $language = LANGUAGE_NOT_SPECIFIED) {
-    $uri = entity_uri($entity_type, $entity);
+  function saveEntityAlias($entity_type, EntityInterface $entity, $alias, $language = Language::LANGCODE_NOT_SPECIFIED) {
+    $uri = $entity->urlInfo();
     return $this->saveAlias($uri['path'], $alias, $language);
   }
 
@@ -95,12 +90,12 @@ class TokenTestBase extends WebTestBase {
       'data' => $data,
       'options' => $options,
     );
-    variable_set('token_page_tokens', $token_page_tokens);
+    \Drupal::state()->set('token_page_tokens', $token_page_tokens);
 
     $options += array('url_options' => array());
     $this->drupalGet($url, $options['url_options']);
     $this->refreshVariables();
-    $result = variable_get('token_page_tokens', array());
+    $result = \Drupal::state()->get('token_page_tokens', array());
 
     if (!isset($result['values']) || !is_array($result['values'])) {
       return $this->fail('Failed to generate tokens.');
@@ -118,4 +113,5 @@ class TokenTestBase extends WebTestBase {
       }
     }
   }
+
 }
