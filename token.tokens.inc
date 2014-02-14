@@ -196,13 +196,11 @@ function token_token_info() {
     'restricted' => TRUE,
     // 'type' => 'url',
   );
-  if (variable_get('user_pictures', 0)) {
-    $info['tokens']['user']['picture'] = array(
-      'name' => t('Picture'),
-      'description' => t('The picture of the user.'),
-      'type' => 'file',
-    );
-  }
+  $info['tokens']['user']['picture'] = array(
+    'name' => t('Picture'),
+    'description' => t('The picture of the user.'),
+    'type' => 'file',
+  );
   $info['tokens']['user']['roles'] = array(
     'name' => t('Roles'),
     'description' => t('The user roles associated with the user account.'),
@@ -564,10 +562,9 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'picture':
-          if (variable_get('user_pictures', 0)) {
-            $replacements[$original] = theme('user_picture', array('account' => $account));
-          }
+          $replacements[$original] = theme('user_picture', array('account' => $account));
           break;
+
         case 'roles':
           // The roles array may be set from checkbox values so ensure it always
           // has 'proper' data with the role names.
@@ -578,10 +575,8 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     }
 
     // Chained token relationships.
-    if (variable_get('user_pictures', 0) && !empty($account->picture) && ($picture_tokens = \Drupal::token()->findWithPrefix($tokens, 'picture'))) {
-      // @todo Remove when core bug http://drupal.org/node/978028 is fixed.
-      $account->picture->description = '';
-      $replacements += \Drupal::token()->generate('file', $picture_tokens, array('file' => $account->picture), $options);
+    if (!empty($account->user_picture) && ($picture_tokens = \Drupal::token()->findWithPrefix($tokens, 'picture'))) {
+      $replacements += \Drupal::token()->generate('file', $picture_tokens, array('file' => $account->user_picture->entity), $options);
     }
     if ($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url')) {
       $replacements += \Drupal::token()->generate('url', $url_tokens, $account->urlInfo(), $options);
