@@ -9,12 +9,12 @@
  * Implements hook_exit().
  */
 function token_test_exit() {
-  if ($debug = variable_get('token_page_tokens', array())) {
+  if ($debug = \Drupal::state()->get('token_page_tokens', array())) {
     $debug += array('tokens' => array(), 'data' => array(), 'options' => array());
     foreach (array_keys($debug['tokens']) as $token) {
-      $debug['values'][$token] = token_replace($token, $debug['data'], $debug['options']);
+      $debug['values'][$token] = \Drupal::token()->replace($token, $debug['data'], $debug['options']);
     }
-    variable_set('token_page_tokens', $debug);
+    \Drupal::state()->set('token_page_tokens', $debug);
   }
 }
 
@@ -27,7 +27,7 @@ function token_test_date_format_types() {
   $info['token_test'] = t('Token test date format');
 
   // Explicitly set the variable here as well.
-  variable_set('date_format_token_test', 'Y');
+  \Drupal::state()->set('date_format_token_test', 'Y');
 
   return $info;
 }
