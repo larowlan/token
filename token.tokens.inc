@@ -4,6 +4,8 @@
  * @file
  * Token callbacks for the token module.
  */
+use Drupal\Component\Utility\String;
+use Drupal\Core\Render\Element;
 
 /**
  * Implements hook_token_info_alter().
