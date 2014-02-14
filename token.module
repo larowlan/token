@@ -1200,7 +1200,7 @@ function token_taxonomy_term_load_all_parents($tid) {
  * @see token_menu_link_load()
  */
 function token_node_menu_link_load($node) {
-  $cache = &drupal_static(__FUNCTIon__, array());
+  $cache = &drupal_static(__FUNCTION__, array());
 
   if (!isset($cache[$node->nid])) {
     $mlid = FALSE;
