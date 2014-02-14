@@ -47,7 +47,8 @@ function token_token_info_alter(&$info) {
   // Add [token:url] tokens for any URI-able entities.
   $entities = \Drupal::entityManager()->getDefinitions();
   foreach ($entities as $entity => $entity_info) {
-    if (!isset($entity_info['token type'])) {
+    /* @var \Drupal\Core\Entity\EntityType $entity_info */
+    if (!$entity_info->hasKey('token type')) {
       continue;
     }
 
@@ -1194,31 +1195,30 @@ function _token_field_info($field_name = NULL) {
       $entity_info = \Drupal::entityManager()->getDefinitions();
 
       foreach ($fields as $field) {
-        $key = $field['field_name'];
-        if (!empty($field['bundles'])) {
-          foreach (array_keys($field['bundles']) as $entity) {
-            // Make sure a token type exists for this entity.
-            $token_type = token_get_entity_mapping('entity', $entity);
-            if (empty($token_type)) {
+        /* @var \Drupal\field\FieldInterface $field */
+        $key = $field->getName();
+        foreach (array_keys($field->getBundles()) as $entity) {
+          // Make sure a token type exists for this entity.
+          $token_type = token_get_entity_mapping('entity', $entity);
+          if (empty($token_type)) {
+            continue;
+          }
+
+          $info[$key]['token types'][] = $token_type;
+          $info[$key] += array('labels' => array(), 'bundles' => array());
+
+          // Find which label is most commonly used.
+          foreach ($field['bundles'][$entity] as $bundle) {
+            // Field information will included fields attached to disabled
+            // bundles, so check that the bundle exists before provided a
+            // token for it.
+            // @see http://drupal.org/node/1252566
+            if (!isset($entity_info[$entity]['bundles'][$bundle])) {
               continue;
             }
 
-            $info[$key]['token types'][] = $token_type;
-            $info[$key] += array('labels' => array(), 'bundles' => array());
-
-            // Find which label is most commonly used.
-            foreach ($field['bundles'][$entity] as $bundle) {
-              // Field information will included fields attached to disabled
-              // bundles, so check that the bundle exists before provided a
-              // token for it.
-              // @see http://drupal.org/node/1252566
-              if (!isset($entity_info[$entity]['bundles'][$bundle])) {
-                continue;
-              }
-
-              $info[$key]['labels'][] = $instances[$entity][$bundle][$key]['label'];
-              $info[$key]['bundles'][$token_type][$bundle] = $entity_info[$entity]['bundles'][$bundle]['label'];
-            }
+            $info[$key]['labels'][] = $instances[$entity][$bundle][$key]['label'];
+            $info[$key]['bundles'][$token_type][$bundle] = $entity_info[$entity]['bundles'][$bundle]['label'];
           }
         }
 
