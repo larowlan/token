@@ -1179,7 +1179,7 @@ function token_taxonomy_term_load_all_parents($tid) {
     array_shift($parents); // Remove this term from the array.
     $parents = array_reverse($parents);
     foreach ($parents as $term) {
-      $cache[$tid][$term->tid] = entity_label('taxonomy_term', $term);
+      $cache[$tid][$term->tid] = $term->label();
     }
   }
 
