@@ -4,6 +4,7 @@
  * @file
  * Enhances the token API in core: adds a browseable UI, missing tokens, etc.
  */
+use Drupal\Component\Utility\String;
 use Drupal\Core\Render\Element;
 
 /**
