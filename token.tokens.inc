@@ -594,7 +594,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'ip-address':
-          $ip = ip_address();
+          $ip = \Drupal::request()->getClientIp();
           $replacements[$original] = $sanitize ? String::checkPlain($ip) : $ip;
           break;
       }
