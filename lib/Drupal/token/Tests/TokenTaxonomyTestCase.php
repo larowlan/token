@@ -13,6 +13,8 @@ use Drupal\Component\Utility\String;
 class TokenTaxonomyTestCase extends TokenTestBase {
   protected $vocab;
 
+  protected static $modules = array('path', 'token', 'token_test', 'taxonomy');
+
   public static function getInfo() {
     return array(
       'name' => 'Taxonomy and vocabulary token tests',
@@ -22,14 +24,14 @@ class TokenTaxonomyTestCase extends TokenTestBase {
   }
 
   public function setUp($modules = array()) {
-    $modules[] = 'taxonomy';
     parent::setUp($modules);
 
     // Create the default tags vocabulary.
     $vocabulary = entity_create('taxonomy_vocabulary', array(
       'name' => 'Tags',
-      'machine_name' => 'tags',
-    ))->save();
+      'vid' => 'tags',
+    ));
+    $vocabulary->save();
     $this->vocab = $vocabulary;
   }
 
@@ -88,7 +90,7 @@ class TokenTaxonomyTestCase extends TokenTestBase {
     $vocabulary = $this->vocab;
     $tokens = array(
       'machine-name' => 'tags',
-      'edit-url' => url("admin/structure/taxonomy/{$vocabulary->machine_name}/edit", array('absolute' => TRUE)),
+      'edit-url' => url("admin/structure/taxonomy/{$vocabulary->id()}/edit", array('absolute' => TRUE)),
     );
     $this->assertTokens('vocabulary', array('vocabulary' => $vocabulary), $tokens);
   }
@@ -107,7 +109,8 @@ class TokenTaxonomyTestCase extends TokenTestBase {
       'name' => drupal_strtolower($this->randomName(5)),
       'vid' => $vocabulary->id(),
     );
-    $term = entity_create('taxonomy_term', $term)->save();
+    $term = entity_create('taxonomy_term', $term);
+    $term->save();
     return $term;
   }
 }

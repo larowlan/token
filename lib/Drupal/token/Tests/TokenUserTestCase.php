@@ -5,12 +5,16 @@
  * Contains \Drupal\token\Tests\TokenUserTestCase.
  */
 namespace Drupal\token\Tests;
+use Drupal\field\Field;
 
 /**
  * Tests user tokens.
  */
 class TokenUserTestCase extends TokenTestBase {
   protected $account = NULL;
+
+  // User pictures only exist in standard now.
+  protected $profile = 'standard';
 
   public static function getInfo() {
     return array(
@@ -40,8 +44,8 @@ class TokenUserTestCase extends TokenTestBase {
   function testUserTokens() {
     // Add a user picture to the account.
     $image = current($this->drupalGetTestFiles('image'));
-    $edit = array('files[picture_upload]' => drupal_realpath($image->uri));
-    $this->drupalPost('user/' . $this->account->id() . '/edit', $edit, t('Save'));
+    $edit = array('files[user_picture_0]' => drupal_realpath($image->uri));
+    $this->drupalPostForm('user/' . $this->account->id() . '/edit', $edit, t('Save'));
 
     // Load actual user data from database.
     $this->account = user_load($this->account->id(), TRUE);
@@ -53,23 +57,21 @@ class TokenUserTestCase extends TokenTestBase {
       'picture:size-raw' => 125,
       'ip-address' => NULL,
       'roles' => implode(', ', $this->account->getRoles()),
-      'roles:keys' => implode(', ', array_keys($this->account->getRoles())),
     );
     $this->assertTokens('user', array('user' => $this->account), $user_tokens);
 
-    $edit = array('user_pictures' => FALSE);
-    $this->drupalPost('admin/config/people/accounts', $edit, 'Save configuration');
-    $this->assertText('The configuration options have been saved.');
+    // Remove the user picture field.
+    Field::fieldInfo()->getField('user', 'user_picture')->delete();
 
     // Remove the simpletest-created user role.
-    $this->account->removeRole(end($this->account->getRoles()));
-    $this->account = user_load($this->account->id(), TRUE);
+    $roles = $this->account->getRoles();
+    $this->account->removeRole(end($roles));
 
     $user_tokens = array(
       'picture' => NULL,
       'picture:fid' => NULL,
       'ip-address' => NULL,
-      'roles' => 'authenticated user',
+      'roles' => 'authenticated',
       'roles:keys' => (string) DRUPAL_AUTHENTICATED_RID,
     );
     $this->assertTokens('user', array('user' => $this->account), $user_tokens);
@@ -82,7 +84,7 @@ class TokenUserTestCase extends TokenTestBase {
 
     $anonymous = drupal_anonymous_user();
     $tokens = array(
-      'roles' => 'anonymous user',
+      'roles' => 'anonymous',
       'roles:keys' => (string) DRUPAL_ANONYMOUS_RID,
     );
     $this->assertTokens('user', array('user' => $anonymous), $tokens);

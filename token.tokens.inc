@@ -29,7 +29,9 @@ function token_token_info_alter(&$info) {
 
   // The [file:size] may not always return in kilobytes.
   // @todo Remove when http://drupal.org/node/1193044 is fixed.
-  $info['tokens']['file']['size']['description'] = t('The size of the file.');
+  if (!empty($info['tokens']['file']['size'])) {
+    $info['tokens']['file']['size']['description'] = t('The size of the file.');
+  }
 
   // Remove deprecated tokens from being listed.
   unset($info['tokens']['node']['tnid']);
@@ -61,10 +63,10 @@ function token_token_info_alter(&$info) {
 
     // Add [entity:url] tokens if they do not already exist.
     // @todo Support entity:label
-    if (!isset($info['tokens'][$token_type]['url']) && !empty($entity_info['uri callback'])) {
+    if (!isset($info['tokens'][$token_type]['url'])) {
       $info['tokens'][$token_type]['url'] = array(
         'name' => t('URL'),
-        'description' => t('The URL of the @entity.', array('@entity' => drupal_strtolower($entity_info['label']))),
+        'description' => t('The URL of the @entity.', array('@entity' => drupal_strtolower($entity_info->getLabel()))),
         'module' => 'token',
         'type' => 'url',
       );
@@ -73,8 +75,8 @@ function token_token_info_alter(&$info) {
     // Add [entity:original] tokens if they do not already exist.
     if (!isset($info['tokens'][$token_type]['original'])) {
       $info['tokens'][$token_type]['original'] = array(
-        'name' => t('Original @entity', array('@entity' => drupal_strtolower($entity_info['label']))),
-        'description' => t('The original @entity data if the @entity is being updated or saved.', array('@entity' => drupal_strtolower($entity_info['label']))),
+        'name' => t('Original @entity', array('@entity' => drupal_strtolower($entity_info->getLabel()))),
+        'description' => t('The original @entity data if the @entity is being updated or saved.', array('@entity' => drupal_strtolower($entity_info->getLabel()))),
         'module' => 'token',
         'type' => $token_type,
       );
@@ -499,8 +501,8 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
         case 'root':
           $parents = taxonomy_term_load_parents_all($term->id());
           $root_term = end($parents);
-          if ($root_term->tid != $term->id()) {
-            $replacements[$original] = $sanitize ? String::checkPlain($root_term->name) : $root_term->name;
+          if ($root_term->id() != $term->id()) {
+            $replacements[$original] = $sanitize ? String::checkPlain($root_term->label()) : $root_term->label();
           }
           break;
       }
@@ -533,10 +535,10 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       switch ($name) {
         case 'machine-name':
           // This is a machine name so does not ever need to be sanitized.
-          $replacements[$original] = $vocabulary->machine_name;
+          $replacements[$original] = $vocabulary->id();
           break;
         case 'edit-url':
-          $replacements[$original] = url("admin/structure/taxonomy/{$vocabulary->machine_name}/edit", $url_options);
+          $replacements[$original] = url("admin/structure/taxonomy/{$vocabulary->id()}/edit", $url_options);
           break;
       }
     }
@@ -549,15 +551,15 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'basename':
-          $basename = pathinfo($file->uri, PATHINFO_BASENAME);
+          $basename = pathinfo($file->uri->value, PATHINFO_BASENAME);
           $replacements[$original] = $sanitize ? String::checkPlain($basename) : $basename;
           break;
         case 'extension':
-          $extension = pathinfo($file->uri, PATHINFO_EXTENSION);
+          $extension = pathinfo($file->uri->value, PATHINFO_EXTENSION);
           $replacements[$original] = $sanitize ? String::checkPlain($extension) : $extension;
           break;
         case 'size-raw':
-          $replacements[$original] = (int) $file->filesize;
+          $replacements[$original] = (int) $file->filesize->value;
           break;
       }
     }
@@ -577,7 +579,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
         case 'roles':
           // The roles array may be set from checkbox values so ensure it always
           // has 'proper' data with the role names.
-          $roles = array_intersect_key(user_roles(), $account->getRoles());
+          $roles = $account->getRoles();
           $replacements[$original] = token_render_array($roles, $options);
           break;
       }
@@ -720,8 +722,10 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
   }
 
   // URL tokens.
-  if ($type == 'url' && !empty($data['path'])) {
-    $path = $data['path'];
+  if ($type == 'url' && !empty($data['route_name'])) {
+    $route = $data['route_name'];
+    $route_param = $data['route_params'];
+    $path = \Drupal::url($route, $route_param);
 
     if (isset($data['options'])) {
       // Merge in the URL options if available.
@@ -740,16 +744,16 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           $replacements[$original] = $sanitize ? String::checkPlain($alias) : $alias;
           break;
         case 'absolute':
-          $replacements[$original] = url($path, $url_options);
+          $replacements[$original] = \Drupal::url($route, $route_param, $url_options);
           break;
         case 'relative':
-          $replacements[$original] = url($path, array('absolute' => FALSE) + $url_options);
+          $replacements[$original] = \Drupal::url($route, $route_param, array('absolute' => FALSE) + $url_options);
           break;
         case 'brief':
-          $replacements[$original] = preg_replace(array('!^https?://!', '!/$!'), '', url($path, $url_options));
+          $replacements[$original] = preg_replace(array('!^https?://!', '!/$!'), '', \Drupal::url($route, $route_param, $url_options));
           break;
         case 'unaliased':
-          $replacements[$original] = url($path, array('alias' => TRUE) + $url_options);
+          $replacements[$original] = \Drupal::url($route, $route_param, array('alias' => TRUE) + $url_options);
           break;
         case 'args':
           $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getPathAlias($path, $language_code) : $path;
@@ -777,12 +781,6 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
   if (!empty($data[$type]) && ($entity_type = token_get_entity_mapping('token', $type))) {
     /* @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = $data[$type];
-
-    // Sometimes taxonomy terms are not properly loaded.
-    // @see http://drupal.org/node/870528
-    if ($entity_type == 'taxonomy_term' && !isset($entity->vocabulary_machine_name)) {
-      $entity->vocabulary_machine_name = db_query("SELECT machine_name FROM {taxonomy_vocabulary} WHERE vid = :vid", array(':vid' => $entity->vid))->fetchField();
-    }
 
     foreach ($tokens as $name => $original) {
       switch ($name) {

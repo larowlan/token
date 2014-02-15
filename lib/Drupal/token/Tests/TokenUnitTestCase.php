@@ -10,6 +10,8 @@ namespace Drupal\token\Tests;
  * Token unit tests.
  */
 class TokenUnitTestCase extends TokenTestBase {
+  protected static $modules = array('path', 'token', 'token_test', 'file');
+
   public static function getInfo() {
     return array(
       'name' => 'Token unit tests',
