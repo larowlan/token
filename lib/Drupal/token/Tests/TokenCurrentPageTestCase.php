@@ -20,7 +20,7 @@ class TokenCurrentPageTestCase extends TokenTestBase {
 
   function testCurrentPageTokens() {
     $tokens = array(
-      '[current-page:title]' => t('Welcome to @site-name', array('@site-name' => variable_get('site_name', 'Drupal'))),
+      '[current-page:title]' => t('Welcome to @site-name', array('@site-name' => \Drupal::config('system.site')->get('name'))),
       '[current-page:url]' => url('node', array('absolute' => TRUE)),
       '[current-page:url:absolute]' => url('node', array('absolute' => TRUE)),
       '[current-page:url:relative]' => url('node', array('absolute' => FALSE)),
@@ -41,15 +41,15 @@ class TokenCurrentPageTestCase extends TokenTestBase {
     $node = $this->drupalCreateNode(array('title' => 'Node title', 'path' => array('alias' => 'node-alias')));
     $tokens = array(
       '[current-page:title]' => 'Node title',
-      '[current-page:url]' => url("node/{$node->nid}", array('absolute' => TRUE)),
-      '[current-page:url:absolute]' => url("node/{$node->nid}", array('absolute' => TRUE)),
-      '[current-page:url:relative]' => url("node/{$node->nid}", array('absolute' => FALSE)),
+      '[current-page:url]' => url("node/{$node->id()}", array('absolute' => TRUE)),
+      '[current-page:url:absolute]' => url("node/{$node->id()}", array('absolute' => TRUE)),
+      '[current-page:url:relative]' => url("node/{$node->id()}", array('absolute' => FALSE)),
       '[current-page:url:alias]' => 'node-alias',
       '[current-page:url:args:value:0]' => 'node-alias',
       '[current-page:url:args:value:1]' => NULL,
-      '[current-page:url:unaliased]' => url("node/{$node->nid}", array('absolute' => TRUE, 'alias' => TRUE)),
+      '[current-page:url:unaliased]' => url("node/{$node->id()}", array('absolute' => TRUE, 'alias' => TRUE)),
       '[current-page:url:unaliased:args:value:0]' => 'node',
-      '[current-page:url:unaliased:args:value:1]' => $node->nid,
+      '[current-page:url:unaliased:args:value:1]' => $node->id(),
       '[current-page:url:unaliased:args:value:2]' => NULL,
       '[current-page:page-number]' => 1,
       '[current-page:query:foo]' => 'bar',
@@ -60,6 +60,6 @@ class TokenCurrentPageTestCase extends TokenTestBase {
       '[current-page:arg:1]' => 1,
       '[current-page:arg:2]' => NULL,
     );
-    $this->assertPageTokens("node/{$node->nid}", $tokens, array(), array('url_options' => array('query' => array('foo' => 'bar'))));
+    $this->assertPageTokens("node/{$node->id()}", $tokens, array(), array('url_options' => array('query' => array('foo' => 'bar'))));
   }
 }

@@ -24,47 +24,46 @@ class TokenCommentTestCase extends TokenTestBase {
   }
 
   function testCommentTokens() {
-    $node = $this->drupalCreateNode(array('comment' => COMMENT_NODE_OPEN));
+    \Drupal::service('comment.manager')->addDefaultField('node', 'page');
+    $node = $this->drupalCreateNode();
 
-    $parent_comment = new stdClass;
-    $parent_comment->nid = $node->nid;
-    $parent_comment->pid = 0;
-    $parent_comment->cid = NULL;
-    $parent_comment->uid = 0;
-    $parent_comment->name = 'anonymous user';
-    $parent_comment->mail = 'anonymous@example.com';
-    $parent_comment->subject = $this->randomName();
-    $parent_comment->timestamp = mt_rand($node->created, REQUEST_TIME);
-    $parent_comment->language = LANGUAGE_NOT_SPECIFIED;
-    $parent_comment->body[LANGUAGE_NOT_SPECIFIED][0] = $this->randomName();
-    comment_save($parent_comment);
+    $parent_comment = entity_create('comment', array(
+      'entity_id' => $node->id(),
+      'entity_type' => 'node',
+      'field_name' => 'comment',
+      'name' => 'anonymous user',
+      'mail' => 'anonymous@example.com',
+      'subject' => $this->randomName(),
+      'body' => $this->randomName(),
+    ))->save();
 
     $tokens = array(
-      'url' => url('comment/' . $parent_comment->cid, array('fragment' => 'comment-' . $parent_comment->cid, 'absolute' => TRUE)),
-      'url:absolute' => url('comment/' . $parent_comment->cid, array('fragment' => 'comment-' . $parent_comment->cid, 'absolute' => TRUE)),
-      'url:relative' => url('comment/' . $parent_comment->cid, array('fragment' => 'comment-' . $parent_comment->cid, 'absolute' => FALSE)),
-      'url:path' => 'comment/' . $parent_comment->cid,
+      'url' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
+      'url:absolute' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
+      'url:relative' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => FALSE)),
+      'url:path' => 'comment/' . $parent_comment->id(),
       'parent:url:absolute' => NULL,
     );
     $this->assertTokens('comment', array('comment' => $parent_comment), $tokens);
 
-    $comment = new stdClass();
-    $comment->nid = $node->nid;
-    $comment->pid = $parent_comment->cid;
-    $comment->cid = NULL;
-    $comment->uid = 1;
-    $comment->subject = $this->randomName();
-    $comment->timestamp = mt_rand($parent_comment->created, REQUEST_TIME);
-    $comment->language = LANGUAGE_NOT_SPECIFIED;
-    $comment->body[LANGUAGE_NOT_SPECIFIED][0] = $this->randomName();
-    comment_save($comment);
+    $comment = entity_create('comment', array(
+      'entity_id' => $node->id(),
+      'pid' => $parent_comment->id(),
+      'entity_type' => 'node',
+      'field_name' => 'comment',
+      'uid' => 1,
+      'name' => 'anonymous user',
+      'mail' => 'anonymous@example.com',
+      'subject' => $this->randomName(),
+      'body' => $this->randomName(),
+    ))->save();
 
     $tokens = array(
-      'url' => url('comment/' . $comment->cid, array('fragment' => 'comment-' . $comment->cid, 'absolute' => TRUE)),
-      'url:absolute' => url('comment/' . $comment->cid, array('fragment' => 'comment-' . $comment->cid, 'absolute' => TRUE)),
-      'url:relative' => url('comment/' . $comment->cid, array('fragment' => 'comment-' . $comment->cid, 'absolute' => FALSE)),
-      'url:path' => 'comment/' . $comment->cid,
-      'parent:url:absolute' => url('comment/' . $parent_comment->cid, array('fragment' => 'comment-' . $parent_comment->cid, 'absolute' => TRUE)),
+      'url' => url('comment/' . $comment->id(), array('fragment' => 'comment-' . $comment->id(), 'absolute' => TRUE)),
+      'url:absolute' => url('comment/' . $comment->id(), array('fragment' => 'comment-' . $comment->id(), 'absolute' => TRUE)),
+      'url:relative' => url('comment/' . $comment->id(), array('fragment' => 'comment-' . $comment->id(), 'absolute' => FALSE)),
+      'url:path' => 'comment/' . $comment->id(),
+      'parent:url:absolute' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
     );
     $this->assertTokens('comment', array('comment' => $comment), $tokens);
   }

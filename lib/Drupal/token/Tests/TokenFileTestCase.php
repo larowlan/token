@@ -20,12 +20,13 @@ class TokenFileTestCase extends TokenTestBase {
 
   function testFileTokens() {
     // Create a test file object.
-    $file = new stdClass();
-    $file->fid = 1;
-    $file->filename = 'test.png';
-    $file->filesize = 100;
-    $file->uri = 'public://images/test.png';
-    $file->filemime = 'image/png';
+    $file = entity_create('file', array(
+      'fid' => 1,
+      'filename' => 'test.png',
+      'filesize' => 100,
+      'uri' => 'public://images/test.png',
+      'filemime' => 'image/png',
+    ));
 
     $tokens = array(
       'basename' => 'test.png',

@@ -5,6 +5,7 @@
  * Contains \Drupal\token\Tests\TokenEntityTestCase.
  */
 namespace Drupal\token\Tests;
+use Drupal\taxonomy\VocabularyInterface;
 
 /**
  * Tests entity tokens.
@@ -45,17 +46,16 @@ class TokenEntityTestCase extends TokenTestBase {
     // that we still get the tokens replaced.
     $vocabulary = taxonomy_vocabulary_machine_name_load('tags');
     $term = $this->addTerm($vocabulary);
-    $this->assertIdentical(token_replace('[vocabulary:name]', array('taxonomy_vocabulary' => $vocabulary)), $vocabulary->name);
-    $this->assertIdentical(token_replace('[term:name][term:vocabulary:name]', array('taxonomy_term' => $term)), $term->name . $vocabulary->name);
+    $this->assertIdentical(\Drupal::token()->replace('[vocabulary:name]', array('taxonomy_vocabulary' => $vocabulary)), $vocabulary->name);
+    $this->assertIdentical(\Drupal::token()->replace('[term:name][term:vocabulary:name]', array('taxonomy_term' => $term)), $term->name . $vocabulary->name);
   }
 
-  function addTerm(TaxonomyVocabulary $vocabulary, array $term = array()) {
+  function addTerm(VocabularyInterface $vocabulary, array $term = array()) {
     $term += array(
       'name' => drupal_strtolower($this->randomName(5)),
-      'vid' => $vocabulary->vid,
+      'vid' => $vocabulary->id(),
     );
-    $term = entity_create('taxonomy_term', $term);
-    taxonomy_term_save($term);
+    $term = entity_create('taxonomy_term', $term)->save();
     return $term;
   }
 
@@ -66,7 +66,7 @@ class TokenEntityTestCase extends TokenTestBase {
     $node = $this->drupalCreateNode(array('title' => 'Original title'));
 
     $tokens = array(
-      'nid' => $node->nid,
+      'nid' => $node->id(),
       'title' => 'Original title',
       'original' => NULL,
       'original:nid' => NULL,
@@ -75,14 +75,14 @@ class TokenEntityTestCase extends TokenTestBase {
 
     // Emulate the original entity property that would be available from
     // node_save() and change the title for the node.
-    $node->original = entity_load_unchanged('node', $node->nid);
+    $node->original = entity_load_unchanged('node', $node->id());
     $node->title = 'New title';
 
     $tokens = array(
-      'nid' => $node->nid,
+      'nid' => $node->id(),
       'title' => 'New title',
       'original' => 'Original title',
-      'original:nid' => $node->nid,
+      'original:nid' => $node->id(),
     );
     $this->assertTokens('node', array('node' => $node), $tokens);
   }

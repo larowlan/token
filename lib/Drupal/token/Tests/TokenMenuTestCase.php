@@ -10,6 +10,8 @@ namespace Drupal\token\Tests;
  * Tests menu tokens.
  */
 class TokenMenuTestCase extends TokenTestBase {
+  protected static $modules = array('path', 'token', 'token_test', 'menu');
+
   public static function getInfo() {
     return array(
       'name' => 'Menu link and menu token tests',
@@ -18,28 +20,21 @@ class TokenMenuTestCase extends TokenTestBase {
     );
   }
 
-  public function setUp($modules = array()) {
-    $modules[] = 'menu';
-    parent::setUp($modules);
-  }
-
   function testMenuTokens() {
     // Add a root link.
-    $root_link = array(
+    $root_link = entity_create('menu_link', array(
       'link_path' => 'root',
       'link_title' => 'Root link',
       'menu_name' => 'main-menu',
-    );
-    menu_link_save($root_link);
+    ))->save();
 
     // Add another link with the root link as the parent
-    $parent_link = array(
+    $parent_link = entity_create('menu_link', array(
       'link_path' => 'root/parent',
       'link_title' => 'Parent link',
       'menu_name' => 'main-menu',
       'plid' => $root_link['mlid'],
-    );
-    menu_link_save($parent_link);
+    ))->save();
 
     // Test menu link tokens.
     $tokens = array(
@@ -88,8 +83,8 @@ class TokenMenuTestCase extends TokenTestBase {
       'menu-link:mlid' => $node->menu['mlid'],
       'menu-link:title' => 'Node link',
       'menu-link:menu' => 'Main menu',
-      'menu-link:url' => url('node/' . $node->nid, array('absolute' => TRUE)),
-      'menu-link:url:path' => 'node/' . $node->nid,
+      'menu-link:url' => url('node/' . $node->id(), array('absolute' => TRUE)),
+      'menu-link:url:path' => 'node/' . $node->id(),
       'menu-link:edit-url' => url("admin/structure/menu/item/{$node->menu['mlid']}/edit", array('absolute' => TRUE)),
       'menu-link:parent' => 'Parent link',
       'menu-link:parent:mlid' => $node->menu['plid'],
@@ -103,7 +98,7 @@ class TokenMenuTestCase extends TokenTestBase {
     $this->assertTokens('node', array('node' => $node), $tokens);
 
     // Reload the node which will not have $node->menu defined and re-test.
-    $loaded_node = node_load($node->nid);
+    $loaded_node = node_load($node->id());
     $this->assertTokens('node', array('node' => $loaded_node), $tokens);
 
     // Regression test for http://drupal.org/node/1317926 to ensure the

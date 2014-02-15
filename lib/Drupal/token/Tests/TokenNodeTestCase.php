@@ -27,9 +27,9 @@ class TokenNodeTestCase extends TokenTestBase {
       'source:nid' => NULL,
       'log' => $source_node->log,
       'url:path' => 'content/source-node',
-      'url:absolute' => url("node/{$source_node->nid}", array('absolute' => TRUE)),
-      'url:relative' => url("node/{$source_node->nid}", array('absolute' => FALSE)),
-      'url:unaliased:path' => "node/{$source_node->nid}",
+      'url:absolute' => url("node/{$source_node->id()}", array('absolute' => TRUE)),
+      'url:relative' => url("node/{$source_node->id()}", array('absolute' => FALSE)),
+      'url:unaliased:path' => "node/{$source_node->id()}",
       'content-type' => 'Basic page',
       'content-type:name' => 'Basic page',
       'content-type:machine-name' => 'page',
@@ -44,15 +44,15 @@ class TokenNodeTestCase extends TokenTestBase {
     );
     $this->assertTokens('node', array('node' => $source_node), $tokens);
 
-    $translated_node = $this->drupalCreateNode(array('tnid' => $source_node->nid, 'type' => 'article'));
+    $translated_node = $this->drupalCreateNode(array('tnid' => $source_node->id(), 'type' => 'article'));
     $tokens = array(
-      'source' => $source_node->title,
-      'source:nid' => $source_node->nid,
+      'source' => $source_node->label(),
+      'source:nid' => $source_node->id(),
       'log' => '',
-      'url:path' => "node/{$translated_node->nid}",
-      'url:absolute' => url("node/{$translated_node->nid}", array('absolute' => TRUE)),
-      'url:relative' => url("node/{$translated_node->nid}", array('absolute' => FALSE)),
-      'url:unaliased:path' => "node/{$translated_node->nid}",
+      'url:path' => "node/{$translated_node->id()}",
+      'url:absolute' => url("node/{$translated_node->id()}", array('absolute' => TRUE)),
+      'url:relative' => url("node/{$translated_node->id()}", array('absolute' => FALSE)),
+      'url:unaliased:path' => "node/{$translated_node->id()}",
       'content-type' => 'Article',
       'content-type:name' => 'Article',
       'content-type:machine-name' => 'article',
@@ -62,8 +62,8 @@ class TokenNodeTestCase extends TokenTestBase {
       // Deprecated tokens.
       'type' => 'article',
       'type-name' => 'Article',
-      'tnid' => $source_node->nid,
-      'url:alias' => "node/{$translated_node->nid}",
+      'tnid' => $source_node->id(),
+      'url:alias' => "node/{$translated_node->id()}",
     );
     $this->assertTokens('node', array('node' => $translated_node), $tokens);
   }

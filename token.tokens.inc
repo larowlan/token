@@ -6,6 +6,7 @@
  */
 use Drupal\Component\Utility\Crypt;
 use Drupal\Component\Utility\String;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Render\Element;
 use Drupal\field\Field;
 
@@ -1299,6 +1300,9 @@ function field_tokens($type, $tokens, array $data = array(), array $options = ar
     // The field API does weird stuff to the entity, so let's clone it.
     /* @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = clone $data['entity'];
+    if (!($entity instanceof EntityInterface)) {
+      return $replacements;
+    }
 
     // Reset the prepared view flag in case token generation is called from
     // inside field_attach_view().
