@@ -42,7 +42,9 @@ function token_token_info_alter(&$info) {
   if (isset($info['tokens']['comment']['url']) && \Drupal::moduleHandler()->moduleExists('comment')) {
     $info['tokens']['comment']['url']['type'] = 'url';
   }
-  $info['tokens']['node']['url']['type'] = 'url';
+  if (isset($info['tokens']['node']['url']) && \Drupal::moduleHandler()->moduleExists('node')) {
+    $info['tokens']['node']['url']['type'] = 'url';
+  }
   if (isset($info['tokens']['term']['url']) && \Drupal::moduleHandler()->moduleExists('taxonomy')) {
     $info['tokens']['term']['url']['type'] = 'url';
   }

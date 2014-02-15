@@ -1,0 +1,9 @@
+id: token_test
+uuid: 3A60E8ED-25C7-4402-8F2A-C305B8916B0E
+label: 'Token test'
+status: true
+langcode: en
+locked: true
+pattern:
+  php: Y
+  intl: yyyy
