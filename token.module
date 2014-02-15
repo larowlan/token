@@ -206,11 +206,11 @@ function token_form_alter(&$form, $form_state, $form_id) {
 /**
  * Implements hook_block_view_alter().
  */
-function token_block_view_alter(&$data, $block) {
-  if (!empty($block->title) && $block->title != '<none>') {
-    // Perform unsanitized token replacement since _block_render_blocks() will
-    // call check_plain() on $block->title.
-    $block->title = \Drupal::token()->replace($block->title, array(), array('sanitize' => FALSE));
+function token_block_view_alter(&$data, \Drupal\block\BlockPluginInterface $block) {
+  $label = $block->getConfiguration()['label'];
+  if ($label != '<none>') {
+    //$block->setConfigurationValue('label', \Drupal::token()->replace($label, array(), array('sanitize' => TRUE)));
+    $data['#configuration']['label'] = \Drupal::token()->replace($label, array(), array('sanitize' => TRUE));
   }
 }
 

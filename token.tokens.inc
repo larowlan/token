@@ -9,6 +9,7 @@ use Drupal\Component\Utility\String;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Render\Element;
 use Drupal\field\Field;
+use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 
 /**
  * Implements hook_token_info_alter().
@@ -672,7 +673,9 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'title':
-          $title = drupal_get_title();
+          $request = \Drupal::request();
+          $route = $request->attributes->get(RouteObjectInterface::ROUTE_OBJECT);
+          $title = \Drupal::service('title_resolver')->getTitle($request, $route);
           $replacements[$original] = $sanitize ? $title : decode_entities($title);
           break;
         case 'url':

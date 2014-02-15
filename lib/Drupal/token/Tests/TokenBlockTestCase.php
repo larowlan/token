@@ -10,7 +10,7 @@ namespace Drupal\token\Tests;
  * Tests block tokens.
  */
 class TokenBlockTestCase extends TokenTestBase {
-  protected static $modules = array('path', 'token', 'token_test', 'block', 'node');
+  protected static $modules = array('path', 'token', 'token_test', 'block', 'node', 'views', 'custom_block');
 
   public static function getInfo() {
     return array(
@@ -27,14 +27,25 @@ class TokenBlockTestCase extends TokenTestBase {
   }
 
   public function testBlockTitleTokens() {
-    $edit['title'] = '[current-page:title] block title';
-    $edit['info'] = 'Test token title block';
-    $edit['body[value]'] = 'This is the test token title block.';
-    $edit['regions[bartik]'] = 'sidebar_first';
-    $this->drupalPost('admin/structure/block/add', $edit, 'Save block');
+    $label = 'tokenblock';
+    $bundle = entity_create('custom_block_type', array(
+      'id' => $label,
+      'label' => $label,
+      'revision' => FALSE
+    ));
+    $bundle->save();
 
-    $this->drupalGet('node');
-    $this->assertText('Welcome to ' . \Drupal::config('system.site')->get('name') . ' block title');
+    /* @var \Drupal\custom_block\CustomBlockInterface $block */
+    $block = entity_create('custom_block', array(
+      'type' => $label,
+      'label' => '[current-page:title] block title',
+      'info' => 'Test token title block',
+      'body[value]' => 'This is the test token title block.',
+    ));
+    $block->save();
+    $this->drupalPlaceBlock('custom_block:' . $block->uuid(), array(
+      'label' => '[current-page:title] block title',
+    ));
 
     // Ensure that tokens are not double-escaped when output as a block title.
     $node = $this->drupalCreateNode(array('title' => "Site's first node"));
