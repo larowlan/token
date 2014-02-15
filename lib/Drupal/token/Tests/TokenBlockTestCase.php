@@ -34,11 +34,11 @@ class TokenBlockTestCase extends TokenTestBase {
     $this->drupalPost('admin/structure/block/add', $edit, 'Save block');
 
     $this->drupalGet('node');
-    $this->assertText('Welcome to ' . variable_get('site_name', 'Drupal') . ' block title');
+    $this->assertText('Welcome to ' . \Drupal::config('system.site')->get('name') . ' block title');
 
     // Ensure that tokens are not double-escaped when output as a block title.
     $node = $this->drupalCreateNode(array('title' => "Site's first node"));
-    $this->drupalGet('node/' . $node->nid);
+    $this->drupalGet('node/' . $node->id());
     // The apostraphe should only be escaped once via check_plain().
     $this->assertRaw("Site&#039;s first node block title");
   }
