@@ -10,6 +10,8 @@ namespace Drupal\token\Tests;
  * Tests block tokens.
  */
 class TokenBlockTestCase extends TokenTestBase {
+  protected static $modules = array('path', 'token', 'token_test', 'block');
+
   public static function getInfo() {
     return array(
       'name' => 'Block token tests',
@@ -19,9 +21,6 @@ class TokenBlockTestCase extends TokenTestBase {
   }
 
   public function setUp($modules = array()) {
-    $modules[] = 'block';
-    parent::setUp($modules);
-
     $this->admin_user = $this->drupalCreateUser(array('access content', 'administer blocks'));
     $this->drupalLogin($this->admin_user);
   }
