@@ -23,8 +23,8 @@ class TokenTaxonomyTestCase extends TokenTestBase {
     );
   }
 
-  public function setUp($modules = array()) {
-    parent::setUp($modules);
+  public function setUp() {
+    parent::setUp();
 
     // Create the default tags vocabulary.
     $vocabulary = entity_create('taxonomy_vocabulary', array(
@@ -44,15 +44,15 @@ class TokenTaxonomyTestCase extends TokenTestBase {
       'url' => url("taxonomy/term/{$root_term->id()}", array('absolute' => TRUE)),
       'url:absolute' => url("taxonomy/term/{$root_term->id()}", array('absolute' => TRUE)),
       'url:relative' => url("taxonomy/term/{$root_term->id()}", array('absolute' => FALSE)),
-      'url:path' => 'root-term',
-      'url:unaliased:path' => "taxonomy/term/{$root_term->id()}",
+      'url:path' => '/root-term',
+      'url:unaliased:path' => "/taxonomy/term/{$root_term->id()}",
       'edit-url' => url("taxonomy/term/{$root_term->id()}/edit", array('absolute' => TRUE)),
       'parents' => NULL,
       'parents:count' => NULL,
       'parents:keys' => NULL,
       'root' => NULL,
       // Deprecated tokens
-      'url:alias' => 'root-term',
+      'url:alias' => '/root-term',
     );
     $this->assertTokens('term', array('term' => $root_term), $tokens);
 
@@ -61,8 +61,8 @@ class TokenTaxonomyTestCase extends TokenTestBase {
       'url' => url("taxonomy/term/{$parent_term->id()}", array('absolute' => TRUE)),
       'url:absolute' => url("taxonomy/term/{$parent_term->id()}", array('absolute' => TRUE)),
       'url:relative' => url("taxonomy/term/{$parent_term->id()}", array('absolute' => FALSE)),
-      'url:path' => "taxonomy/term/{$parent_term->id()}",
-      'url:unaliased:path' => "taxonomy/term/{$parent_term->id()}",
+      'url:path' => "/taxonomy/term/{$parent_term->id()}",
+      'url:unaliased:path' => "/taxonomy/term/{$parent_term->id()}",
       'edit-url' => url("taxonomy/term/{$parent_term->id()}/edit", array('absolute' => TRUE)),
       'parents' => 'Root term',
       'parents:count' => 1,
@@ -70,7 +70,7 @@ class TokenTaxonomyTestCase extends TokenTestBase {
       'root' => String::checkPlain($root_term->label()),
       'root:tid' => $root_term->id(),
       // Deprecated tokens
-      'url:alias' => "taxonomy/term/{$parent_term->id()}",
+      'url:alias' => "/taxonomy/term/{$parent_term->id()}",
     );
     $this->assertTokens('term', array('term' => $parent_term), $tokens);
 
