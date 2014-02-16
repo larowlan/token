@@ -24,8 +24,8 @@ class TokenUserTestCase extends TokenTestBase {
     );
   }
 
-  public function setUp($modules = array()) {
-    parent::setUp($modules);
+  public function setUp() {
+    parent::setUp();
 
     // Enable user pictures.
     \Drupal::state()->set('user_pictures', 1);
