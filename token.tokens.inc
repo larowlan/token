@@ -726,13 +726,14 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     if (isset($data['route_parameters'])) {
       $route_param = $data['route_parameters'];
     }
-    $options = isset($data['options']) ? $data['options'] : array();
-    $path = \Drupal::url($route, $route_param, $options);
-
+    $url_options = array();
     if (isset($data['options'])) {
       // Merge in the URL options if available.
       $url_options = $data['options'] + $url_options;
     }
+    $path_url_options = $url_options;
+    unset($path_url_options['fragment']);
+    $path = \Drupal::url($route, $route_param, $path_url_options);
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
@@ -746,7 +747,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           $replacements[$original] = $sanitize ? String::checkPlain($alias) : $alias;
           break;
         case 'absolute':
-          $replacements[$original] = \Drupal::url($route, $route_param, $url_options);
+          $replacements[$original] = \Drupal::url($route, $route_param, array('absolute' => TRUE) + $url_options);
           break;
         case 'relative':
           $replacements[$original] = \Drupal::url($route, $route_param, array('absolute' => FALSE) + $url_options);
