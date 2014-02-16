@@ -25,11 +25,11 @@ class TokenNodeTestCase extends TokenTestBase {
     $tokens = array(
       'source' => NULL,
       'source:nid' => NULL,
-      'log' => $source_node->log,
-      'url:path' => 'content/source-node',
+      'log' => $source_node->log->value,
+      'url:path' => '/content/source-node',
       'url:absolute' => url("node/{$source_node->id()}", array('absolute' => TRUE)),
       'url:relative' => url("node/{$source_node->id()}", array('absolute' => FALSE)),
-      'url:unaliased:path' => "node/{$source_node->id()}",
+      'url:unaliased:path' => "/node/{$source_node->id()}",
       'content-type' => 'Basic page',
       'content-type:name' => 'Basic page',
       'content-type:machine-name' => 'page',
@@ -37,10 +37,9 @@ class TokenNodeTestCase extends TokenTestBase {
       'content-type:node-count' => 1,
       'content-type:edit-url' => url('admin/structure/types/manage/page', array('absolute' => TRUE)),
       // Deprecated tokens.
-      'tnid' => 0,
       'type' => 'page',
       'type-name' => 'Basic page',
-      'url:alias' => 'content/source-node',
+      'url:alias' => '/content/source-node',
     );
     $this->assertTokens('node', array('node' => $source_node), $tokens);
 
@@ -49,10 +48,10 @@ class TokenNodeTestCase extends TokenTestBase {
       'source' => $source_node->label(),
       'source:nid' => $source_node->id(),
       'log' => '',
-      'url:path' => "node/{$translated_node->id()}",
+      'url:path' => "/node/{$translated_node->id()}",
       'url:absolute' => url("node/{$translated_node->id()}", array('absolute' => TRUE)),
       'url:relative' => url("node/{$translated_node->id()}", array('absolute' => FALSE)),
-      'url:unaliased:path' => "node/{$translated_node->id()}",
+      'url:unaliased:path' => "/node/{$translated_node->id()}",
       'content-type' => 'Article',
       'content-type:name' => 'Article',
       'content-type:machine-name' => 'article',
@@ -62,8 +61,7 @@ class TokenNodeTestCase extends TokenTestBase {
       // Deprecated tokens.
       'type' => 'article',
       'type-name' => 'Article',
-      'tnid' => $source_node->id(),
-      'url:alias' => "node/{$translated_node->id()}",
+      'url:alias' => "/node/{$translated_node->id()}",
     );
     $this->assertTokens('node', array('node' => $translated_node), $tokens);
   }
