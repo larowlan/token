@@ -445,7 +445,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     if (!empty($node->tnid) && ($source_tokens = \Drupal::token()->findWithPrefix($tokens, 'source')) && $source_node = node_load($node->tnid)) {
       $replacements += \Drupal::token()->generate('node', $source_tokens, array('node' => $source_node), $options);
     }
-    if (($node_type_tokens = \Drupal::token()->findWithPrefix($tokens, 'content-type')) && $node_type = node_type_load($node->type)) {
+    if (($node_type_tokens = \Drupal::token()->findWithPrefix($tokens, 'content-type')) && $node_type = node_type_load($node->bundle())) {
       $replacements += \Drupal::token()->generate('content-type', $node_type_tokens, array('node_type' => $node_type), $options);
     }
     if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url'))) {
@@ -579,9 +579,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           break;
 
         case 'roles':
-          // The roles array may be set from checkbox values so ensure it always
-          // has 'proper' data with the role names.
-          $roles = $account->getRoles();
+          $roles = drupal_map_assoc($account->getRoles());
           $replacements[$original] = token_render_array($roles, $options);
           break;
       }
@@ -595,9 +593,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       $replacements += \Drupal::token()->generate('url', $url_tokens, $account->urlInfo(), $options);
     }
     if ($role_tokens = \Drupal::token()->findWithPrefix($tokens, 'roles')) {
-      // The roles array may be set from checkbox values so ensure it always
-      // has 'proper' data with the role names.
-      $roles = array_intersect_key(user_roles(), $account->getRoles());
+      $roles = drupal_map_assoc($account->getRoles());
       $replacements += \Drupal::token()->generate('array', $role_tokens, array('array' => $roles), $options);
     }
   }
