@@ -726,7 +726,8 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     if (isset($data['route_parameters'])) {
       $route_param = $data['route_parameters'];
     }
-    $path = \Drupal::url($route, $route_param);
+    $options = isset($data['options']) ? $data['options'] : array();
+    $path = \Drupal::url($route, $route_param, $options);
 
     if (isset($data['options'])) {
       // Merge in the URL options if available.
@@ -766,11 +767,14 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     // [url:arg:*] chained tokens.
     if ($arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'args')) {
       $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getPathAlias($path, $language_code) : $path;
+      $value = ltrim($value, '/');
       $replacements += \Drupal::token()->generate('array', $arg_tokens, array('array' => arg(NULL, $value)), $options);
     }
 
     // [url:unaliased:*] chained tokens.
     if ($unaliased_tokens = \Drupal::token()->findWithPrefix($tokens, 'unaliased')) {
+      $unaliased_token_data['route_name'] = $route;
+      $unaliased_token_data['route_parameters'] = $route_param;
       $unaliased_token_data['path'] = $path;
       $unaliased_token_data['options'] = isset($data['options']) ? $data['options'] : array();
       $unaliased_token_data['options']['alias'] = TRUE;
