@@ -11,6 +11,8 @@ use Drupal\taxonomy\VocabularyInterface;
  * Tests entity tokens.
  */
 class TokenEntityTestCase extends TokenTestBase {
+  protected static $modules = array('path', 'token', 'token_test', 'node', 'taxonomy');
+
   public static function getInfo() {
     return array(
       'name' => 'Entity token tests',
@@ -20,15 +22,14 @@ class TokenEntityTestCase extends TokenTestBase {
   }
 
   public function setUp($modules = array()) {
-    $modules[] = 'taxonomy';
-    parent::setUp($modules);
+    parent::setUp();
 
     // Create the default tags vocabulary.
     $vocabulary = entity_create('taxonomy_vocabulary', array(
       'name' => 'Tags',
-      'machine_name' => 'tags',
+      'vid' => 'tags',
     ));
-    taxonomy_vocabulary_save($vocabulary);
+    $vocabulary->save();
     $this->vocab = $vocabulary;
   }
 
@@ -44,10 +45,10 @@ class TokenEntityTestCase extends TokenTestBase {
 
     // Test that when we send the mis-matched entity type into token_replace()
     // that we still get the tokens replaced.
-    $vocabulary = taxonomy_vocabulary_machine_name_load('tags');
+    $vocabulary = entity_load('taxonomy_vocabulary', 'tags');
     $term = $this->addTerm($vocabulary);
-    $this->assertIdentical(\Drupal::token()->replace('[vocabulary:name]', array('taxonomy_vocabulary' => $vocabulary)), $vocabulary->name);
-    $this->assertIdentical(\Drupal::token()->replace('[term:name][term:vocabulary:name]', array('taxonomy_term' => $term)), $term->name . $vocabulary->name);
+    $this->assertIdentical(\Drupal::token()->replace('[vocabulary:name]', array('taxonomy_vocabulary' => $vocabulary)), $vocabulary->label());
+    $this->assertIdentical(\Drupal::token()->replace('[term:name][term:vocabulary:name]', array('taxonomy_term' => $term)), $term->label() . $vocabulary->label());
   }
 
   function addTerm(VocabularyInterface $vocabulary, array $term = array()) {
@@ -55,7 +56,8 @@ class TokenEntityTestCase extends TokenTestBase {
       'name' => drupal_strtolower($this->randomName(5)),
       'vid' => $vocabulary->id(),
     );
-    $term = entity_create('taxonomy_term', $term)->save();
+    $term = entity_create('taxonomy_term', $term);
+    $term->save();
     return $term;
   }
 
