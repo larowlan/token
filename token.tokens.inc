@@ -734,6 +734,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     $path_url_options = $url_options;
     unset($path_url_options['fragment']);
     $path = \Drupal::url($route, $route_param, $path_url_options);
+    $path = ltrim($path, '/');
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
@@ -753,9 +754,11 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           $replacements[$original] = \Drupal::url($route, $route_param, array('absolute' => FALSE) + $url_options);
           break;
         case 'brief':
+          $url_options['absolute'] = TRUE;
           $replacements[$original] = preg_replace(array('!^https?://!', '!/$!'), '', \Drupal::url($route, $route_param, $url_options));
           break;
         case 'unaliased':
+          $url_options['absolute'] = TRUE;
           $replacements[$original] = \Drupal::url($route, $route_param, array('alias' => TRUE) + $url_options);
           break;
         case 'args':

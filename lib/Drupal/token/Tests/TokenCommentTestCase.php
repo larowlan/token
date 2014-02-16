@@ -39,7 +39,7 @@ class TokenCommentTestCase extends TokenTestBase {
       'url' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
       'url:absolute' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
       'url:relative' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => FALSE)),
-      'url:path' => '/comment/' . $parent_comment->id(),
+      'url:path' => 'comment/' . $parent_comment->id(),
       'parent:url:absolute' => NULL,
     );
     $this->assertTokens('comment', array('comment' => $parent_comment), $tokens);
@@ -61,7 +61,7 @@ class TokenCommentTestCase extends TokenTestBase {
       'url' => url('comment/' . $comment->id(), array('fragment' => 'comment-' . $comment->id(), 'absolute' => TRUE)),
       'url:absolute' => url('comment/' . $comment->id(), array('fragment' => 'comment-' . $comment->id(), 'absolute' => TRUE)),
       'url:relative' => url('comment/' . $comment->id(), array('fragment' => 'comment-' . $comment->id(), 'absolute' => FALSE)),
-      'url:path' => '/comment/' . $comment->id(),
+      'url:path' => 'comment/' . $comment->id(),
       'parent:url:absolute' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
     );
     $this->assertTokens('comment', array('comment' => $comment), $tokens);
