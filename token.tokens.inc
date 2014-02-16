@@ -726,7 +726,10 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
   // URL tokens.
   if ($type == 'url' && !empty($data['route_name'])) {
     $route = $data['route_name'];
-    $route_param = $data['route_params'];
+    $route_param = array();
+    if (isset($data['route_parameters'])) {
+      $route_param = $data['route_parameters'];
+    }
     $path = \Drupal::url($route, $route_param);
 
     if (isset($data['options'])) {
