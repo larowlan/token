@@ -792,7 +792,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
   }
 
   // Entity tokens.
-  if (!empty($data[$type]) && ($entity_type = token_get_entity_mapping('token', $type))) {
+  if (!empty($data[$type]) && $entity_type = token_get_entity_mapping('token', $type)) {
     /* @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = $data[$type];
 
