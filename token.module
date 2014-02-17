@@ -207,7 +207,8 @@ function token_form_alter(&$form, $form_state, $form_id) {
  * Implements hook_block_view_alter().
  */
 function token_block_view_alter(&$data, \Drupal\block\BlockPluginInterface $block) {
-  $label = $block->getConfiguration()['label'];
+  $config = $block->getConfiguration();
+  $label = $config['label'];
   if ($label != '<none>') {
     //$block->setConfigurationValue('label', \Drupal::token()->replace($label, array(), array('sanitize' => TRUE)));
     $data['#configuration']['label'] = \Drupal::token()->replace($label, array(), array('sanitize' => TRUE));
@@ -949,40 +950,6 @@ function _token_build_tree($token_type, array $options) {
 }
 
 /**
- * Get a translated menu link by its mlid, without access checking.
- *
- * This function is a copy of menu_link_load() but with its own cache and a
- * simpler query to load the link. This also skips normal menu link access
- * checking by using _token_menu_link_translate().
- *
- * @param $mlid
- *   The mlid of the menu item.
- *
- * @return
- *   A menu link translated for rendering.
- *
- * @see menu_link_load()
- * @see _token_menu_link_translate()
- */
-function token_menu_link_load($mlid) {
-  $cache = &drupal_static(__FUNCTION__, array());
-
-  if (!is_numeric($mlid)) {
-    return FALSE;
-  }
-
-  if (!isset($cache[$mlid])) {
-    $item = db_query("SELECT * FROM {menu_links} ml LEFT JOIN {menu_router} m ON m.path = ml.router_path WHERE ml.mlid = :mlid", array(':mlid' => $mlid))->fetchAssoc();
-    if (!empty($item)) {
-      _token_menu_link_translate($item);
-    }
-    $cache[$mlid] = $item;
-  }
-
-  return $cache[$mlid];
-}
-
-/**
  * Get a translated book menu link by its mlid, without access checking.
  *
  * This function is a copy of book_link_load() but with its own cache and a
@@ -1155,7 +1122,7 @@ function token_menu_link_load_all_parents($mlid) {
   if (!isset($cache[$mlid])) {
     $cache[$mlid] = array();
     $plid = db_query("SELECT plid FROM {menu_links} WHERE mlid = :mlid", array(':mlid' => $mlid))->fetchField();
-    while ($plid && $parent = token_menu_link_load($plid)) {
+    while ($plid && $parent = menu_link_load($plid)) {
       $cache[$mlid] = array($plid => $parent['title']) + $cache[$mlid];
       $plid = $parent['plid'];
     }
@@ -1200,7 +1167,7 @@ function token_taxonomy_term_load_all_parents($tid) {
 function token_node_menu_link_load($node) {
   $cache = &drupal_static(__FUNCTION__, array());
 
-  if (!isset($cache[$node->nid])) {
+  if (!isset($cache[$node->id()])) {
     $mlid = FALSE;
 
     // Nodes do not have their menu links loaded via menu_node_load().
@@ -1208,17 +1175,18 @@ function token_node_menu_link_load($node) {
       // We need to clone the node as menu_node_prepare() may cause data loss.
       // @see http://drupal.org/node/1317926
       $menu_node = clone $node;
-      menu_node_prepare($menu_node);
+      $form_state = array();
+      menu_node_prepare_form($menu_node, NULL, NULL, $form_state);
       $mlid = !empty($menu_node->menu['mlid']) ? $menu_node->menu['mlid'] : FALSE;
     }
     else {
       $mlid = !empty($node->menu['mlid']) ? $node->menu['mlid'] : FALSE;
     }
 
-    $cache[$node->nid] = $mlid;
+    $cache[$node->id()] = $mlid;
   }
 
-  return $cache[$node->nid] ? token_menu_link_load($cache[$node->nid]) : FALSE;
+  return $cache[$node->id()] ? menu_link_load($cache[$node->id()]) : FALSE;
 }
 
 function token_element_children(&$elements, $sort = FALSE) {

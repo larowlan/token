@@ -612,58 +612,54 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 
   // Menu link tokens.
   if ($type == 'menu-link' && !empty($data['menu-link'])) {
-    $link = (array) $data['menu-link'];
-
-    if (!isset($link['title'])) {
-      // Re-load the link if it was not loaded via token_menu_link_load().
-      $link = token_menu_link_load($link['mlid']);
-    }
+    $link = $data['menu-link'];
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'mlid':
-          $replacements[$original] = $link['mlid'];
+          $replacements[$original] = $link->id();
           break;
         case 'title':
-          $replacements[$original] = $sanitize ? String::checkPlain($link['title']) : $link['title'];
+          $replacements[$original] = $sanitize ? String::checkPlain($link->label()) : $link->label();
           break;
         case 'url':
-          $replacements[$original] = url($link['href'], $url_options);
+          $replacements[$original] = \Drupal::url($link->route_name, $link->route_parameters, !empty($link->localized_options) ? $link->localized_options : array('absolute' => TRUE));
           break;
         case 'parent':
-          if (!empty($link['plid']) && $parent = token_menu_link_load($link['plid'])) {
-            $replacements[$original] = $sanitize ? String::checkPlain($parent['title']) : $parent['title'];
+          if (!empty($link->plid) && $parent = menu_link_load($link->plid)) {
+            $replacements[$original] = $sanitize ? String::checkPlain($parent->label()) : $parent->label();
           }
           break;
         case 'parents':
-          if ($parents = token_menu_link_load_all_parents($link['mlid'])) {
+          if ($parents = token_menu_link_load_all_parents($link->id())) {
             $replacements[$original] = token_render_array($parents, $options);
           }
           break;
         case 'root';
-          if (!empty($link['p1']) && $link['p1'] != $link['mlid'] && $root = token_menu_link_load($link['p1'])) {
-            $replacements[$original] = $sanitize ? String::checkPlain($root['title']) : $root['title'];
+          if (!empty($link->p1) && $link->p1 != $link->id() && $root = menu_link_load($link->p1)) {
+            $replacements[$original] = $sanitize ? String::checkPlain($root->label()) : $root->label();
           }
           break;
       }
     }
 
     // Chained token relationships.
-    if (!empty($link['plid']) && ($source_tokens = \Drupal::token()->findWithPrefix($tokens, 'parent')) && $parent = token_menu_link_load($link['plid'])) {
+    if (!empty($link->plid) && ($source_tokens = \Drupal::token()->findWithPrefix($tokens, 'parent')) && $parent = menu_link_load($link->plid)) {
       $replacements += \Drupal::token()->generate('menu-link', $source_tokens, array('menu-link' => $parent), $options);
     }
     // [menu-link:parents:*] chained tokens.
     if ($parents_tokens = \Drupal::token()->findWithPrefix($tokens, 'parents')) {
-      if ($parents = token_menu_link_load_all_parents($link['mlid'])) {
+      if ($parents = token_menu_link_load_all_parents($link->id())) {
         $replacements += \Drupal::token()->generate('array', $parents_tokens, array('array' => $parents), $options);
       }
     }
-    if (!empty($link['p1']) && $link['p1'] != $link['mlid'] && ($root_tokens = \Drupal::token()->findWithPrefix($tokens, 'root')) && $root = token_menu_link_load($link['p1'])) {
+    if (!empty($link->p1) && $link->p1 != $link->id() && ($root_tokens = \Drupal::token()->findWithPrefix($tokens, 'root')) && $root = menu_link_load($link->p1)) {
       $replacements += \Drupal::token()->generate('menu-link', $root_tokens, array('menu-link' => $root), $options);
     }
     if ($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url')) {
-      $replacements += \Drupal::token()->generate('url', $url_tokens, array('path' => $link['href']), $options);
+      $replacements += \Drupal::token()->generate('url', $url_tokens, array('route_name' => $link->route_name, 'route_parameters' => $link->route_parameters), $options);
     }
+
   }
 
   // Current page tokens.
@@ -682,7 +678,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           $replacements[$original] = url($current_path, $url_options);
           break;
         case 'page-number':
-          if ($page = filter_input(INPUT_GET, 'page')) {
+          if ($page = \Drupal::request()->query->get('page')) {
             // @see PagerDefault::execute()
             $pager_page_array = explode(',', $page);
             $page = $pager_page_array[0];
@@ -695,8 +691,11 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     // @deprecated
     // [current-page:arg] dynamic tokens.
     if ($arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'arg')) {
+      $path = \Drupal::request()->attributes->get('_system_path');
+      // Make sure its a system path.
+      $path = \Drupal::service('path.alias_manager')->getSystemPath($path);
       foreach ($arg_tokens as $name => $original) {
-        if (is_numeric($name) && ($arg = arg($name)) && isset($arg)) {
+        if (is_numeric($name) && ($arg = arg($name, $path)) && isset($arg)) {
           $replacements[$original] = $sanitize ? String::checkPlain($arg) : $arg;
         }
       }
@@ -710,12 +709,18 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           $value = \Drupal::request()->query->get($name);
           $replacements[$original] = $sanitize ? String::checkPlain($value) : $value;
         }
+        elseif ($name == 'q') {
+          $replacements[$original] = \Drupal::request()->attributes->get('_system_path');
+        }
       }
     }
 
     // Chained token relationships.
     if ($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url')) {
-      $replacements += \Drupal::token()->generate('url', $url_tokens, array('path' => $current_path), $options);
+      $request = \Drupal::request();
+      $url_data['route_name'] = $request->attributes->get(RouteObjectInterface::ROUTE_OBJECT);
+      $url_data['route_parameters'] = $request->attributes->get('_raw_variables')->all();
+      $replacements += \Drupal::token()->generate('url', $url_tokens, $url_data, $options);
     }
   }
 
@@ -1117,7 +1122,7 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
       switch ($name) {
         case 'menu-link':
           if ($link = token_node_menu_link_load($node)) {
-            $replacements[$original] = $sanitize ? String::checkPlain($link['title']) : $link['title'];
+            $replacements[$original] = $sanitize ? String::checkPlain($link->label()) : $link->label();
           }
           break;
       }
@@ -1133,52 +1138,52 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
 
   // Menu link tokens.
   if ($type == 'menu-link' && !empty($data['menu-link'])) {
-    $link = (array) $data['menu-link'];
+    $link = $data['menu-link'];
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'menu':
-          if ($menu = menu_load($link['menu_name'])) {
-            $replacements[$original] = $sanitize ? String::checkPlain($menu['title']) : $menu['title'];
+          if ($menu = menu_load($link->bundle())) {
+            $replacements[$original] = $sanitize ? String::checkPlain($menu->label()) : $menu->label();
           }
           break;
         case 'edit-url':
-          $replacements[$original] = url("admin/structure/menu/item/{$link['mlid']}/edit", $url_options);
+          $replacements[$original] = url("admin/structure/menu/item/{$link->id()}/edit", $url_options);
           break;
       }
     }
 
     // Chained token relationships.
-    if (($menu_tokens = \Drupal::token()->findWithPrefix($tokens, 'menu')) && $menu = menu_load($link['menu_name'])) {
+    if (($menu_tokens = \Drupal::token()->findWithPrefix($tokens, 'menu')) && $menu = menu_load($link->bundle())) {
       $replacements += \Drupal::token()->generate('menu', $menu_tokens, array('menu' => $menu), $options);
     }
   }
 
   // Menu tokens.
   if ($type == 'menu' && !empty($data['menu'])) {
-    $menu = (array) $data['menu'];
+    $menu = $data['menu'];
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'name':
-          $replacements[$original] = $sanitize ? String::checkPlain($menu['title']) : $menu['title'];
+          $replacements[$original] = $sanitize ? String::checkPlain($menu->label()) : $menu->label();
           break;
         case 'machine-name':
           // This is a machine name so does not ever need to be sanitized.
-          $replacements[$original] = $menu['menu_name'];
+          $replacements[$original] = $menu->id();
           break;
         case 'description':
-          $replacements[$original] = $sanitize ? filter_xss($menu['description']) : $menu['description'];
+          $replacements[$original] = $sanitize ? filter_xss($menu->description) : $menu->description;
           break;
         case 'menu-link-count':
           $query = db_select('menu_links');
-          $query->condition('menu_name', $menu['menu_name']);
+          $query->condition('menu_name', $menu->id());
           $query->addTag('menu_menu_link_count');
           $count = $query->countQuery()->execute()->fetchField();
           $replacements[$original] = (int) $count;
           break;
         case 'edit-url':
-          $replacements[$original] = url("admin/structure/menu/manage/" . $menu['menu_name'], $url_options);
+          $replacements[$original] = url("admin/structure/menu/manage/" . $menu->id(), $url_options);
           break;
       }
     }

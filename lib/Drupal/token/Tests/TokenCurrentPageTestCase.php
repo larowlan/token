@@ -10,6 +10,9 @@ namespace Drupal\token\Tests;
  * Tests current page tokens.
  */
 class TokenCurrentPageTestCase extends TokenTestBase {
+
+  protected static $modules = array('path', 'token', 'token_test', 'node');
+
   public static function getInfo() {
     return array(
       'name' => 'Current page token tests',
@@ -19,21 +22,22 @@ class TokenCurrentPageTestCase extends TokenTestBase {
   }
 
   function testCurrentPageTokens() {
+    $this->drupalGet('user');
     $tokens = array(
-      '[current-page:title]' => t('Welcome to @site-name', array('@site-name' => \Drupal::config('system.site')->get('name'))),
-      '[current-page:url]' => url('node', array('absolute' => TRUE)),
-      '[current-page:url:absolute]' => url('node', array('absolute' => TRUE)),
-      '[current-page:url:relative]' => url('node', array('absolute' => FALSE)),
-      '[current-page:url:path]' => 'node',
-      '[current-page:url:args:value:0]' => 'node',
+      '[current-page:title]' => t('Log in'),
+      '[current-page:url]' => url('user', array('absolute' => TRUE)),
+      '[current-page:url:absolute]' => url('user', array('absolute' => TRUE)),
+      '[current-page:url:relative]' => url('user', array('absolute' => FALSE)),
+      '[current-page:url:path]' => 'user',
+      '[current-page:url:args:value:0]' => 'user',
       '[current-page:url:args:value:1]' => NULL,
-      '[current-page:url:unaliased]' => url('node', array('absolute' => TRUE, 'alias' => TRUE)),
+      '[current-page:url:unaliased]' => url('user', array('absolute' => TRUE, 'alias' => TRUE)),
       '[current-page:page-number]' => 1,
       '[current-page:query:foo]' => NULL,
       '[current-page:query:bar]' => NULL,
-      '[current-page:query:q]' => 'node',
+      '[current-page:query:q]' => 'user',
       // Deprecated tokens
-      '[current-page:arg:0]' => 'node',
+      '[current-page:arg:0]' => 'user',
       '[current-page:arg:1]' => NULL,
     );
     $this->assertPageTokens('', $tokens);
