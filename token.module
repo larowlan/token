@@ -61,13 +61,7 @@ function token_menu() {
     'type' => MENU_CALLBACK,
     'file' => 'token.pages.inc',
   );*/
-  $items['token/autocomplete/%token_type'] = array(
-    'page callback' => 'token_autocomplete_token',
-    'page arguments' => array(2),
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK,
-    'file' => 'token.pages.inc',
-  );
+
   /*$items['token/autocomplete/%token_type/%menu_tail'] = array(
     'page callback' => 'token_autocomplete_token',
     'page arguments' => array(2, 3),

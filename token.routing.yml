@@ -1,0 +1,60 @@
+token.autocomplete:
+  path: /token/autocomplete/{token_type}/{filter}
+  defaults:
+    _controller: '\Drupal\token\Controller\TokenAutocompleteController::autocomplete'
+  requirements:
+    _access: 'TRUE'
+
+#
+#  $items['token/autocomplete/%token_type'] = array(
+#    'page callback' => 'token_autocomplete_token',
+#    'page arguments' => array(2),
+#    'access callback' => TRUE,
+#    'type' => MENU_CALLBACK,
+#    'file' => 'token.pages.inc',
+#  );
+#    $items['token/flush-cache'] = array(
+#      'page callback' => 'token_flush_cache_callback',
+#      'access arguments' => array('flush caches'),
+#      'type' => MENU_CALLBACK,
+#      'file' => 'token.pages.inc',
+#    );
+#
+#  if (\Drupal::moduleHandler()->moduleExists('devel')) {
+#    $items['node/%node/devel/token'] = array(
+#      'title' => 'Tokens',
+#      'page callback' => 'token_devel_token_object',
+#      'page arguments' => array('node', 1),
+#      'access arguments' => array('access devel information'),
+#      'type' => MENU_LOCAL_TASK,
+#      'file' => 'token.pages.inc',
+#      'weight' => 5,
+#    );
+#    $items['comment/%comment/devel/token'] = array(
+#      'title' => 'Tokens',
+#      'page callback' => 'token_devel_token_object',
+#      'page arguments' => array('comment', 1),
+#      'access arguments' => array('access devel information'),
+#      'type' => MENU_LOCAL_TASK,
+#      'file' => 'token.pages.inc',
+#      'weight' => 5,
+#    );
+#    $items['taxonomy/term/%taxonomy_term/devel/token'] = array(
+#      'title' => 'Tokens',
+#      'page callback' => 'token_devel_token_object',
+#      'page arguments' => array('taxonomy_term', 2),
+#      'access arguments' => array('access devel information'),
+#      'type' => MENU_LOCAL_TASK,
+#      'file' => 'token.pages.inc',
+#      'weight' => 5,
+#    );
+#    $items['user/%user/devel/token'] = array(
+#      'title' => 'Tokens',
+#      'page callback' => 'token_devel_token_object',
+#      'page arguments' => array('user', 1),
+#      'access arguments' => array('access devel information'),
+#      'type' => MENU_LOCAL_TASK,
+#      'file' => 'token.pages.inc',
+#      'weight' => 5,
+#    );
+#  }

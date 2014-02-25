@@ -269,33 +269,3 @@ function token_autocomplete_type($string = '') {
   drupal_json_output($matches);
 }
 
-function token_autocomplete_token($token_type) {
-  $args = func_get_args();
-  array_shift($args);
-  $string = trim(implode('/', $args));
-  $string = substr($string, strrpos($string, '['));
-
-  $token_type = $token_type['type'];
-  $matches = array();
-
-  if (!drupal_strlen($string)) {
-    $matches["[{$token_type}:"] = 0;
-  }
-  else {
-    $depth = max(1, substr_count($string, ':'));
-    $tree = token_build_tree($token_type, array('flat' => TRUE, 'depth' => $depth));
-    foreach (array_keys($tree) as $token) {
-      if (strpos($token, $string) === 0) {
-        $matches[$token] = levenshtein($token, $string);
-        if (isset($tree[$token]['children'])) {
-          $token = rtrim($token, ':]') . ':';
-          $matches[$token] = levenshtein($token, $string);
-        }
-      }
-    }
-  }
-
-  asort($matches);
-  $matches = drupal_map_assoc(array_keys($matches));
-  drupal_json_output($matches);
-}
