@@ -248,7 +248,7 @@ function token_get_token_problems() {
   //  }
   //}
 
-  $token_info = token_info();
+  $token_info = \Drupal::token()->getInfo();
   $token_problems = array(
     'not-array' => array(
       'label' => t('The following tokens or token types are not defined as arrays:'),
