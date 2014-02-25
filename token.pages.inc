@@ -23,7 +23,8 @@ function theme_tree_table($variables) {
     drupal_add_library('token', 'treeTable');
   }
 
-  return theme('table', $variables);
+  // ToDo: Use render arrays. See https://drupal.org/node/2195739
+  return _theme('table', $variables);
 }
 
 /**

@@ -19,7 +19,8 @@ function token_requirements($phase = 'runtime') {
       if (!empty($problem['problems'])) {
         $problems = array_unique($problem['problems']);
         $problems = array_map('check_plain', $problems);
-        $token_problems[$problem_key] = $problem['label'] . theme('item_list', array('items' => $problems));
+        // ToDo: Use render arrays. See https://drupal.org/node/2195739
+        $token_problems[$problem_key] = $problem['label'] . _theme('item_list', array('items' => $problems));
       }
       else {
         unset($token_problems[$problem_key]);

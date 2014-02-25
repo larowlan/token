@@ -575,7 +575,8 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'picture':
-          $replacements[$original] = theme('user_picture', array('account' => $account));
+          // ToDo: Use render arrays. See https://drupal.org/node/2195739
+          $replacements[$original] = _theme('user_picture', array('account' => $account));
           break;
 
         case 'roles':
