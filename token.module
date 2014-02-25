@@ -359,7 +359,7 @@ function token_get_entity_mapping($value_type = 'token', $value = NULL) {
 }
 
 /**
- * Implements hook_entity_info_alter().
+ * Implements hook_entity_type_alter().
  *
  * Because some token types to do not match their entity type names, we have to
  * map them to the proper type. This is purely for other modules' benefit.
@@ -367,9 +367,10 @@ function token_get_entity_mapping($value_type = 'token', $value = NULL) {
  * @see token_get_entity_mapping()
  * @see http://drupal.org/node/737726
  */
-function token_entity_info_alter(&$info) {
-  foreach (array_keys($info) as $entity_type) {
-    if ($info[$entity_type]->get('token type')) {
+function token_entity_type_alter(array &$entity_types) {
+  /* @var $entity_types \Drupal\Core\Entity\EntityTypeInterface[] */
+  foreach (array_keys($entity_types) as $entity_type) {
+    if ($entity_types[$entity_type]->get('token type')) {
       // If the entity's token type is already defined, great!
       continue;
     }
@@ -379,12 +380,12 @@ function token_entity_info_alter(&$info) {
       case 'taxonomy_term':
       case 'taxonomy_vocabulary':
         // Stupid taxonomy token types...
-        $info[$entity_type]->set('token type', str_replace('taxonomy_', '', $entity_type));
+        $entity_types[$entity_type]->set('token type', str_replace('taxonomy_', '', $entity_type));
         break;
 
       default:
         // By default the token type is the same as the entity type.
-        $info[$entity_type]->set('token type', $entity_type);
+        $entity_types[$entity_type]->set('token type', $entity_type);
         break;
     }
   }
