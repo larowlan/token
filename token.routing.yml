@@ -1,24 +1,15 @@
 token.autocomplete:
-  path: /token/autocomplete/{token_type}/{filter}
+  path: '/token/autocomplete/{token_type}/{filter}'
   defaults:
     _controller: '\Drupal\token\Controller\TokenAutocompleteController::autocomplete'
   requirements:
     _access: 'TRUE'
-
-#
-#  $items['token/autocomplete/%token_type'] = array(
-#    'page callback' => 'token_autocomplete_token',
-#    'page arguments' => array(2),
-#    'access callback' => TRUE,
-#    'type' => MENU_CALLBACK,
-#    'file' => 'token.pages.inc',
-#  );
-#    $items['token/flush-cache'] = array(
-#      'page callback' => 'token_flush_cache_callback',
-#      'access arguments' => array('flush caches'),
-#      'type' => MENU_CALLBACK,
-#      'file' => 'token.pages.inc',
-#    );
+token.flush_cache:
+  path: '/token/flush-cache'
+  defaults:
+    _controller: '\Drupal\token\Controller\TokenCacheController::flush'
+  requirements:
+    _permission: 'flush caches'
 #
 #  if (\Drupal::moduleHandler()->moduleExists('devel')) {
 #    $items['node/%node/devel/token'] = array(

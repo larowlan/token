@@ -212,19 +212,6 @@ function token_devel_token_object($entity_type, $entity) {
   return $build;
 }
 
-/**
- * Page callback to clear the token registry caches.
- */
-function token_flush_cache_callback() {
-  if (!\Drupal::request()->query->has('token') || !\Drupal::csrfToken()->validate(\Drupal::request()->query->get('token'), current_path())) {
-    return MENU_NOT_FOUND;
-  }
-
-  token_clear_cache();
-  drupal_set_message(t('Token registry caches cleared.'));
-  drupal_goto();
-}
-
 function token_autocomplete() {
   $args = func_get_args();
   $string = implode('/', $args);
