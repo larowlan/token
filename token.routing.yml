@@ -10,42 +10,47 @@ token.flush_cache:
     _controller: '\Drupal\token\Controller\TokenCacheController::flush'
   requirements:
     _permission: 'flush caches'
-#
-#  if (\Drupal::moduleHandler()->moduleExists('devel')) {
-#    $items['node/%node/devel/token'] = array(
-#      'title' => 'Tokens',
-#      'page callback' => 'token_devel_token_object',
-#      'page arguments' => array('node', 1),
-#      'access arguments' => array('access devel information'),
-#      'type' => MENU_LOCAL_TASK,
-#      'file' => 'token.pages.inc',
-#      'weight' => 5,
-#    );
-#    $items['comment/%comment/devel/token'] = array(
-#      'title' => 'Tokens',
-#      'page callback' => 'token_devel_token_object',
-#      'page arguments' => array('comment', 1),
-#      'access arguments' => array('access devel information'),
-#      'type' => MENU_LOCAL_TASK,
-#      'file' => 'token.pages.inc',
-#      'weight' => 5,
-#    );
-#    $items['taxonomy/term/%taxonomy_term/devel/token'] = array(
-#      'title' => 'Tokens',
-#      'page callback' => 'token_devel_token_object',
-#      'page arguments' => array('taxonomy_term', 2),
-#      'access arguments' => array('access devel information'),
-#      'type' => MENU_LOCAL_TASK,
-#      'file' => 'token.pages.inc',
-#      'weight' => 5,
-#    );
-#    $items['user/%user/devel/token'] = array(
-#      'title' => 'Tokens',
-#      'page callback' => 'token_devel_token_object',
-#      'page arguments' => array('user', 1),
-#      'access arguments' => array('access devel information'),
-#      'type' => MENU_LOCAL_TASK,
-#      'file' => 'token.pages.inc',
-#      'weight' => 5,
-#    );
-#  }
+token.devel_node_token:
+  path: '/node/{entity_id}/devel/token'
+  defaults:
+    _content: '\Drupal\token\Controller\TokenDevelController::devel_token_object'
+    _title: 'Tokens'
+    entity_type: 'node'
+  options:
+    _access_mode: 'ALL'
+  requirements:
+    _permission: 'access devel information'
+    _module_dependencies: 'devel'
+token.devel_comment_token:
+  path: '/comment/{entity_id}/devel/token'
+  defaults:
+    _content: '\Drupal\token\Controller\TokenDevelController::devel_token_object'
+    _title: 'Tokens'
+    entity_type: 'comment'
+  options:
+    _access_mode: 'ALL'
+  requirements:
+    _permission: 'access devel information'
+    _module_dependencies: 'devel'
+token.devel_term_token:
+  path: '/taxonomy/term/{entity_id}/devel/token'
+  defaults:
+    _content: '\Drupal\token\Controller\TokenDevelController::devel_token_object'
+    _title: 'Tokens'
+    entity_type: 'taxonomy_term'
+  options:
+    _access_mode: 'ALL'
+  requirements:
+    _permission: 'access devel information'
+    _module_dependencies: 'devel'
+token.devel_user_token:
+  path: '/user/{entity_id}/devel/token'
+  defaults:
+    _content: '\Drupal\token\Controller\TokenDevelController::devel_token_object'
+    _title: 'Tokens'
+    entity_type: 'user'
+  options:
+    _access_mode: 'ALL'
+  requirements:
+    _permission: 'access devel information'
+    _module_dependencies: 'devel'

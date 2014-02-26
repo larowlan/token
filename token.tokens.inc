@@ -961,7 +961,7 @@ function token_tokens_alter(array &$replacements, array $context) {
         case 'author':
           // @todo Remove when http://drupal.org/node/920056 is fixed.
           if (!empty($comment->uid)) {
-            $account = user_load($comment->uid);
+            $account = user_load($comment->uid->value);
           }
           else {
             $account = drupal_anonymous_user();
@@ -981,7 +981,7 @@ function token_tokens_alter(array &$replacements, array $context) {
     foreach ($context['tokens'] as $name => $original) {
       switch ($name) {
         case 'author':
-          $account = user_load($node->uid);
+          $account = user_load($node->uid->value);
           $name = $account->getUsername();
           $replacements[$original] = $sanitize ? String::checkPlain($name) : $name;
           break;
@@ -996,7 +996,7 @@ function token_tokens_alter(array &$replacements, array $context) {
     foreach ($context['tokens'] as $name => $original) {
       switch ($name) {
         case 'owner':
-          $account = user_load($file->uid);
+          $account = user_load($file->uid->value);
           $name = $account->getUsername();
           $replacements[$original] = $sanitize ? String::checkPlain($name) : $name;
           break;
