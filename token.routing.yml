@@ -13,10 +13,8 @@ token.flush_cache:
 token.devel_node_token:
   path: '/node/{node}/devel/token'
   defaults:
-    _content: '\Drupal\token\Controller\TokenDevelController::devel_token_object'
+    _content: '\Drupal\token\Controller\TokenDevelController::devel_token_node'
     _title: 'Tokens'
-    entity_type: 'node'
-    entity_id: %node
   options:
     _access_mode: 'ALL'
   requirements:
@@ -25,10 +23,8 @@ token.devel_node_token:
 token.devel_comment_token:
   path: '/comment/{comment}/devel/token'
   defaults:
-    _content: '\Drupal\token\Controller\TokenDevelController::devel_token_object'
+    _content: '\Drupal\token\Controller\TokenDevelController::devel_token_comment'
     _title: 'Tokens'
-    entity_type: 'comment'
-    entity_id: %comment
   options:
     _access_mode: 'ALL'
   requirements:
@@ -37,10 +33,8 @@ token.devel_comment_token:
 token.devel_taxonomy_term_token:
   path: '/taxonomy/term/{taxonomy_term}/devel/token'
   defaults:
-    _content: '\Drupal\token\Controller\TokenDevelController::devel_token_object'
+    _content: '\Drupal\token\Controller\TokenDevelController::devel_token_taxonomy_term'
     _title: 'Tokens'
-    entity_type: 'taxonomy_term'
-    entity_id: %taxonomy_term
   options:
     _access_mode: 'ALL'
   requirements:
@@ -49,10 +43,8 @@ token.devel_taxonomy_term_token:
 token.devel_user_token:
   path: '/user/{user}/devel/token'
   defaults:
-    _content: '\Drupal\token\Controller\TokenDevelController::devel_token_object'
+    _content: '\Drupal\token\Controller\TokenDevelController::devel_token_user'
     _title: 'Tokens'
-    entity_type: 'user'
-    entity_id: %user
   options:
     _access_mode: 'ALL'
   requirements:

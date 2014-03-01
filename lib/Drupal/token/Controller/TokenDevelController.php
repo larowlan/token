@@ -44,7 +44,23 @@ class TokenDevelController implements ContainerInjectionInterface {
     );
   }
 
-  public function devel_token_object($entity_type, $entity_id, Request $request) {
+  public function devel_token_node($node, Request $request) {
+    return $this->devel_token_object('node', $node, $request);
+  }
+
+  public function devel_token_comment($comment, Request $request) {
+    return $this->devel_token_object('comment', $comment, $request);
+  }
+
+  public function devel_token_user($user, Request $request) {
+    return $this->devel_token_object('user', $user, $request);
+  }
+
+  public function devel_token_taxonomy_term($taxonomy_term, Request $request) {
+    return $this->devel_token_object('taxonomy_term', $taxonomy_term, $request);
+  }
+
+  private function devel_token_object($entity_type, $entity_id, Request $request) {
     $this->moduleHandler->loadInclude('token', 'pages.inc');
     $entity = entity_load($entity_type, $entity_id);
 
