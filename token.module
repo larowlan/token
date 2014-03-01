@@ -156,26 +156,6 @@ function token_theme() {
 }
 
 /**
- * Implements hook_library().
- */
-function token_library() {
-  // jQuery treeTable plugin.
-  $libraries['treeTable'] = array(
-    'title' => 'jQuery treeTable',
-    'website' => 'http://plugins.jquery.com/project/treetable',
-    'version' => '2.3.0',
-    'js' => array(
-      drupal_get_path('module', 'token') . '/jquery.treeTable.js' => array(),
-    ),
-    'css' => array(
-      drupal_get_path('module', 'token') . '/jquery.treeTable.css' => array(),
-    ),
-  );
-
-  return $libraries;
-}
-
-/**
  * Implements hook_form_alter().
  *
  * Adds a submit handler to forms which could affect the tokens available on

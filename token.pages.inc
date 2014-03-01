@@ -20,7 +20,8 @@ function theme_tree_table($variables) {
   }
 
   if (!empty($variables['rows'])) {
-    drupal_add_library('token', 'treeTable');
+    $attached['#attached']['library'][] = array('token', 'jquery.treeTable');
+    drupal_render($attached);
   }
 
   // ToDo: Use render arrays. See https://drupal.org/node/2195739
@@ -99,7 +100,7 @@ function theme_token_tree($variables) {
     '#attached' => array(
       'js' => array(drupal_get_path('module', 'token') . '/token.js'),
       'css' => array(drupal_get_path('module', 'token') . '/token.css'),
-      'library' => array(array('token', 'treeTable')),
+      'library' => array(array('token', 'jquery.treeTable')),
     ),
   );
 
