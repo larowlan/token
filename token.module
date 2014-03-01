@@ -290,7 +290,7 @@ function token_field_delete_instance($instance) {
  */
 function token_clear_cache() {
   if (db_table_exists('cache_token')) {
-    cache('cache_token')->flush();
+    \Drupal::cache('cache_token')->flush();
   }
   drupal_static_reset('token_get_info');
   drupal_static_reset('token_get_global_token_types');
@@ -427,7 +427,7 @@ function token_get_info($token_type = NULL, $token = NULL) {
     $langcode = \Drupal::languageManager()->getCurrentLanguage()->id;
     $cid = "info:{$langcode}";
 
-    if ($cache = cache('cache_token')->get($cid)) {
+    if ($cache = \Drupal::cache('cache_token')->get($cid)) {
       $token_info = $cache->data;
     }
     else {
@@ -457,7 +457,7 @@ function token_get_info($token_type = NULL, $token = NULL) {
       }
 
       // Store info in cache for future use.
-      cache('cache_token')->set($cid, $token_info);
+      \Drupal::cache('cache_token')->set($cid, $token_info);
     }
   }
 
@@ -813,13 +813,13 @@ function token_build_tree($token_type, array $options = array()) {
   // If we do not have this base tree in the static cache, check {cache_token}
   // otherwise generate and store it in the cache.
   if (!isset($trees[$tree_cid])) {
-    if ($cache = cache('cache_token')->get($tree_cid)) {
+    if ($cache = \Drupal::cache('cache_token')->get($tree_cid)) {
       $trees[$tree_cid] = $cache->data;
     }
     else {
       $options['parents'] = array();
       $trees[$tree_cid] = _token_build_tree($token_type, $options);
-      cache('cache_token')->set($tree_cid, $trees[$tree_cid]);
+      \Drupal::cache('cache_token')->set($tree_cid, $trees[$tree_cid]);
     }
   }
 

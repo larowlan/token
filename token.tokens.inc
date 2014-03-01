@@ -1200,7 +1200,7 @@ function _token_field_info($field_name = NULL) {
   $info = &drupal_static(__FUNCTION__);
 
   if (!isset($fields)) {
-    if ($cached = cache('cache_token')->get('field:info')) {
+    if ($cached = \Drupal::cache('cache_token')->get('field:info')) {
       $info = $cached->data;
     }
     else {
@@ -1253,7 +1253,7 @@ function _token_field_info($field_name = NULL) {
       }
 
       \Drupal::moduleHandler()->alter('token_field_info', $info);
-      cache('cache_token')->set('field:info', $info);
+      \Drupal::cache('cache_token')->set('field:info', $info);
     }
   }
 
