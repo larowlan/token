@@ -68,7 +68,9 @@ class TokenAutocompleteController implements ContainerInjectionInterface {
     }
 
     asort($matches);
-    $matches = drupal_map_assoc(array_keys($matches));
+
+    $keys = array_keys($matches);
+    $matches = array_combine($keys, $keys);
 
     return new JsonResponse($matches);
   }

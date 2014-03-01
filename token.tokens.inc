@@ -580,8 +580,9 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           break;
 
         case 'roles':
-          $roles = drupal_map_assoc($account->getRoles());
-          $replacements[$original] = token_render_array($roles, $options);
+          $roles = $account->getRoles();
+          $roles_names = array_combine($roles, $roles);
+          $replacements[$original] = token_render_array($roles_names, $options);
           break;
       }
     }
@@ -594,8 +595,9 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       $replacements += \Drupal::token()->generate('url', $url_tokens, $account->urlInfo(), $options);
     }
     if ($role_tokens = \Drupal::token()->findWithPrefix($tokens, 'roles')) {
-      $roles = drupal_map_assoc($account->getRoles());
-      $replacements += \Drupal::token()->generate('array', $role_tokens, array('array' => $roles), $options);
+      $roles = $account->getRoles();
+      $roles_names = array_combine($roles, $roles);
+      $replacements += \Drupal::token()->generate('array', $role_tokens, array('array' => $roles_names), $options);
     }
   }
 
