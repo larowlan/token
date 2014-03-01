@@ -11,44 +11,48 @@ token.flush_cache:
   requirements:
     _permission: 'flush caches'
 token.devel_node_token:
-  path: '/node/{entity_id}/devel/token'
+  path: '/node/{node}/devel/token'
   defaults:
     _content: '\Drupal\token\Controller\TokenDevelController::devel_token_object'
     _title: 'Tokens'
     entity_type: 'node'
+    entity_id: %node
   options:
     _access_mode: 'ALL'
   requirements:
     _permission: 'access devel information'
     _module_dependencies: 'devel'
 token.devel_comment_token:
-  path: '/comment/{entity_id}/devel/token'
+  path: '/comment/{comment}/devel/token'
   defaults:
     _content: '\Drupal\token\Controller\TokenDevelController::devel_token_object'
     _title: 'Tokens'
     entity_type: 'comment'
+    entity_id: %comment
   options:
     _access_mode: 'ALL'
   requirements:
     _permission: 'access devel information'
     _module_dependencies: 'devel'
-token.devel_term_token:
-  path: '/taxonomy/term/{entity_id}/devel/token'
+token.devel_taxonomy_term_token:
+  path: '/taxonomy/term/{taxonomy_term}/devel/token'
   defaults:
     _content: '\Drupal\token\Controller\TokenDevelController::devel_token_object'
     _title: 'Tokens'
     entity_type: 'taxonomy_term'
+    entity_id: %taxonomy_term
   options:
     _access_mode: 'ALL'
   requirements:
     _permission: 'access devel information'
     _module_dependencies: 'devel'
 token.devel_user_token:
-  path: '/user/{entity_id}/devel/token'
+  path: '/user/{user}/devel/token'
   defaults:
     _content: '\Drupal\token\Controller\TokenDevelController::devel_token_object'
     _title: 'Tokens'
     entity_type: 'user'
+    entity_id: %user
   options:
     _access_mode: 'ALL'
   requirements:
