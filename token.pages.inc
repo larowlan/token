@@ -18,12 +18,11 @@ function theme_tree_table($variables) {
       unset($row['parent']);
     }
   }
-
+  $attached['#attached']['library'][] = array('token', 'token');
   if (!empty($variables['rows'])) {
     $attached['#attached']['library'][] = array('token', 'jquery.treeTable');
-    drupal_render($attached);
   }
-
+  drupal_render($attached);
   // ToDo: Use render arrays. See https://drupal.org/node/2195739
   return _theme('table', $variables);
 }
@@ -98,9 +97,8 @@ function theme_token_tree($variables) {
     '#attributes' => array('class' => array('token-tree')),
     '#empty' => t('No tokens available'),
     '#attached' => array(
-      'js' => array(drupal_get_path('module', 'token') . '/token.js'),
       'css' => array(drupal_get_path('module', 'token') . '/token.css'),
-      'library' => array(array('token', 'jquery.treeTable')),
+      'library' => array(array('token', 'token'), array('token', 'jquery.treeTable')),
     ),
   );
 
