@@ -1061,7 +1061,7 @@ function token_render_cache_get($elements) {
   }
   $bin = isset($elements['#cache']['bin']) ? $elements['#cache']['bin'] : 'cache';
 
-  if (!empty($cid) && $cache = cache($bin)->get($cid)) {
+  if (!empty($cid) && $cache = \Drupal::cache($bin)->get($cid)) {
     // Add additional libraries, JavaScript, CSS and other data attached
     // to this element.
     if (isset($cache->data['#attached'])) {
