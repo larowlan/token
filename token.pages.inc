@@ -97,7 +97,7 @@ function theme_token_tree($variables) {
     '#attributes' => array('class' => array('token-tree')),
     '#empty' => t('No tokens available'),
     '#attached' => array(
-      'css' => array(drupal_get_path('module', 'token') . '/token.css'),
+      'css' => array(drupal_get_path('module', 'token') . '/css/token.css'),
       'library' => array(array('token', 'token'), array('token', 'jquery.treeTable')),
     ),
   );
