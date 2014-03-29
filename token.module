@@ -674,7 +674,7 @@ function token_form_field_ui_field_instance_edit_form_alter(&$form, $form_state)
     return;
   }
   $field_type = $form['#field']->getType();
-  if (($field_type == 'file' || $field_type == 'image') && isset($form['instance']['settings']['file_directory']) {
+  if (($field_type == 'file' || $field_type == 'image') && isset($form['instance']['settings']['file_directory'])) {
     // GAH! We can only support global tokens in the upload file directory path.
     $form['instance']['settings']['file_directory']['#element_validate'][] = 'token_element_validate';
     $form['instance']['settings']['file_directory']['#token_types'] = array();
