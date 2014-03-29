@@ -87,7 +87,7 @@ function token_token_info_alter(&$info) {
 
   // Add support for custom date formats.
   // @todo Remove when http://drupal.org/node/1173706 is fixed.
-  $date_format_types = \Drupal::entityManager()->getStorageController('date_format')->loadMultiple();
+  $date_format_types = \Drupal::entityManager()->getStorage('date_format')->loadMultiple();
   foreach ($date_format_types as $date_format_type => $date_format_type_info) {
     /* @var \Drupal\system\Entity\DateFormat $date_format_type_info */
     if (!isset($info['tokens']['date'][$date_format_type])) {
@@ -393,7 +393,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
     $date = !empty($data['date']) ? $data['date'] : REQUEST_TIME;
 
     // @todo Remove when http://drupal.org/node/1173706 is fixed.
-    $date_format_types = \Drupal::entityManager()->getStorageController('date_format')->loadMultiple();
+    $date_format_types = \Drupal::entityManager()->getStorage('date_format')->loadMultiple();
     foreach ($tokens as $name => $original) {
       if (isset($date_format_types[$name]) && _token_module('date', $name) == 'token') {
         $replacements[$original] = format_date($date, $name, '', NULL, $language_code);
@@ -435,7 +435,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
           $replacements[$original] = $sanitize ? filter_xss($node->log->value) : $node->log->value;
           break;
         case 'content-type':
-          $type_name = \Drupal::entityManager()->getStorageController('node_type')->load($node->getType())->label();
+          $type_name = \Drupal::entityManager()->getStorage('node_type')->load($node->getType())->label();
           $replacements[$original] = $sanitize ? String::checkPlain($type_name) : $type_name;
           break;
       }
