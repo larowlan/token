@@ -1186,7 +1186,7 @@ function token_element_children(&$elements, $sort = FALSE) {
   }
   // Sort the children if necessary.
   if ($sort && $sortable) {
-    uasort($children, 'element_sort');
+    uasort($children, 'Drupal\Component\Utility\SortArray::sortByWeightProperty');
     // Put the sorted children back into $elements in the correct order, to
     // preserve sorting if the same element is passed through
     // element_children() twice.
