@@ -8,6 +8,8 @@ namespace Drupal\token\Tests;
 
 /**
  * Tests node tokens.
+ *
+ * @group Token
  */
 class TokenNodeTestCase extends TokenTestBase {
   protected $profile = 'standard';

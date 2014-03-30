@@ -9,6 +9,8 @@ use Drupal\Component\Utility\String;
 
 /**
  * Tests taxonomy tokens.
+ *
+ * @group Token
  */
 class TokenTaxonomyTestCase extends TokenTestBase {
   protected $vocab;

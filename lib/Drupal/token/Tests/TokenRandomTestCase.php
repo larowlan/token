@@ -8,6 +8,8 @@ namespace Drupal\token\Tests;
 
 /**
  * Tests random tokens.
+ *
+ * @group Token
  */
 class TokenRandomTestCase extends TokenTestBase {
   public static function getInfo() {

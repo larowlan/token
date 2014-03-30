@@ -8,6 +8,8 @@ namespace Drupal\token\Tests;
 
 /**
  * Tests file tokens.
+ *
+ * @group Token
  */
 class TokenFileTestCase extends TokenTestBase {
   protected static $modules = array('path', 'token', 'token_test', 'file');

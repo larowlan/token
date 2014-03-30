@@ -8,6 +8,8 @@ namespace Drupal\token\Tests;
 
 /**
  * Tests block tokens.
+ *
+ * @group Token
  */
 class TokenBlockTestCase extends TokenTestBase {
   protected static $modules = array('path', 'token', 'token_test', 'block', 'node', 'views', 'custom_block');

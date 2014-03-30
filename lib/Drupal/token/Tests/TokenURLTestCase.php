@@ -8,6 +8,8 @@ namespace Drupal\token\Tests;
 
 /**
  * Tests url tokens.
+ *
+ * @group Token
  */
 class TokenURLTestCase extends TokenTestBase {
   protected static $modules = array('path', 'token', 'token_test', 'node');

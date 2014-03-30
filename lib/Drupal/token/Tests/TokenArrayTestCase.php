@@ -8,6 +8,8 @@ namespace Drupal\token\Tests;
 
 /**
  * Tests array tokens.
+ *
+ * @group Token
  */
 class TokenArrayTestCase extends TokenTestBase {
   public static function getInfo() {

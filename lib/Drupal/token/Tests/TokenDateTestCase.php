@@ -8,6 +8,8 @@ namespace Drupal\token\Tests;
 
 /**
  * Tests date tokens.
+ *
+ * @group Token
  */
 class TokenDateTestCase extends TokenTestBase {
   public static function getInfo() {

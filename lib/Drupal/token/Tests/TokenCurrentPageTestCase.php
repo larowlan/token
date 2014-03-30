@@ -8,6 +8,8 @@ namespace Drupal\token\Tests;
 
 /**
  * Tests current page tokens.
+ *
+ * @group Token
  */
 class TokenCurrentPageTestCase extends TokenTestBase {
 

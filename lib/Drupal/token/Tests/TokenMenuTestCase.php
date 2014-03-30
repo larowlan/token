@@ -8,6 +8,8 @@ namespace Drupal\token\Tests;
 
 /**
  * Tests menu tokens.
+ *
+ * @group Token
  */
 class TokenMenuTestCase extends TokenTestBase {
   protected static $modules = array('path', 'token', 'token_test', 'menu', 'node');

@@ -9,6 +9,8 @@ use Drupal\field\Field;
 
 /**
  * Tests user tokens.
+ *
+ * @group Token
  */
 class TokenUserTestCase extends TokenTestBase {
   protected $account = NULL;

@@ -9,6 +9,8 @@ use Drupal\taxonomy\VocabularyInterface;
 
 /**
  * Tests entity tokens.
+ *
+ * @group Token
  */
 class TokenEntityTestCase extends TokenTestBase {
   protected static $modules = array('path', 'token', 'token_test', 'node', 'taxonomy');
