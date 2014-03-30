@@ -23,6 +23,7 @@ class TokenCommentTestCase extends TokenTestBase {
   }
 
   function testCommentTokens() {
+    $this->drupalCreateContentType(array('type' => 'page', 'name' => t('Page')));
     \Drupal::service('comment.manager')->addDefaultField('node', 'page');
     $node = $this->drupalCreateNode();
 
