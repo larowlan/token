@@ -4,6 +4,7 @@
  * @file
  * Enhances the token API in core: adds a browseable UI, missing tokens, etc.
  */
+
 use Drupal\Component\Utility\String;
 use Drupal\Core\Render\Element;
 
@@ -1156,7 +1157,7 @@ function token_node_menu_link_load($node) {
       // @see http://drupal.org/node/1317926
       $menu_node = clone $node;
       $form_state = array();
-      menu_node_prepare_form($menu_node, NULL, NULL, $form_state);
+      menu_node_prepare_form($menu_node, NULL, $form_state);
       $mlid = !empty($menu_node->menu['mlid']) ? $menu_node->menu['mlid'] : FALSE;
     }
     else {
