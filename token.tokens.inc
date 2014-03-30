@@ -414,7 +414,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 
     // Chained token relationships.
     if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url'))) {
-      $replacements += \Drupal::token()->generate('url', $url_tokens, $comment->urlInfo(), $options);
+      $replacements += \Drupal::token()->generate('url', $url_tokens, (array) $comment->urlInfo(), $options);
     }
   }
 
@@ -449,7 +449,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       $replacements += \Drupal::token()->generate('content-type', $node_type_tokens, array('node_type' => $node_type), $options);
     }
     if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url'))) {
-      $replacements += \Drupal::token()->generate('url', $url_tokens, $node->urlInfo(), $options);
+      $replacements += \Drupal::token()->generate('url', $url_tokens, (array) $node->urlInfo(), $options);
     }
   }
 
@@ -512,7 +512,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 
     // Chained token relationships.
     if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url'))) {
-      $replacements += \Drupal::token()->generate('url', $url_tokens, $term->urlInfo(), $options);
+      $replacements += \Drupal::token()->generate('url', $url_tokens, (array) $term->urlInfo(), $options);
     }
     // [term:parents:*] chained tokens.
     if ($parents_tokens = \Drupal::token()->findWithPrefix($tokens, 'parents')) {
@@ -818,7 +818,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
 
     // [entity:url:*] chained tokens.
     if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url')) && _token_module($type, 'url') == 'token') {
-      $replacements += \Drupal::token()->generate('url', $url_tokens, $entity->urlInfo(), $options);
+      $replacements += \Drupal::token()->generate('url', $url_tokens, (array) $entity->urlInfo(), $options);
     }
 
     // [entity:original:*] chained tokens.
