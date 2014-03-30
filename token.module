@@ -1103,8 +1103,8 @@ function token_menu_link_load_all_parents($mlid) {
     $cache[$mlid] = array();
     $plid = db_query("SELECT plid FROM {menu_links} WHERE mlid = :mlid", array(':mlid' => $mlid))->fetchField();
     while ($plid && $parent = menu_link_load($plid)) {
-      $cache[$mlid] = array($plid => $parent['title']) + $cache[$mlid];
-      $plid = $parent['plid'];
+      $cache[$mlid] = array($plid => $parent->label()) + $cache[$mlid];
+      $plid = $parent->plid;
     }
   }
 
