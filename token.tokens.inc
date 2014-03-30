@@ -374,7 +374,7 @@ function token_token_info() {
 /**
  * Implements hook_tokens().
  */
-function token_tokens($type, $tokens, array $data = array(), array $options = array()) {
+function token_tokens($type, array $tokens, array $data = array(), array $options = array()) {
   $replacements = array();
 
   $url_options = array('absolute' => TRUE);
