@@ -915,7 +915,7 @@ function token_tokens($type, $tokens, array $data = array(), array $options = ar
       $algos = hash_algos();
       foreach ($hash_tokens as $name => $original) {
         if (in_array($name, $algos)) {
-          $replacements[$original] = hash($name, Crypt::randomStringHashed(55));
+          $replacements[$original] = hash($name, Crypt::randomBytes(55));
         }
       }
     }
