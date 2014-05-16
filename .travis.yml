@@ -1,0 +1,43 @@
+language: php
+
+php:
+  - 5.4
+  - 5.5
+
+matrix:
+  allow-failures:
+    - php: 5.5
+
+  env:
+    global:
+      - MODULE_NAME='token'
+      - MODULE_TEST_GROUP='Token'
+      - DRUPAL_TAG='8.0-alpha11'
+      - DRUPAL_REPO='http://drupalcode.org/project/drupal.git'
+      - DRUPAL_DIR='drupal'
+      - DATABASE='drupal'
+      - DB_USERNAME='root'
+      - DB_ENCODE='utf8
+
+mysql:
+  database: $DATABASE
+  username: $DB_USERNAME
+  encoding: $DB_ENCODE
+
+before_install:
+  - composer self-update
+  - composer global require drush/drush:dev-master
+
+install:
+  - mkdir /tmp/$MODULE_NAME
+  - mv * /tmp/$MODULE_NAME/
+  - git clone --branch $DRUPAL_TAG $DRUPAL_REPO $DRUPAL_DIR
+  - mv /tmp/$MODULE_NAME $DRUPAL_DIR/modules/$MODULE_NAME/
+
+before_script:
+  - drush --yes site-install minimal --db-url="mysql://$DB_USERNAME@127.0.0.1/$DATABASE"
+  - drush --yes en $MODULE_NAME
+  - drush --yes en simpletest
+
+script:
+  - drush test-run '$MODULE_TEST_GROUP' --debug
