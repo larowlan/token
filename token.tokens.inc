@@ -9,6 +9,7 @@ use Drupal\Component\Utility\String;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Render\Element;
 use Drupal\field\Field;
+use Drupal\Component\Utility\Xss;
 use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 
 /**
@@ -428,11 +429,11 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
         case 'source':
           if (!empty($node->tnid) && $source_node = node_load($node->tnid)) {
             $title = $source_node->label();
-            $replacements[$original] = $sanitize ? filter_xss($title) : $title;
+            $replacements[$original] = $sanitize ? Xss::filter($title) : $title;
           }
           break;
         case 'log':
-          $replacements[$original] = $sanitize ? filter_xss($node->log->value) : $node->log->value;
+          $replacements[$original] = $sanitize ? Xss::filter($node->log->value) : $node->log->value;
           break;
         case 'content-type':
           $type_name = \Drupal::entityManager()->getStorage('node_type')->load($node->getType())->label();
@@ -467,7 +468,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           $replacements[$original] = $node_type->type;
           break;
         case 'description':
-          $replacements[$original] = $sanitize ? filter_xss($node_type->description) : $node_type->description;
+          $replacements[$original] = $sanitize ? Xss::filter($node_type->description) : $node_type->description;
           break;
         case 'node-count':
           $query = db_select('node');
@@ -1176,7 +1177,7 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
           $replacements[$original] = $menu->id();
           break;
         case 'description':
-          $replacements[$original] = $sanitize ? filter_xss($menu->description) : $menu->description;
+          $replacements[$original] = $sanitize ? Xss::filter($menu->description) : $menu->description;
           break;
         case 'menu-link-count':
           $query = db_select('menu_links');
