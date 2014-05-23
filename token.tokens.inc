@@ -748,12 +748,12 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'path':
-          $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getPathAlias($path, $language_code) : $path;
+          $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code) : $path;
           $replacements[$original] = $sanitize ? String::checkPlain($value) : $value;
           break;
         case 'alias':
           // @deprecated
-          $alias = \Drupal::service('path.alias_manager')->getPathAlias($path, $language_code);
+          $alias = \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code);
           $replacements[$original] = $sanitize ? String::checkPlain($alias) : $alias;
           break;
         case 'absolute':
@@ -771,7 +771,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           $replacements[$original] = \Drupal::url($route, $route_param, array('alias' => TRUE) + $url_options);
           break;
         case 'args':
-          $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getPathAlias($path, $language_code) : $path;
+          $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code) : $path;
           $replacements[$original] = token_render_array(arg(NULL, $value), $options);
           break;
       }
@@ -779,7 +779,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
 
     // [url:arg:*] chained tokens.
     if ($arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'args')) {
-      $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getPathAlias($path, $language_code) : $path;
+      $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code) : $path;
       $value = ltrim($value, '/');
       $replacements += \Drupal::token()->generate('array', $arg_tokens, array('array' => arg(NULL, $value)), $options);
     }
