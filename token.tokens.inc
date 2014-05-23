@@ -9,6 +9,7 @@ use Drupal\Component\Utility\String;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Render\Element;
 use Drupal\field\Field;
+use Drupal\Component\Utility\Xss;
 use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 
 /**
@@ -414,7 +415,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
 
     // Chained token relationships.
     if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url'))) {
-      $replacements += \Drupal::token()->generate('url', $url_tokens, (array) $comment->urlInfo(), $options);
+      $replacements += \Drupal::token()->generate('url', $url_tokens, $comment->urlInfo()->toArray(), $options);
     }
   }
 
@@ -428,11 +429,11 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
         case 'source':
           if (!empty($node->tnid) && $source_node = node_load($node->tnid)) {
             $title = $source_node->label();
-            $replacements[$original] = $sanitize ? filter_xss($title) : $title;
+            $replacements[$original] = $sanitize ? Xss::filter($title) : $title;
           }
           break;
         case 'log':
-          $replacements[$original] = $sanitize ? filter_xss($node->log->value) : $node->log->value;
+          $replacements[$original] = $sanitize ? Xss::filter($node->log->value) : $node->log->value;
           break;
         case 'content-type':
           $type_name = \Drupal::entityManager()->getStorage('node_type')->load($node->getType())->label();
@@ -449,7 +450,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
       $replacements += \Drupal::token()->generate('content-type', $node_type_tokens, array('node_type' => $node_type), $options);
     }
     if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url'))) {
-      $replacements += \Drupal::token()->generate('url', $url_tokens, (array) $node->urlInfo(), $options);
+      $replacements += \Drupal::token()->generate('url', $url_tokens, $node->urlInfo()->toArray(), $options);
     }
   }
 
@@ -467,7 +468,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           $replacements[$original] = $node_type->type;
           break;
         case 'description':
-          $replacements[$original] = $sanitize ? filter_xss($node_type->description) : $node_type->description;
+          $replacements[$original] = $sanitize ? Xss::filter($node_type->description) : $node_type->description;
           break;
         case 'node-count':
           $query = db_select('node');
@@ -512,7 +513,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
 
     // Chained token relationships.
     if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url'))) {
-      $replacements += \Drupal::token()->generate('url', $url_tokens, (array) $term->urlInfo(), $options);
+      $replacements += \Drupal::token()->generate('url', $url_tokens, $term->urlInfo()->toArray(), $options);
     }
     // [term:parents:*] chained tokens.
     if ($parents_tokens = \Drupal::token()->findWithPrefix($tokens, 'parents')) {
@@ -592,7 +593,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
       $replacements += \Drupal::token()->generate('file', $picture_tokens, array('file' => $account->user_picture->entity), $options);
     }
     if ($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url')) {
-      $replacements += \Drupal::token()->generate('url', $url_tokens, $account->urlInfo(), $options);
+      $replacements += \Drupal::token()->generate('url', $url_tokens, $account->urlInfo()->toArray(), $options);
     }
     if ($role_tokens = \Drupal::token()->findWithPrefix($tokens, 'roles')) {
       $roles = $account->getRoles();
@@ -747,12 +748,12 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'path':
-          $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getPathAlias($path, $language_code) : $path;
+          $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code) : $path;
           $replacements[$original] = $sanitize ? String::checkPlain($value) : $value;
           break;
         case 'alias':
           // @deprecated
-          $alias = \Drupal::service('path.alias_manager')->getPathAlias($path, $language_code);
+          $alias = \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code);
           $replacements[$original] = $sanitize ? String::checkPlain($alias) : $alias;
           break;
         case 'absolute':
@@ -770,7 +771,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           $replacements[$original] = \Drupal::url($route, $route_param, array('alias' => TRUE) + $url_options);
           break;
         case 'args':
-          $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getPathAlias($path, $language_code) : $path;
+          $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code) : $path;
           $replacements[$original] = token_render_array(arg(NULL, $value), $options);
           break;
       }
@@ -778,7 +779,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
 
     // [url:arg:*] chained tokens.
     if ($arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'args')) {
-      $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getPathAlias($path, $language_code) : $path;
+      $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code) : $path;
       $value = ltrim($value, '/');
       $replacements += \Drupal::token()->generate('array', $arg_tokens, array('array' => arg(NULL, $value)), $options);
     }
@@ -802,7 +803,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'url':
-          if (_token_module($type, 'url') == 'token' && $uri = $entity->urlInfo()) {
+          if (_token_module($type, 'url') == 'token' && $uri = $entity->urlInfo()->toArray()) {
             $replacements[$original] = url($uri['path'], $uri['options']);
           }
           break;
@@ -818,7 +819,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
 
     // [entity:url:*] chained tokens.
     if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url')) && _token_module($type, 'url') == 'token') {
-      $replacements += \Drupal::token()->generate('url', $url_tokens, (array) $entity->urlInfo(), $options);
+      $replacements += \Drupal::token()->generate('url', $url_tokens, $entity->urlInfo()->toArray(), $options);
     }
 
     // [entity:original:*] chained tokens.
@@ -1176,7 +1177,7 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
           $replacements[$original] = $menu->id();
           break;
         case 'description':
-          $replacements[$original] = $sanitize ? filter_xss($menu->description) : $menu->description;
+          $replacements[$original] = $sanitize ? Xss::filter($menu->description) : $menu->description;
           break;
         case 'menu-link-count':
           $query = db_select('menu_links');

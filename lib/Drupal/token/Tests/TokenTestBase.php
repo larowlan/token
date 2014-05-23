@@ -73,7 +73,7 @@ class TokenTestBase extends WebTestBase {
   }
 
   function saveEntityAlias($entity_type, EntityInterface $entity, $alias, $language = Language::LANGCODE_NOT_SPECIFIED) {
-    $uri = $entity->urlInfo();
+    $uri = $entity->urlInfo()->toArray();
     return $this->saveAlias($uri['path'], $alias, $language);
   }
 
