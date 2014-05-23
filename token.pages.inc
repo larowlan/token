@@ -203,8 +203,7 @@ function token_devel_token_object($entity_type, $entity) {
     '#attributes' => array('class' => array('token-tree')),
     '#empty' => t('No tokens available.'),
     '#attached' => array(
-      'js' => array(drupal_get_path('module', 'token') . '/js/token.js'),
-      'css' => array(drupal_get_path('module', 'token') . '/css/token.css'),
+      'library' => array('token/token'),
     ),
   );
 
