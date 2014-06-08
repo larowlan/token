@@ -4,6 +4,4 @@ label: 'Token test'
 status: true
 langcode: en
 locked: true
-pattern:
-  php: Y
-  intl: yyyy
+pattern: Y
