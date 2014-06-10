@@ -379,15 +379,6 @@ function token_module_implements_alter(&$implementations, $hook) {
 }
 
 /**
- * Implements hook_flush_caches().
- */
-function token_flush_caches() {
-  if (db_table_exists('cache_token')) {
-    return array('cache_token');
-  }
-}
-
-/**
  * Retrieve, sort, store token info from the cache.
  *
  * @param $token_type
