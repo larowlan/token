@@ -14,7 +14,8 @@ function theme_token_tree_link($variables) {
   }
 
   if (!empty($variables['dialog'])) {
-    drupal_add_library('token', 'dialog');
+    // @todo Move this somewhere it can use #attached.
+    _drupal_add_library('token/token');
     $variables['options']['attributes']['class'][] = 'token-dialog';
   }
 
