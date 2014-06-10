@@ -8,6 +8,7 @@
 use Drupal\Component\Utility\String;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Render\Element;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * The maximum depth for token tree recursion.
@@ -17,8 +18,8 @@ define('TOKEN_MAX_DEPTH', 9);
 /**
  * Implements hook_help().
  */
-function token_help($path, $arg) {
-  if ($path == 'admin/help#token') {
+function token_help($route_name, Request $request) {
+  if ($route_name == 'help.page.token') {
     if (current_path() != 'admin/help/token') {
       // Because system_modules() executes hook_help() for each module to 'test'
       // if they will return anything, but not actually display it, we want to

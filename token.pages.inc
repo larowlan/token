@@ -194,7 +194,7 @@ function _token_token_tree_format_row($token, array $token_info, $is_group = FAL
   $row = $defaults;
   $row['id'] = _token_clean_css_identifier($token);
   $row['data']['name'] = $token_info['name'];
-  $row['data']['description'] = $token_info['description'];
+  $row['data']['description'] = isset($token_info['description']) ? $token_info['description'] : '';
 
   if ($is_group) {
     // This is a token type/group.
