@@ -34,18 +34,6 @@ function token_help($path, $arg) {
 }
 
 /**
- * Implements hook_system_info_alter().
- *
- * Prevent the token_actions module from being enabled since updates may have
- * left the old module files still in the directory.
- */
-function token_system_info_alter(&$info, $file, $type) {
-  if ($type == 'module' && $file->name == 'token_actions') {
-    $info['hidden'] = TRUE;
-  }
-}
-
-/**
  * Return an array of the core modules supported by token.module.
  */
 function _token_core_supported_modules() {
