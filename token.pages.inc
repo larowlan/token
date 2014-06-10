@@ -108,7 +108,6 @@ function theme_token_tree($variables) {
   $element = array(
     '#cache' => array(
       'cid' => 'tree-rendered:' . hash('sha256', serialize(array('token_types' => $token_types, 'global_types' => NULL) + $variables)),
-      'bin' => 'cache_token',
     ),
   );
   if ($cached_output = token_render_cache_get($element)) {

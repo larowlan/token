@@ -304,9 +304,7 @@ function token_field_delete_instance($instance) {
  * Clear token caches and static variables.
  */
 function token_clear_cache() {
-  if (db_table_exists('cache_token')) {
-    \Drupal::cache('cache_token')->flush();
-  }
+  \Drupal::token()->resetInfo();
   drupal_static_reset('token_get_info');
   drupal_static_reset('token_get_global_token_types');
   drupal_static_reset('token_get_entity_mapping');
@@ -435,40 +433,30 @@ function token_get_info($token_type = NULL, $token = NULL) {
   $token_info = &$drupal_static_fast['token_info'];
 
   if (empty($token_info)) {
-    $langcode = \Drupal::languageManager()->getCurrentLanguage()->id;
-    $cid = "info:{$langcode}";
+    $token_info = \Drupal::token()->getInfo();
 
-    if ($cache = \Drupal::cache('cache_token')->get($cid)) {
-      $token_info = $cache->data;
+    // @todo: Move this into the token service and deprecate this function.
+    foreach (array_keys($token_info['types']) as $type_key) {
+      if (isset($token_info['types'][$type_key]['type'])) {
+        $base_type = $token_info['types'][$type_key]['type'];
+        // If this token type extends another token type, then merge in
+        // the base token type's tokens.
+        if (isset($token_info['tokens'][$base_type])) {
+          $token_info['tokens'] += array($type_key => array());
+          $token_info['tokens'][$type_key] += $token_info['tokens'][$base_type];
+        }
+      }
+      else {
+        // Add a 'type' value to each token type so we can properly use
+        // token_type_load().
+        $token_info['types'][$type_key]['type'] = $type_key;
+      }
     }
-    else {
-      $token_info = \Drupal::token()->getInfo();
 
-      foreach (array_keys($token_info['types']) as $type_key) {
-        if (isset($token_info['types'][$type_key]['type'])) {
-          $base_type = $token_info['types'][$type_key]['type'];
-          // If this token type extends another token type, then merge in
-          // the base token type's tokens.
-          if (isset($token_info['tokens'][$base_type])) {
-            $token_info['tokens'] += array($type_key => array());
-            $token_info['tokens'][$type_key] += $token_info['tokens'][$base_type];
-          }
-        }
-        else {
-          // Add a 'type' value to each token type so we can properly use
-          // token_type_load().
-          $token_info['types'][$type_key]['type'] = $type_key;
-        }
-      }
-
-      // Pre-sort tokens.
-      uasort($token_info['types'], 'token_asort_tokens');
-      foreach (array_keys($token_info['tokens']) as $type) {
-        uasort($token_info['tokens'][$type], 'token_asort_tokens');
-      }
-
-      // Store info in cache for future use.
-      \Drupal::cache('cache_token')->set($cid, $token_info);
+    // Pre-sort tokens.
+    uasort($token_info['types'], 'token_asort_tokens');
+    foreach (array_keys($token_info['tokens']) as $type) {
+      uasort($token_info['tokens'][$type], 'token_asort_tokens');
     }
   }
 
@@ -829,18 +817,18 @@ function token_build_tree($token_type, array $options = array()) {
   }
 
   $langcode = \Drupal::languageManager()->getCurrentLanguage()->id;
-  $tree_cid = "tree:{$token_type}:{$langcode}:{$options['depth']}";
+  $tree_cid = "token_tree:{$token_type}:{$langcode}:{$options['depth']}";
 
-  // If we do not have this base tree in the static cache, check {cache_token}
+  // If we do not have this base tree in the static cache, check the cache
   // otherwise generate and store it in the cache.
   if (!isset($trees[$tree_cid])) {
-    if ($cache = \Drupal::cache('cache_token')->get($tree_cid)) {
+    if ($cache = \Drupal::cache('data')->get($tree_cid)) {
       $trees[$tree_cid] = $cache->data;
     }
     else {
       $options['parents'] = array();
       $trees[$tree_cid] = _token_build_tree($token_type, $options);
-      \Drupal::cache('cache_token')->set($tree_cid, $trees[$tree_cid]);
+      \Drupal::cache('data')->set($tree_cid, $trees[$tree_cid]);
     }
   }
 
@@ -1080,7 +1068,7 @@ function token_render_cache_get($elements) {
   if (!$cid = drupal_render_cid_create($elements)) {
     return FALSE;
   }
-  $bin = isset($elements['#cache']['bin']) ? $elements['#cache']['bin'] : 'cache';
+  $bin = isset($elements['#cache']['bin']) ? $elements['#cache']['bin'] : 'render';
 
   if (!empty($cid) && $cache = \Drupal::cache($bin)->get($cid)) {
     // Add additional libraries, JavaScript, CSS and other data attached
