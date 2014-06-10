@@ -95,7 +95,7 @@ function token_token_info_alter(&$info) {
     /* @var \Drupal\system\Entity\DateFormat $date_format_type_info */
     if (!isset($info['tokens']['date'][$date_format_type])) {
       $info['tokens']['date'][$date_format_type] = array(
-        'name' => $date_format_type_info->label(),
+        'name' => String::checkPlain($date_format_type_info->label()),
         'description' => t("A date in '@type' format. (%date)", array('@type' => $date_format_type, '%date' => format_date(REQUEST_TIME, $date_format_type))),
         'module' => 'token',
       );
@@ -207,11 +207,6 @@ function token_token_info() {
     'description' => t('The URL of the one-time login page for the user account.'),
     'restricted' => TRUE,
     // 'type' => 'url',
-  );
-  $info['tokens']['user']['picture'] = array(
-    'name' => t('Picture'),
-    'description' => t('The picture of the user.'),
-    'type' => 'file',
   );
   $info['tokens']['user']['roles'] = array(
     'name' => t('Roles'),
@@ -1319,8 +1314,9 @@ function field_tokens($type, $tokens, array $data = array(), array $options = ar
         continue;
       }
 
-      // Replace the [entity:field-name] token.
-      if (isset($tokens[$field_name])) {
+      // Replace the [entity:field-name] token only if token module added this
+      // token.
+      if (isset($tokens[$field_name]) && _token_module($data['token_type'], $field_name) == 'token') {
         $original = $tokens[$field_name];
 
         // Assert that this field was added by token.module.
