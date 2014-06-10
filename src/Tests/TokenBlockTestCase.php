@@ -39,26 +39,26 @@ class TokenBlockTestCase extends TokenTestBase {
     ));
     $bundle->save();
 
-    $block = BlockContent::create(array(
+    $block_content = BlockContent::create(array(
       'type' => $label,
-      'label' => '[user:name]',
+      'label' => '[current-page:title] block title',
       'info' => 'Test token title block',
       'body[value]' => 'This is the test token title block.',
     ));
-    $block->save();
+    $block_content->save();
+
+    $block = $this->drupalPlaceBlock('block_content:' . $block_content->uuid(), array(
+      'label' => '[user:name]',
+    ));
     $this->drupalGet($block->getSystemPath());
     // Ensure token validation is working on the block.
     $this->assertText('The Block title is using the following invalid tokens: [user:name].');
 
     // Create the block for real now with a valid title.
-    $block->label = '[current-page:title] block title';
+    $settings = $block->get('settings');
+    $settings['label'] = '[current-page:title] block title';
+    $block->set('settings', $settings);
     $block->save();
-
-
-
-    $this->drupalPlaceBlock('custom_block:' . $block->uuid(), array(
-      'label' => '[current-page:title] block title',
-    ));
 
     // Ensure that tokens are not double-escaped when output as a block title.
     $node = $this->drupalCreateNode(array('title' => "Site's first node"));

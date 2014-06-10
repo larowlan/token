@@ -12,7 +12,7 @@ namespace Drupal\token\Tests;
  * @group Token
  */
 class TokenMenuTestCase extends TokenTestBase {
-  protected static $modules = array('path', 'token', 'token_test', 'menu', 'node');
+  protected static $modules = array('path', 'token', 'token_test', 'menu_ui', 'node');
 
   public static function getInfo() {
     return array(

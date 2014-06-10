@@ -39,7 +39,7 @@ function token_help($route_name, Request $request) {
  * Return an array of the core modules supported by token.module.
  */
 function _token_core_supported_modules() {
-  return array('book', 'field', 'menu', 'profile');
+  return array('book', 'field', 'menu_ui');
 }
 
 /**
@@ -1162,7 +1162,7 @@ function token_node_menu_link_load($node) {
       // @see http://drupal.org/node/1317926
       $menu_node = clone $node;
       $form_state = array();
-      menu_node_prepare_form($menu_node, NULL, $form_state);
+      menu_ui_node_prepare_form($menu_node, NULL, $form_state);
       $mlid = !empty($menu_node->menu['mlid']) ? $menu_node->menu['mlid'] : FALSE;
     }
     else {

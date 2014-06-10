@@ -27,7 +27,7 @@ class TokenNodeTestCase extends TokenTestBase {
     $tokens = array(
       'source' => NULL,
       'source:nid' => NULL,
-      'log' => $source_node->log->value,
+      'log' => $source_node->revision_log->value,
       'url:path' => 'content/source-node',
       'url:absolute' => url("node/{$source_node->id()}", array('absolute' => TRUE)),
       'url:relative' => url("node/{$source_node->id()}", array('absolute' => FALSE)),
