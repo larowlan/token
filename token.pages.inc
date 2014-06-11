@@ -74,7 +74,7 @@ function theme_tree_table($variables) {
  */
 function theme_token_tree($variables) {
   if (!empty($variables['dialog'])) {
-    return theme_token_tree_link($variables);
+    return _theme('token_tree_link', $variables);
   }
 
   $token_types = $variables['token_types'];

@@ -2,16 +2,14 @@
 
 /**
  * @file
- * Contains \Drupal\token\Controller\TokenAutocompleteController.
+ * Contains \Drupal\token\Controller\TokenTreeController.
  */
 
 namespace Drupal\token\Controller;
 
 use Drupal\Component\Serialization\Json;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Controller\ControllerBase;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Returns tree responses for tokens.
@@ -21,10 +19,10 @@ class TokenTreeController extends ControllerBase {
   /**
    * Page callback to output a token tree as an empty page.
    */
-  function outputTree() {
+  function outputTree(Request $request) {
     $build['#title'] = $this->t('Available tokens');
 
-    $options = isset($_GET['options']) ? Json::decode($_GET['options']) : array();
+    $options = $request->attributes->has('options') ? Json::decode($request->attributes->get('options')) : array();
 
     // Force the dialog option to be false so we're not creating a dialog within
     // a dialog.
