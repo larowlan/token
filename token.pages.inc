@@ -5,6 +5,7 @@
  * User page callbacks for the token module.
  */
 use Drupal\Component\Serialization\Json;
+use Drupal\Core\Utility\Token;
 
 /**
  * Theme a link to a token tree either as a regular link or a dialog.
@@ -92,6 +93,7 @@ function theme_token_tree($variables) {
   $element = array(
     '#cache' => array(
       'cid' => 'tree-rendered:' . hash('sha256', serialize(array('token_types' => $token_types, 'global_types' => NULL) + $variables)),
+      'tags' => array(Token::TOKEN_INFO_CACHE_TAG => TRUE),
     ),
   );
   if ($cached_output = token_render_cache_get($element)) {

@@ -7,7 +7,9 @@
 
 use Drupal\Component\Utility\String;
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Utility\Token;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -807,7 +809,7 @@ function token_build_tree($token_type, array $options = array()) {
     else {
       $options['parents'] = array();
       $trees[$tree_cid] = _token_build_tree($token_type, $options);
-      \Drupal::cache('data')->set($tree_cid, $trees[$tree_cid]);
+      \Drupal::cache('data')->set($tree_cid, $trees[$tree_cid], Cache::PERMANENT, array(Token::TOKEN_INFO_CACHE_TAG => TRUE));
     }
   }
 
