@@ -12,6 +12,7 @@ use Drupal\Component\Utility\Xss;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\FieldConfigInterface;
 use Drupal\field\FieldInstanceConfigInterface;
+use Drupal\system\Entity\Menu;
 use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 
 /**
@@ -95,7 +96,7 @@ function token_token_info_alter(&$info) {
     /* @var \Drupal\system\Entity\DateFormat $date_format_type_info */
     if (!isset($info['tokens']['date'][$date_format_type])) {
       $info['tokens']['date'][$date_format_type] = array(
-        'name' => $date_format_type_info->label(),
+        'name' => String::checkPlain($date_format_type_info->label()),
         'description' => t("A date in '@type' format. (%date)", array('@type' => $date_format_type, '%date' => format_date(REQUEST_TIME, $date_format_type))),
         'module' => 'token',
       );
@@ -207,11 +208,6 @@ function token_token_info() {
     'description' => t('The URL of the one-time login page for the user account.'),
     'restricted' => TRUE,
     // 'type' => 'url',
-  );
-  $info['tokens']['user']['picture'] = array(
-    'name' => t('Picture'),
-    'description' => t('The picture of the user.'),
-    'type' => 'file',
   );
   $info['tokens']['user']['roles'] = array(
     'name' => t('Roles'),
@@ -435,7 +431,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           }
           break;
         case 'log':
-          $replacements[$original] = $sanitize ? Xss::filter($node->log->value) : $node->log->value;
+          $replacements[$original] = $sanitize ? Xss::filter($node->revision_log->value) : $node->revision_log->value;
           break;
         case 'content-type':
           $type_name = \Drupal::entityManager()->getStorage('node_type')->load($node->getType())->label();
@@ -699,7 +695,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
     if ($arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'arg')) {
       $path = \Drupal::request()->attributes->get('_system_path');
       // Make sure its a system path.
-      $path = \Drupal::service('path.alias_manager')->getSystemPath($path);
+      $path = \Drupal::service('path.alias_manager')->getPathByAlias($path);
       foreach ($arg_tokens as $name => $original) {
         if (is_numeric($name) && ($arg = arg($name, $path)) && isset($arg)) {
           $replacements[$original] = $sanitize ? String::checkPlain($arg) : $arg;
@@ -1055,9 +1051,9 @@ function book_tokens($type, $tokens, array $data = array(), array $options = arr
 }
 
 /**
- * Implements hook_token_info() on behalf of menu.module.
+ * Implements hook_token_info() on behalf of menu_ui.module.
  */
-function menu_token_info() {
+function menu_ui_token_info() {
   // Menu tokens.
   $info['types']['menu'] = array(
     'name' => t('Menus'),
@@ -1104,9 +1100,9 @@ function menu_token_info() {
 }
 
 /**
- * Implements hook_tokens() on behalf of menu.module.
+ * Implements hook_tokens() on behalf of menu_ui.module.
  */
-function menu_tokens($type, $tokens, array $data = array(), array $options = array()) {
+function menu_ui_tokens($type, $tokens, array $data = array(), array $options = array()) {
   $replacements = array();
 
   $url_options = array('absolute' => TRUE);
@@ -1149,7 +1145,7 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'menu':
-          if ($menu = menu_load($link->bundle())) {
+          if ($menu = Menu::load($link->bundle())) {
             $replacements[$original] = $sanitize ? String::checkPlain($menu->label()) : $menu->label();
           }
           break;
@@ -1160,7 +1156,7 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
     }
 
     // Chained token relationships.
-    if (($menu_tokens = \Drupal::token()->findWithPrefix($tokens, 'menu')) && $menu = menu_load($link->bundle())) {
+    if (($menu_tokens = \Drupal::token()->findWithPrefix($tokens, 'menu')) && $menu = Menu::load($link->bundle())) {
       $replacements += \Drupal::token()->generate('menu', $menu_tokens, array('menu' => $menu), $options);
     }
   }
@@ -1319,8 +1315,9 @@ function field_tokens($type, $tokens, array $data = array(), array $options = ar
         continue;
       }
 
-      // Replace the [entity:field-name] token.
-      if (isset($tokens[$field_name])) {
+      // Replace the [entity:field-name] token only if token module added this
+      // token.
+      if (isset($tokens[$field_name]) && _token_module($data['token_type'], $field_name) == 'token') {
         $original = $tokens[$field_name];
 
         // Assert that this field was added by token.module.

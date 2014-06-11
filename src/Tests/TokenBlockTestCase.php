@@ -5,6 +5,8 @@
  * Contains \Drupal\token\Tests\TokenBlockTestCase.
  */
 namespace Drupal\token\Tests;
+use Drupal\block_content\Entity\BlockContent;
+use Drupal\block_content\Entity\BlockContentType;
 
 /**
  * Tests block tokens.
@@ -12,7 +14,7 @@ namespace Drupal\token\Tests;
  * @group Token
  */
 class TokenBlockTestCase extends TokenTestBase {
-  protected static $modules = array('path', 'token', 'token_test', 'block', 'node', 'views', 'custom_block');
+  protected static $modules = array('path', 'token', 'token_test', 'block', 'node', 'views', 'block_content');
 
   public static function getInfo() {
     return array(
@@ -30,24 +32,33 @@ class TokenBlockTestCase extends TokenTestBase {
 
   public function testBlockTitleTokens() {
     $label = 'tokenblock';
-    $bundle = entity_create('custom_block_type', array(
+    $bundle = BlockContentType::create(array(
       'id' => $label,
       'label' => $label,
       'revision' => FALSE
     ));
     $bundle->save();
 
-    /* @var \Drupal\custom_block\CustomBlockInterface $block */
-    $block = entity_create('custom_block', array(
+    $block_content = BlockContent::create(array(
       'type' => $label,
       'label' => '[current-page:title] block title',
       'info' => 'Test token title block',
       'body[value]' => 'This is the test token title block.',
     ));
-    $block->save();
-    $this->drupalPlaceBlock('custom_block:' . $block->uuid(), array(
-      'label' => '[current-page:title] block title',
+    $block_content->save();
+
+    $block = $this->drupalPlaceBlock('block_content:' . $block_content->uuid(), array(
+      'label' => '[user:name]',
     ));
+    $this->drupalGet($block->getSystemPath());
+    // Ensure token validation is working on the block.
+    $this->assertText('The Block title is using the following invalid tokens: [user:name].');
+
+    // Create the block for real now with a valid title.
+    $settings = $block->get('settings');
+    $settings['label'] = '[current-page:title] block title';
+    $block->set('settings', $settings);
+    $block->save();
 
     // Ensure that tokens are not double-escaped when output as a block title.
     $node = $this->drupalCreateNode(array('title' => "Site's first node"));

@@ -5,6 +5,7 @@
  * Contains \Drupal\token\Tests\TokenUserTestCase.
  */
 namespace Drupal\token\Tests;
+use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Field;
 
 /**
@@ -64,7 +65,7 @@ class TokenUserTestCase extends TokenTestBase {
     $this->assertTokens('user', array('user' => $this->account), $user_tokens);
 
     // Remove the user picture field.
-    Field::fieldInfo()->getField('user', 'user_picture')->delete();
+    FieldConfig::loadByName('user', 'user_picture')->delete();
 
     // Remove the simpletest-created user role.
     $roles = $this->account->getRoles();

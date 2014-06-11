@@ -68,7 +68,7 @@ class TokenTestBase extends WebTestBase {
       'alias' => $alias,
       'language' => $language,
     );
-    \Drupal::service('path.crud')->save($alias['source'], $alias['alias']);
+    \Drupal::service('path.alias_storage')->save($alias['source'], $alias['alias']);
     return $alias;
   }
 

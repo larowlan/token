@@ -12,6 +12,9 @@ token:
   version: VERSION
   js:
     js/token.js: {}
+  css:
+    component:
+      css/token.css: {}
   dependencies:
     - core/jquery
     - core/drupal
