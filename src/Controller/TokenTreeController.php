@@ -22,7 +22,7 @@ class TokenTreeController extends ControllerBase {
   function outputTree(Request $request) {
     $build['#title'] = $this->t('Available tokens');
 
-    $options = $request->attributes->has('options') ? Json::decode($request->attributes->get('options')) : array();
+    $options = $request->query->has('options') ? Json::decode($request->query->get('options')) : array();
 
     // Force the dialog option to be false so we're not creating a dialog within
     // a dialog.
