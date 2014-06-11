@@ -16,7 +16,8 @@ function theme_token_tree_link($variables) {
 
   if (!empty($variables['dialog'])) {
     // @todo Move this somewhere it can use #attached.
-    _drupal_add_library('core/drupal.ajax');
+    _drupal_add_library('core/drupal.dialog.ajax');
+    _drupal_add_library('token/token');
     $variables['options']['attributes']['class'][] = 'token-dialog';
   }
 
@@ -36,8 +37,9 @@ function theme_token_tree_link($variables) {
   $variables['options']['attributes'] += array(
     'data-accepts' => 'application/vnd.drupal-dialog',
     'data-dialog-options' => json_encode(array(
-      'width' => 400,
-      'draggable' => TRUE,
+      'width' => 600,
+      'height' => 400,
+      'position' => array('my' => 'right bottom', 'at' => 'right bottom'),
     )),
    );
   $variables['options']['attributes']['class'][] = 'use-ajax';
