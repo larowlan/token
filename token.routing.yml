@@ -1,3 +1,10 @@
+token.tree:
+  path: '/token/tree'
+  defaults:
+    _content: '\Drupal\token\Controller\TokenTreeController::outputTree'
+  requirements:
+    _csrf_token: 'TRUE'
+
 token.autocomplete:
   path: '/token/autocomplete/{token_type}/{filter}'
   defaults:

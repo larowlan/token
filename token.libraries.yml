@@ -9,10 +9,12 @@ jquery.treeTable:
   dependencies:
     - core/jquery
 token:
-  version: 1.0
+  version: VERSION
   js:
     js/token.js: {}
+  css:
+    component:
+      css/token.css: {}
   dependencies:
     - core/jquery
     - core/drupal
-    - core/jquery.ui.dialog
