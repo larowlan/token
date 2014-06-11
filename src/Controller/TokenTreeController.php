@@ -27,7 +27,12 @@ class TokenTreeController extends ControllerBase {
     // Force the dialog option to be false so we're not creating a dialog within
     // a dialog.
     $options['dialog'] = FALSE;
-    $build['tree']['#markup'] = _theme('token_tree', $options);
+
+    // Build a render array with the options.
+    foreach ($options as $key => $value) {
+      $build['tree']['#' . $key] = $value;
+    }
+    $build['tree']['#theme'] = 'token_tree';
 
     return $build;
   }
