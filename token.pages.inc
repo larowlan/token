@@ -41,6 +41,8 @@ function theme_token_tree_link($variables) {
       'width' => 600,
       'height' => 400,
       'position' => array('my' => 'right bottom', 'at' => 'right bottom'),
+      'draggable' => TRUE,
+      'autoResize' => FALSE,
     )),
    );
   $variables['options']['attributes']['class'][] = 'use-ajax';
