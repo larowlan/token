@@ -180,7 +180,7 @@ function token_theme() {
       'text' => NULL,
       'options' => array(),
       'dialog' => TRUE,
-    ),
+    ) + $info['token_tree']['variables'],
     'file' => 'token.pages.inc',
   );
 
