@@ -273,8 +273,8 @@ function token_form_block_admin_configure_alter(&$form, $form_state) {
  * Implements hook_widget_form_alter().
  */
 function token_field_widget_form_alter(&$element, &$form_state, $context) {
-  if (!empty($element['#description']) && is_string($element['#description'])) {
-    $element['#description'] = filter_xss_admin(token_replace($element['#description']));
+  if (!empty($element['#description']) && !empty($context['instance']['description'])) {
+    $element['#description'] = filter_xss_admin(token_replace($context['instance']['description']));
   }
 }
 
