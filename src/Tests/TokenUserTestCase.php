@@ -5,6 +5,7 @@
  * Contains \Drupal\token\Tests\TokenUserTestCase.
  */
 namespace Drupal\token\Tests;
+use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Field;
 
@@ -86,7 +87,7 @@ class TokenUserTestCase extends TokenTestBase {
     );
     $this->assertTokens('current-user', array(), $tokens);
 
-    $anonymous = drupal_anonymous_user();
+    $anonymous = new AnonymousUserSession();
     $tokens = array(
       'roles' => 'anonymous',
       'roles:keys' => (string) DRUPAL_ANONYMOUS_RID,
