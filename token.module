@@ -9,8 +9,8 @@ use Drupal\Component\Utility\String;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Utility\Token;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
  * The maximum depth for token tree recursion.
@@ -20,7 +20,7 @@ define('TOKEN_MAX_DEPTH', 9);
 /**
  * Implements hook_help().
  */
-function token_help($route_name, Request $request) {
+function token_help($route_name, RouteMatchInterface $route_match) {
   if ($route_name == 'help.page.token') {
     if (current_path() != 'admin/help/token') {
       // Because system_modules() executes hook_help() for each module to 'test'
