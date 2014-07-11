@@ -925,7 +925,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
   if (empty($data[$type]) && ($entity_type = token_get_entity_mapping('token', $type)) && $entity_type != $type && !empty($data[$entity_type]) && empty($options['recursive'])) {
     $data[$type] = $data[$entity_type];
     $options['recursive'] = TRUE;
-    $replacements += module_invoke_all('tokens', $type, $tokens, $data, $options);
+    $replacements += \Drupal::moduleHandler()->invokeAll('tokens', array($type, $tokens, $data, $options));
   }
 
   // If the token type specifics a 'needs-data' value, and the value is not
