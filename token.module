@@ -315,7 +315,7 @@ function token_get_entity_mapping($value_type = 'token', $value = NULL, $fallbac
       $mapping[$entity_type] = $info->get('token type') ? $info->get('token type') : $entity_type;
     }
     // Allow modules to alter the mapping array.
-    drupal_alter('token_entity_mapping', $mapping);
+    \Drupal::moduleHandler()->alter('token_entity_mapping', $mapping);
   }
 
   if (!isset($value)) {
