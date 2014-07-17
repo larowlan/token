@@ -4,29 +4,30 @@
  * @file
  * Contains \Drupal\token\Tests\TokenUserTestCase.
  */
+
 namespace Drupal\token\Tests;
+
+use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\field\Entity\FieldConfig;
-use Drupal\field\Field;
 
 /**
  * Tests user tokens.
  *
- * @group Token
+ * @group token
  */
 class TokenUserTestCase extends TokenTestBase {
   protected $account = NULL;
 
-  // User pictures only exist in standard now.
-  protected $profile = 'standard';
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
+  protected static $modules = array('token_user_picture');
 
-  public static function getInfo() {
-    return array(
-      'name' => 'User token tests',
-      'description' => 'Test the user tokens.',
-      'group' => 'Token',
-    );
-  }
-
+  /**
+   * {@inheritdoc}
+   */
   public function setUp() {
     parent::setUp();
 
@@ -86,7 +87,7 @@ class TokenUserTestCase extends TokenTestBase {
     );
     $this->assertTokens('current-user', array(), $tokens);
 
-    $anonymous = drupal_anonymous_user();
+    $anonymous = new AnonymousUserSession();
     $tokens = array(
       'roles' => 'anonymous',
       'roles:keys' => (string) DRUPAL_ANONYMOUS_RID,

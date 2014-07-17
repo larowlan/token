@@ -9,19 +9,14 @@ namespace Drupal\token\Tests;
 /**
  * Tests url tokens.
  *
- * @group Token
+ * @group token
  */
 class TokenURLTestCase extends TokenTestBase {
   protected static $modules = array('path', 'token', 'token_test', 'node');
 
-  public static function getInfo() {
-    return array(
-      'name' => 'URL token tests',
-      'description' => 'Test the URL tokens.',
-      'group' => 'Token',
-    );
-  }
-
+  /**
+   * {@inheritdoc}
+   */
   public function setUp() {
     parent::setUp();
     $this->saveAlias('node/1', 'first-node');

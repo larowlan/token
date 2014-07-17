@@ -13,8 +13,7 @@ use Drupal\Core\Language\Language;
 /**
  * Helper test class with some added functions for testing.
  */
-class TokenTestBase extends WebTestBase {
-  protected $profile = 'testing';
+abstract class TokenTestBase extends WebTestBase {
 
   protected static $modules = array('path', 'token', 'token_test');
 

@@ -18,7 +18,7 @@ function token_requirements($phase = 'runtime') {
     foreach ($token_problems as $problem_key => $problem) {
       if (!empty($problem['problems'])) {
         $problems = array_unique($problem['problems']);
-        $problems = array_map('check_plain', $problems);
+        $problems = array_map('\Drupal\Component\Utility\String::checkPlain', $problems);
         // ToDo: Use render arrays. See https://drupal.org/node/2195739
         $token_problems[$problem_key] = $problem['label'] . _theme('item_list', array('items' => $problems));
       }

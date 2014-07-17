@@ -9,16 +9,9 @@ namespace Drupal\token\Tests;
 /**
  * Tests date tokens.
  *
- * @group Token
+ * @group token
  */
 class TokenDateTestCase extends TokenTestBase {
-  public static function getInfo() {
-    return array(
-      'name' => 'Date token tests',
-      'description' => 'Test the date tokens.',
-      'group' => 'Token',
-    );
-  }
 
   function testDateTokens() {
     $tokens = array(

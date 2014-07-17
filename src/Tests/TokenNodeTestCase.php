@@ -4,23 +4,16 @@
  * @file
  * Contains \Drupal\token\Tests\TokenNodeTestCase.
  */
+
 namespace Drupal\token\Tests;
 
 /**
- * Tests node tokens.
+ * Test the node and content type tokens.
  *
- * @group Token
+ * @group token
  */
 class TokenNodeTestCase extends TokenTestBase {
   protected $profile = 'standard';
-
-  public static function getInfo() {
-    return array(
-      'name' => 'Node and content type token tests',
-      'description' => 'Test the node and content type tokens.',
-      'group' => 'Token',
-    );
-  }
 
   function testNodeTokens() {
     $source_node = $this->drupalCreateNode(array('log' => $this->randomName(), 'path' => array('alias' => 'content/source-node')));
