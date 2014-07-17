@@ -11,19 +11,20 @@ use Drupal\block_content\Entity\BlockContentType;
 /**
  * Tests block tokens.
  *
- * @group Token
+ * @group token
  */
 class TokenBlockTestCase extends TokenTestBase {
+
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
   protected static $modules = array('path', 'token', 'token_test', 'block', 'node', 'views', 'block_content');
 
-  public static function getInfo() {
-    return array(
-      'name' => 'Block token tests',
-      'description' => 'Test the block title token replacement.',
-      'group' => 'Token',
-    );
-  }
-
+  /**
+   * {@inheritdoc}
+   */
   public function setUp($modules = array()) {
     parent::setUp();
     $this->admin_user = $this->drupalCreateUser(array('access content', 'administer blocks'));
@@ -63,7 +64,7 @@ class TokenBlockTestCase extends TokenTestBase {
     // Ensure that tokens are not double-escaped when output as a block title.
     $node = $this->drupalCreateNode(array('title' => "Site's first node"));
     $this->drupalGet('node/' . $node->id());
-    // The apostraphe should only be escaped once via check_plain().
+    // The apostraphe should only be escaped once via \Drupal\Component\Utility\String::checkPlain().
     $this->assertRaw("Site&#039;s first node block title");
   }
 }

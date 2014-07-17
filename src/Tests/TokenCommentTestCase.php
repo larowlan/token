@@ -9,18 +9,10 @@ namespace Drupal\token\Tests;
 /**
  * Tests comment tokens.
  *
- * @group Token
+ * @group token
  */
 class TokenCommentTestCase extends TokenTestBase {
   protected static $modules = array('path', 'token', 'token_test', 'node', 'comment');
-
-  public static function getInfo() {
-    return array(
-      'name' => 'Comment token tests',
-      'description' => 'Test the comment tokens.',
-      'group' => 'Token',
-    );
-  }
 
   function testCommentTokens() {
     $this->drupalCreateContentType(array('type' => 'page', 'name' => t('Page')));

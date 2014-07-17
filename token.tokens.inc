@@ -692,7 +692,8 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
 
     // @deprecated
     // [current-page:arg] dynamic tokens.
-    if ($arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'arg')) {
+    // @todo: Replace with tokens for {slug}s?
+    if (FALSE && $arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'arg')) {
       $path = \Drupal::request()->attributes->get('_system_path');
       // Make sure its a system path.
       $path = \Drupal::service('path.alias_manager')->getPathByAlias($path);
@@ -768,15 +769,18 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           $url_options['absolute'] = TRUE;
           $replacements[$original] = \Drupal::url($route, $route_param, array('alias' => TRUE) + $url_options);
           break;
-        case 'args':
+        // @todo Update this to not use arg()
+        /*case 'args':
           $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code) : $path;
           $replacements[$original] = token_render_array(arg(NULL, $value), $options);
           break;
+        */
       }
     }
 
     // [url:arg:*] chained tokens.
-    if ($arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'args')) {
+    // @todo Update this to not use arg()
+    if (FALSE && $arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'args')) {
       $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code) : $path;
       $value = ltrim($value, '/');
       $replacements += \Drupal::token()->generate('array', $arg_tokens, array('array' => arg(NULL, $value)), $options);

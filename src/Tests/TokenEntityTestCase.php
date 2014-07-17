@@ -15,14 +15,9 @@ use Drupal\taxonomy\VocabularyInterface;
 class TokenEntityTestCase extends TokenTestBase {
   protected static $modules = array('path', 'token', 'token_test', 'node', 'taxonomy');
 
-  public static function getInfo() {
-    return array(
-      'name' => 'Entity token tests',
-      'description' => 'Test the entity tokens.',
-      'group' => 'Token',
-    );
-  }
-
+  /**
+   * {@inheritdoc}
+   */
   public function setUp($modules = array()) {
     parent::setUp();
 

@@ -9,16 +9,9 @@ namespace Drupal\token\Tests;
 /**
  * Tests array tokens.
  *
- * @group Token
+ * @group token
  */
 class TokenArrayTestCase extends TokenTestBase {
-  public static function getInfo() {
-    return array(
-      'name' => 'Array token tests',
-      'description' => 'Test the array tokens.',
-      'group' => 'Token',
-    );
-  }
 
   function testArrayTokens() {
     // Test a simple array.
