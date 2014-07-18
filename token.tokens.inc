@@ -9,8 +9,8 @@ use Drupal\Component\Utility\String;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Component\Utility\Xss;
-use Drupal\field\Entity\FieldConfig;
-use Drupal\field\FieldConfigInterface;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\field\FieldStorageConfigInterface;
 use Drupal\field\FieldInstanceConfigInterface;
 use Drupal\system\Entity\Menu;
 use Symfony\Cmf\Component\Routing\RouteObjectInterface;
@@ -1221,7 +1221,7 @@ function field_token_info_alter(&$info) {
 
     $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type_id);
     foreach ($fields as $field_name => $field) {
-      if (!($field instanceof FieldConfigInterface)) {
+      if (!($field instanceof FieldStorageConfigInterface)) {
         continue;
       }
       // If a token already exists for this field, then don't add it.

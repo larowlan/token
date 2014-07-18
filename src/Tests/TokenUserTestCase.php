@@ -8,7 +8,7 @@
 namespace Drupal\token\Tests;
 
 use Drupal\Core\Session\AnonymousUserSession;
-use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 
 /**
  * Tests user tokens.
@@ -66,7 +66,7 @@ class TokenUserTestCase extends TokenTestBase {
     $this->assertTokens('user', array('user' => $this->account), $user_tokens);
 
     // Remove the user picture field.
-    FieldConfig::loadByName('user', 'user_picture')->delete();
+    FieldStorageConfig::loadByName('user', 'user_picture')->delete();
 
     // Remove the simpletest-created user role.
     $roles = $this->account->getRoles();
