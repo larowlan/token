@@ -9,18 +9,10 @@ namespace Drupal\token\Tests;
 /**
  * Tests menu tokens.
  *
- * @group Token
+ * @group token
  */
 class TokenMenuTestCase extends TokenTestBase {
-  protected static $modules = array('path', 'token', 'token_test', 'menu', 'node');
-
-  public static function getInfo() {
-    return array(
-      'name' => 'Menu link and menu token tests',
-      'description' => 'Test the menu tokens.',
-      'group' => 'Token',
-    );
-  }
+  protected static $modules = array('path', 'token', 'token_test', 'menu_ui', 'node');
 
   function testMenuTokens() {
     // Add a menu.

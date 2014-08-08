@@ -4,6 +4,51 @@
  * @file
  * User page callbacks for the token module.
  */
+use Drupal\Component\Serialization\Json;
+use Drupal\Core\Utility\Token;
+
+/**
+ * Theme a link to a token tree either as a regular link or a dialog.
+ */
+function theme_token_tree_link($variables) {
+  if (empty($variables['text'])) {
+    $variables['text'] = t('Browse available tokens.');
+  }
+
+  if (!empty($variables['dialog'])) {
+    // @todo Move this somewhere it can use #attached.
+    _drupal_add_library('core/drupal.dialog.ajax');
+    _drupal_add_library('token/token');
+    $variables['options']['attributes']['class'][] = 'token-dialog';
+  }
+
+  $info = token_theme();
+  $variables['options']['query']['options'] = array_intersect_key($variables, $info['token_tree']['variables']);
+
+  // We should never pass the dialog option to theme_token_tree(). It is only
+  // used for this function.
+  unset($variables['options']['query']['options']['dialog']);
+
+  // Because PHP converts query strings with arrays into a different syntax on
+  // the next request, the options have to be encoded with JSON in the query
+  // string so that we can reliably decode it for token comparison.
+  $variables['options']['query']['options'] = Json::encode($variables['options']['query']['options']);
+
+  // Set the token tree to open in a separate window.
+  $variables['options']['attributes'] += array(
+    'data-accepts' => 'application/vnd.drupal-dialog',
+    'data-dialog-options' => json_encode(array(
+      'width' => 600,
+      'height' => 400,
+      'position' => array('my' => 'right bottom', 'at' => 'right bottom'),
+      'draggable' => TRUE,
+      'autoResize' => FALSE,
+    )),
+   );
+  $variables['options']['attributes']['class'][] = 'use-ajax';
+
+  return Drupal::l($variables['text'], 'token.tree', array(), $variables['options']);
+}
 
 /**
  * Theme a tree table.
@@ -33,6 +78,10 @@ function theme_tree_table($variables) {
  * @ingroup themeable
  */
 function theme_token_tree($variables) {
+  if (!empty($variables['dialog'])) {
+    return _theme('token_tree_link', $variables);
+  }
+
   $token_types = $variables['token_types'];
   $info = token_get_info();
 
@@ -46,7 +95,7 @@ function theme_token_tree($variables) {
   $element = array(
     '#cache' => array(
       'cid' => 'tree-rendered:' . hash('sha256', serialize(array('token_types' => $token_types, 'global_types' => NULL) + $variables)),
-      'bin' => 'cache_token',
+      'tags' => array(Token::TOKEN_INFO_CACHE_TAG => TRUE),
     ),
   );
   if ($cached_output = token_render_cache_get($element)) {
@@ -133,7 +182,7 @@ function _token_token_tree_format_row($token, array $token_info, $is_group = FAL
   $row = $defaults;
   $row['id'] = _token_clean_css_identifier($token);
   $row['data']['name'] = $token_info['name'];
-  $row['data']['description'] = $token_info['description'];
+  $row['data']['description'] = isset($token_info['description']) ? $token_info['description'] : '';
 
   if ($is_group) {
     // This is a token type/group.
@@ -170,7 +219,7 @@ function _token_clean_css_identifier($id) {
 /**
  * Menu callback; prints the available tokens and values for an object.
  */
-function token_devel_token_object($entity_type, $entity) {
+function token_devel_token_object($entity_type, $entity, $token_type = NULL) {
   $header = array(
     t('Token'),
     t('Value'),
@@ -182,7 +231,10 @@ function token_devel_token_object($entity_type, $entity) {
     'values' => TRUE,
     'data' => array($entity_type => $entity),
   );
-  $tree = token_build_tree($entity_type, $options);
+  if (!isset($token_type)) {
+    $token_type = $entity_type;
+  }
+  $tree = token_build_tree($token_type, $options);
   foreach ($tree as $token => $token_info) {
     if (!empty($token_info['restricted'])) {
       continue;

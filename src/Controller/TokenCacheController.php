@@ -7,6 +7,8 @@
 
 namespace Drupal\token\Controller;
 
+use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,7 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Clears cache for tokens.
  */
-class TokenCacheController implements ContainerInjectionInterface{
+class TokenCacheController extends ControllerBase implements ContainerInjectionInterface  {
 
   /**
    * @var \Drupal\Core\Access\CsrfTokenGenerator

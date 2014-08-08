@@ -6,10 +6,13 @@
  */
 use Drupal\Component\Utility\Crypt;
 use Drupal\Component\Utility\String;
-use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Render\Element;
-use Drupal\field\Field;
 use Drupal\Component\Utility\Xss;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\FieldConfigInterface;
+use Drupal\field\FieldInstanceConfigInterface;
+use Drupal\system\Entity\Menu;
 use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 
 /**
@@ -93,7 +96,7 @@ function token_token_info_alter(&$info) {
     /* @var \Drupal\system\Entity\DateFormat $date_format_type_info */
     if (!isset($info['tokens']['date'][$date_format_type])) {
       $info['tokens']['date'][$date_format_type] = array(
-        'name' => $date_format_type_info->label(),
+        'name' => String::checkPlain($date_format_type_info->label()),
         'description' => t("A date in '@type' format. (%date)", array('@type' => $date_format_type, '%date' => format_date(REQUEST_TIME, $date_format_type))),
         'module' => 'token',
       );
@@ -205,11 +208,6 @@ function token_token_info() {
     'description' => t('The URL of the one-time login page for the user account.'),
     'restricted' => TRUE,
     // 'type' => 'url',
-  );
-  $info['tokens']['user']['picture'] = array(
-    'name' => t('Picture'),
-    'description' => t('The picture of the user.'),
-    'type' => 'file',
   );
   $info['tokens']['user']['roles'] = array(
     'name' => t('Roles'),
@@ -433,7 +431,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           }
           break;
         case 'log':
-          $replacements[$original] = $sanitize ? Xss::filter($node->log->value) : $node->log->value;
+          $replacements[$original] = $sanitize ? Xss::filter($node->revision_log->value) : $node->revision_log->value;
           break;
         case 'content-type':
           $type_name = \Drupal::entityManager()->getStorage('node_type')->load($node->getType())->label();
@@ -694,10 +692,11 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
 
     // @deprecated
     // [current-page:arg] dynamic tokens.
-    if ($arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'arg')) {
+    // @todo: Replace with tokens for {slug}s?
+    if (FALSE && $arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'arg')) {
       $path = \Drupal::request()->attributes->get('_system_path');
       // Make sure its a system path.
-      $path = \Drupal::service('path.alias_manager')->getSystemPath($path);
+      $path = \Drupal::service('path.alias_manager')->getPathByAlias($path);
       foreach ($arg_tokens as $name => $original) {
         if (is_numeric($name) && ($arg = arg($name, $path)) && isset($arg)) {
           $replacements[$original] = $sanitize ? String::checkPlain($arg) : $arg;
@@ -770,15 +769,18 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           $url_options['absolute'] = TRUE;
           $replacements[$original] = \Drupal::url($route, $route_param, array('alias' => TRUE) + $url_options);
           break;
-        case 'args':
+        // @todo Update this to not use arg()
+        /*case 'args':
           $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code) : $path;
           $replacements[$original] = token_render_array(arg(NULL, $value), $options);
           break;
+        */
       }
     }
 
     // [url:arg:*] chained tokens.
-    if ($arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'args')) {
+    // @todo Update this to not use arg()
+    if (FALSE && $arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'args')) {
       $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code) : $path;
       $value = ltrim($value, '/');
       $replacements += \Drupal::token()->generate('array', $arg_tokens, array('array' => arg(NULL, $value)), $options);
@@ -927,7 +929,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
   if (empty($data[$type]) && ($entity_type = token_get_entity_mapping('token', $type)) && $entity_type != $type && !empty($data[$entity_type]) && empty($options['recursive'])) {
     $data[$type] = $data[$entity_type];
     $options['recursive'] = TRUE;
-    $replacements += module_invoke_all('tokens', $type, $tokens, $data, $options);
+    $replacements += \Drupal::moduleHandler()->invokeAll('tokens', array($type, $tokens, $data, $options));
   }
 
   // If the token type specifics a 'needs-data' value, and the value is not
@@ -1053,9 +1055,9 @@ function book_tokens($type, $tokens, array $data = array(), array $options = arr
 }
 
 /**
- * Implements hook_token_info() on behalf of menu.module.
+ * Implements hook_token_info() on behalf of menu_ui.module.
  */
-function menu_token_info() {
+function menu_ui_token_info() {
   // Menu tokens.
   $info['types']['menu'] = array(
     'name' => t('Menus'),
@@ -1102,9 +1104,9 @@ function menu_token_info() {
 }
 
 /**
- * Implements hook_tokens() on behalf of menu.module.
+ * Implements hook_tokens() on behalf of menu_ui.module.
  */
-function menu_tokens($type, $tokens, array $data = array(), array $options = array()) {
+function menu_ui_tokens($type, $tokens, array $data = array(), array $options = array()) {
   $replacements = array();
 
   $url_options = array('absolute' => TRUE);
@@ -1147,7 +1149,7 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'menu':
-          if ($menu = menu_load($link->bundle())) {
+          if ($menu = Menu::load($link->bundle())) {
             $replacements[$original] = $sanitize ? String::checkPlain($menu->label()) : $menu->label();
           }
           break;
@@ -1158,7 +1160,7 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
     }
 
     // Chained token relationships.
-    if (($menu_tokens = \Drupal::token()->findWithPrefix($tokens, 'menu')) && $menu = menu_load($link->bundle())) {
+    if (($menu_tokens = \Drupal::token()->findWithPrefix($tokens, 'menu')) && $menu = Menu::load($link->bundle())) {
       $replacements += \Drupal::token()->generate('menu', $menu_tokens, array('menu' => $menu), $options);
     }
   }
@@ -1197,88 +1199,31 @@ function menu_tokens($type, $tokens, array $data = array(), array $options = arr
 }
 
 /**
- * Fetch an array of field data used for tokens.
- */
-function _token_field_info($field_name = NULL) {
-  $info = &drupal_static(__FUNCTION__);
-
-  if (!isset($fields)) {
-    if ($cached = \Drupal::cache('cache_token')->get('field:info')) {
-      $info = $cached->data;
-    }
-    else {
-      $info = array();
-
-      $fields = field_info_fields();
-      $instances = Field::fieldInfo()->getInstances();
-      $type_info = \Drupal::service('plugin.manager.field.field_type')->getDefinitions();
-      $entity_info = \Drupal::entityManager()->getDefinitions();
-
-      foreach ($fields as $field) {
-        /* @var \Drupal\field\FieldInterface $field */
-        $key = $field->getName();
-        foreach (array_keys($field->getBundles()) as $entity) {
-          // Make sure a token type exists for this entity.
-          $token_type = token_get_entity_mapping('entity', $entity);
-          if (empty($token_type)) {
-            continue;
-          }
-
-          $info[$key]['token types'][] = $token_type;
-          $info[$key] += array('labels' => array(), 'bundles' => array());
-
-          // Find which label is most commonly used.
-          foreach ($field['bundles'][$entity] as $bundle) {
-            // Field information will included fields attached to disabled
-            // bundles, so check that the bundle exists before provided a
-            // token for it.
-            // @see http://drupal.org/node/1252566
-            if (!isset($entity_info[$entity]['bundles'][$bundle])) {
-              continue;
-            }
-
-            $info[$key]['labels'][] = $instances[$entity][$bundle][$key]['label'];
-            $info[$key]['bundles'][$token_type][$bundle] = $entity_info[$entity]['bundles'][$bundle]['label'];
-          }
-        }
-
-        if (isset($info[$key])) {
-          $labels = array_count_values($info[$key]['labels']);
-          arsort($labels);
-          $info[$key]['label'] = String::checkPlain(key($labels));
-
-          // Generate a description for the token.
-          $info[$key]['description'] = t('@type field.', array('@type' => $type_info[$field['type']]['label']));
-          if ($also_known_as = array_unique(array_diff($info[$key]['labels'], array($info[$key]['label'])))) {
-            $info[$key]['description'] .= ' ' . t('Also known as %labels.', array('%labels' => implode(', ', $also_known_as)));
-          }
-        }
-      }
-
-      \Drupal::moduleHandler()->alter('token_field_info', $info);
-      \Drupal::cache('cache_token')->set('field:info', $info);
-    }
-  }
-
-  if (isset($field_name)) {
-    return isset($info[$field_name]) ? $info[$field_name] : FALSE;
-  }
-
-  return $info;
-}
-
-/**
  * Implements hook_token_info_alter() on behalf of field.module.
  *
  * We use hook_token_info_alter() rather than hook_token_info() as other
  * modules may already have defined some field tokens.
  */
 function field_token_info_alter(&$info) {
-  $fields = _token_field_info();
+  $type_info = \Drupal::service('plugin.manager.field.field_type')->getDefinitions();
 
   // Attach field tokens to their respecitve entity tokens.
-  foreach ($fields as $field_name => $field) {
-    foreach (array_keys($field['bundles']) as $token_type) {
+  foreach (\Drupal::entityManager()->getDefinitions() as $entity_type_id => $entity_type) {
+    if (!$entity_type->isFieldable()) {
+      continue;
+    }
+
+    // Make sure a token type exists for this entity.
+    $token_type = token_get_entity_mapping('entity', $entity_type_id);
+    if (empty($token_type)) {
+      continue;
+    }
+
+    $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type_id);
+    foreach ($fields as $field_name => $field) {
+      if (!($field instanceof FieldConfigInterface)) {
+        continue;
+      }
       // If a token already exists for this field, then don't add it.
       if (isset($info['tokens'][$token_type][$field_name])) {
         continue;
@@ -1294,14 +1239,53 @@ function field_token_info_alter(&$info) {
         continue;
       }
 
+      // Generate a description for the token.
+
+      list($label, $labels) = _token_field_label($entity_type_id, $field_name);
+      $description = t('@type field.', array('@type' => $type_info[$field->getType()]['label']));
+      if (count($labels) > 1) {
+        unset($labels[$label]);
+        $description .= ' ' . t('Also known as %labels.', array('%labels' => implode(', ', $labels)));
+      }
+
       $info['tokens'][$token_type][$field_name] = array(
-        // Note that label and description have already been sanitized by _token_field_info().
-        'name' => $field['label'],
-        'description' => $field['description'],
+        'name' => String::checkPlain($label),
+        'description' => $description,
         'module' => 'token',
       );
     }
   }
+}
+
+/**
+ * Returns the label of a certain field.
+ *
+ * Therefore it looks up in all bundles to find the most used instance.
+ *
+ * Based on field_views_field_label().
+ */
+function _token_field_label($entity_type, $field_name) {
+  $label_counter = array();
+  $all_labels = array();
+  // Count the amount of instances per label per field.
+  foreach (array_keys(\Drupal::entityManager()->getBundleInfo($entity_type)) as $bundle) {
+    $bundle_instances = array_filter(\Drupal::entityManager()->getFieldDefinitions($entity_type, $bundle), function ($field_definition) {
+        return $field_definition instanceof FieldInstanceConfigInterface;
+      });
+    if (isset($bundle_instances[$field_name])) {
+      $instance = $bundle_instances[$field_name];
+      $label = $instance->getLabel();
+      $label_counter[$label] = isset($label_counter[$label]) ? ++$label_counter[$label] : 1;
+      $all_labels[$label] = TRUE;
+    }
+  }
+  if (empty($label_counter)) {
+    return array($field_name, $all_labels);
+  }
+  // Sort the field labels by it most used label and return the most used one.
+  arsort($label_counter);
+  $label_counter = array_keys($label_counter);
+  return array($label_counter[0], $all_labels);
 }
 
 /**
@@ -1319,7 +1303,7 @@ function field_tokens($type, $tokens, array $data = array(), array $options = ar
     // The field API does weird stuff to the entity, so let's clone it.
     /* @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = clone $data['entity'];
-    if (!($entity instanceof EntityInterface)) {
+    if (!($entity instanceof ContentEntityInterface)) {
       return $replacements;
     }
 
@@ -1327,17 +1311,17 @@ function field_tokens($type, $tokens, array $data = array(), array $options = ar
     // inside field_attach_view().
     unset($entity->_field_view_prepared);
 
-    $bundle = $entity->bundle();
-    $fields = Field::fieldInfo()->getBundleInstances($entity_type, $bundle);
+    $fields = $entity->getFieldDefinitions();
 
     foreach (array_keys($fields) as $field_name) {
-      // Do not continue if the field is empty.
-      if (empty($entity->{$field_name})) {
+      // Do not continue if the field is empty or not a configurable field.
+      if (empty($entity->{$field_name}) || !($fields[$field_name] instanceof FieldInstanceConfigInterface)) {
         continue;
       }
 
-      // Replace the [entity:field-name] token.
-      if (isset($tokens[$field_name])) {
+      // Replace the [entity:field-name] token only if token module added this
+      // token.
+      if (isset($tokens[$field_name]) && _token_module($data['token_type'], $field_name) == 'token') {
         $original = $tokens[$field_name];
 
         // Assert that this field was added by token.module.
@@ -1346,7 +1330,7 @@ function field_tokens($type, $tokens, array $data = array(), array $options = ar
           continue;
         }
 
-        $field_output = field_view_field($entity_type, $entity, $field_name, 'token', $langcode);
+        $field_output = $entity->$field_name->view('token');
         $field_output['#token_options'] = $options;
         $field_output['#pre_render'][] = 'token_pre_render_field_token';
         $replacements[$original] = drupal_render($field_output);

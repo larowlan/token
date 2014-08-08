@@ -9,18 +9,10 @@ namespace Drupal\token\Tests;
 /**
  * Tests file tokens.
  *
- * @group Token
+ * @group token
  */
 class TokenFileTestCase extends TokenTestBase {
   protected static $modules = array('path', 'token', 'token_test', 'file');
-
-  public static function getInfo() {
-    return array(
-      'name' => 'File token tests',
-      'description' => 'Test the file tokens.',
-      'group' => 'Token',
-    );
-  }
 
   function testFileTokens() {
     // Create a test file object.
