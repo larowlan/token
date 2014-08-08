@@ -10,21 +10,16 @@ use Drupal\Component\Utility\String;
 /**
  * Tests taxonomy tokens.
  *
- * @group Token
+ * @group token
  */
 class TokenTaxonomyTestCase extends TokenTestBase {
   protected $vocab;
 
   protected static $modules = array('path', 'token', 'token_test', 'taxonomy');
 
-  public static function getInfo() {
-    return array(
-      'name' => 'Taxonomy and vocabulary token tests',
-      'description' => 'Test the taxonomy tokens.',
-      'group' => 'Token',
-    );
-  }
-
+  /**
+   * {@inheritdoc}
+   */
   public function setUp() {
     parent::setUp();
 

@@ -13,16 +13,16 @@ Drupal.behaviors.tokenInsert = {
   attach: function (context, settings) {
     // Keep track of which textfield was last selected/focused.
     $('textarea, input[type="text"]', context).focus(function() {
-      Drupal.settings.tokenFocusedField = this;
+      drupalSettings.tokenFocusedField = this;
     });
 
     $('.token-click-insert .token-key', context).once('token-click-insert', function() {
       var newThis = $('<a href="javascript:void(0);" title="' + Drupal.t('Insert this token into your form') + '">' + $(this).html() + '</a>').click(function(){
-        if (typeof Drupal.settings.tokenFocusedField == 'undefined') {
+        if (typeof drupalSettings.tokenFocusedField == 'undefined') {
           alert(Drupal.t('First click a text field to insert your tokens into.'));
         }
         else {
-          var myField = Drupal.settings.tokenFocusedField;
+          var myField = drupalSettings.tokenFocusedField;
           var myValue = $(this).text();
 
           //IE support
@@ -52,4 +52,4 @@ Drupal.behaviors.tokenInsert = {
   }
 };
 
-})(jQuery);
+})(jQuery, drupalSettings);

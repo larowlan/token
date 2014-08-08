@@ -7,21 +7,13 @@
 namespace Drupal\token\Tests;
 
 /**
- * Tests current page tokens.
+ * Test the [current-page:*] tokens.
  *
- * @group Token
+ * @group token
  */
 class TokenCurrentPageTestCase extends TokenTestBase {
 
   protected static $modules = array('path', 'token', 'token_test', 'node');
-
-  public static function getInfo() {
-    return array(
-      'name' => 'Current page token tests',
-      'description' => 'Test the [current-page:*] tokens.',
-      'group' => 'Token',
-    );
-  }
 
   function testCurrentPageTokens() {
     $this->drupalGet('user');

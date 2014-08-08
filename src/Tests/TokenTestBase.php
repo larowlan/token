@@ -13,8 +13,7 @@ use Drupal\Core\Language\Language;
 /**
  * Helper test class with some added functions for testing.
  */
-class TokenTestBase extends WebTestBase {
-  protected $profile = 'testing';
+abstract class TokenTestBase extends WebTestBase {
 
   protected static $modules = array('path', 'token', 'token_test');
 
@@ -68,7 +67,7 @@ class TokenTestBase extends WebTestBase {
       'alias' => $alias,
       'language' => $language,
     );
-    \Drupal::service('path.crud')->save($alias['source'], $alias['alias']);
+    \Drupal::service('path.alias_storage')->save($alias['source'], $alias['alias']);
     return $alias;
   }
 

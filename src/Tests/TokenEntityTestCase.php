@@ -15,14 +15,9 @@ use Drupal\taxonomy\VocabularyInterface;
 class TokenEntityTestCase extends TokenTestBase {
   protected static $modules = array('path', 'token', 'token_test', 'node', 'taxonomy');
 
-  public static function getInfo() {
-    return array(
-      'name' => 'Entity token tests',
-      'description' => 'Test the entity tokens.',
-      'group' => 'Token',
-    );
-  }
-
+  /**
+   * {@inheritdoc}
+   */
   public function setUp($modules = array()) {
     parent::setUp();
 
@@ -40,10 +35,12 @@ class TokenEntityTestCase extends TokenTestBase {
     $this->assertIdentical(token_get_entity_mapping('token', 'term'), 'taxonomy_term');
     $this->assertIdentical(token_get_entity_mapping('token', 'vocabulary'), 'taxonomy_vocabulary');
     $this->assertIdentical(token_get_entity_mapping('token', 'invalid'), FALSE);
+    $this->assertIdentical(token_get_entity_mapping('token', 'invalid', TRUE), 'invalid');
     $this->assertIdentical(token_get_entity_mapping('entity', 'node'), 'node');
     $this->assertIdentical(token_get_entity_mapping('entity', 'taxonomy_term'), 'term');
     $this->assertIdentical(token_get_entity_mapping('entity', 'taxonomy_vocabulary'), 'vocabulary');
     $this->assertIdentical(token_get_entity_mapping('entity', 'invalid'), FALSE);
+    $this->assertIdentical(token_get_entity_mapping('entity', 'invalid', TRUE), 'invalid');
 
     // Test that when we send the mis-matched entity type into token_replace()
     // that we still get the tokens replaced.
