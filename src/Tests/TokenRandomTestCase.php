@@ -9,16 +9,9 @@ namespace Drupal\token\Tests;
 /**
  * Tests random tokens.
  *
- * @group Token
+ * @group token
  */
 class TokenRandomTestCase extends TokenTestBase {
-  public static function getInfo() {
-    return array(
-      'name' => 'Random token tests',
-      'description' => 'Test the random tokens.',
-      'group' => 'Token',
-    );
-  }
 
   function testRandomTokens() {
     $tokens = array(

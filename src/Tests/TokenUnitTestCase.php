@@ -7,20 +7,12 @@
 namespace Drupal\token\Tests;
 
 /**
- * Token unit tests.
+ * Test basic, low-level token functions.
  *
- * @group Token
+ * @group token
  */
 class TokenUnitTestCase extends TokenTestBase {
   protected static $modules = array('path', 'token', 'token_test', 'file', 'node');
-
-  public static function getInfo() {
-    return array(
-      'name' => 'Token unit tests',
-      'description' => 'Test basic, low-level token functions.',
-      'group' => 'Token',
-    );
-  }
 
   /**
    * Test token_get_invalid_tokens() and token_get_invalid_tokens_by_context().
