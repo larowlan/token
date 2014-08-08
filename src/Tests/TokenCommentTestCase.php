@@ -30,11 +30,15 @@ class TokenCommentTestCase extends TokenTestBase {
     ));
     $parent_comment->save();
 
+    // Fix http://example.com/index.php/comment/1 fails 'url:path' test.
+    $parent_comment_path = \Drupal::url('entity.comment.canonical', array('comment' => $parent_comment->id()));
+    $parent_comment_path = ltrim($parent_comment_path, '/');
+
     $tokens = array(
       'url' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
       'url:absolute' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
       'url:relative' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => FALSE)),
-      'url:path' => 'comment/' . $parent_comment->id(),
+      'url:path' => $parent_comment_path,
       'parent:url:absolute' => NULL,
     );
     $this->assertTokens('comment', array('comment' => $parent_comment), $tokens);
@@ -52,11 +56,15 @@ class TokenCommentTestCase extends TokenTestBase {
     ));
     $comment->save();
 
+    // Fix http://example.com/index.php/comment/1 fails 'url:path' test.
+    $comment_path = \Drupal::url('entity.comment.canonical', array('comment' => $comment->id()));
+    $comment_path = ltrim($comment_path, '/');
+
     $tokens = array(
       'url' => url('comment/' . $comment->id(), array('fragment' => 'comment-' . $comment->id(), 'absolute' => TRUE)),
       'url:absolute' => url('comment/' . $comment->id(), array('fragment' => 'comment-' . $comment->id(), 'absolute' => TRUE)),
       'url:relative' => url('comment/' . $comment->id(), array('fragment' => 'comment-' . $comment->id(), 'absolute' => FALSE)),
-      'url:path' => 'comment/' . $comment->id(),
+      'url:path' => $comment_path,
       'parent:url:absolute' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
     );
     $this->assertTokens('comment', array('comment' => $comment), $tokens);

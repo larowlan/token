@@ -413,7 +413,10 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
 
     // Chained token relationships.
     if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url'))) {
-      $replacements += \Drupal::token()->generate('url', $url_tokens, $comment->urlInfo()->toArray(), $options);
+      // Add fragment to url options.
+      $comment_data = $comment->urlInfo()->toArray();
+      $comment_data['options'] += array('fragment' => 'comment-' . $comment->id());
+      $replacements += \Drupal::token()->generate('url', $url_tokens, $comment_data, $options);
     }
   }
 
