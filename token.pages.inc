@@ -16,9 +16,9 @@ function theme_token_tree_link($variables) {
   }
 
   if (!empty($variables['dialog'])) {
-    // @todo Move this somewhere it can use #attached.
-    _drupal_add_library('core/drupal.dialog.ajax');
-    _drupal_add_library('token/token');
+    $attached['#attached']['library'][] = 'core/drupal.dialog.ajax';
+    $attached['#attached']['library'][] = 'token/token';
+    drupal_render($attached);
     $variables['options']['attributes']['class'][] = 'token-dialog';
   }
 
@@ -255,8 +255,7 @@ function token_devel_token_object($entity_type, $entity, $token_type = NULL) {
     '#attributes' => array('class' => array('token-tree')),
     '#empty' => t('No tokens available.'),
     '#attached' => array(
-      'js' => array(drupal_get_path('module', 'token') . '/token.js'),
-      'css' => array(drupal_get_path('module', 'token') . '/token.css'),
+      'library' => array('token/token'),
     ),
   );
 

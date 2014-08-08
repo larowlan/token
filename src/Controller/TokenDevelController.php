@@ -96,8 +96,7 @@ class TokenDevelController implements ContainerInjectionInterface {
       '#attributes' => array('class' => array('token-tree')),
       '#empty' => t('No tokens available.'),
       '#attached' => array(
-        'js' => array(drupal_get_path('module', 'token') . '/token.js'),
-        'css' => array(drupal_get_path('module', 'token') . '/token.css'),
+        'library' => array('token/token'),
       ),
     );
 
