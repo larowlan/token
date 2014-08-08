@@ -16,9 +16,9 @@ function theme_token_tree_link($variables) {
   }
 
   if (!empty($variables['dialog'])) {
-    // @todo Move this somewhere it can use #attached.
-    _drupal_add_library('core/drupal.dialog.ajax');
-    _drupal_add_library('token/token');
+    $attached['#attached']['library'][] = 'core/drupal.dialog.ajax';
+    $attached['#attached']['library'][] = 'token/token';
+    drupal_render($attached);
     $variables['options']['attributes']['class'][] = 'token-dialog';
   }
 
