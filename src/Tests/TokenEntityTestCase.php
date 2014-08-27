@@ -52,7 +52,7 @@ class TokenEntityTestCase extends TokenTestBase {
 
   function addTerm(VocabularyInterface $vocabulary, array $term = array()) {
     $term += array(
-      'name' => drupal_strtolower($this->randomName(5)),
+      'name' => drupal_strtolower($this->randomMachineName(5)),
       'vid' => $vocabulary->id(),
     );
     $term = entity_create('taxonomy_term', $term);

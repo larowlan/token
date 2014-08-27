@@ -25,8 +25,8 @@ class TokenCommentTestCase extends TokenTestBase {
       'field_name' => 'comment',
       'name' => 'anonymous user',
       'mail' => 'anonymous@example.com',
-      'subject' => $this->randomName(),
-      'body' => $this->randomName(),
+      'subject' => $this->randomMachineName(),
+      'body' => $this->randomMachineName(),
     ));
     $parent_comment->save();
 
@@ -51,8 +51,8 @@ class TokenCommentTestCase extends TokenTestBase {
       'uid' => 1,
       'name' => 'anonymous user',
       'mail' => 'anonymous@example.com',
-      'subject' => $this->randomName(),
-      'body' => $this->randomName(),
+      'subject' => $this->randomMachineName(),
+      'body' => $this->randomMachineName(),
     ));
     $comment->save();
 
