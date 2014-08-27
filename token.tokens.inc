@@ -1295,10 +1295,8 @@ function field_tokens($type, $tokens, array $data = array(), array $options = ar
 
   // Entity tokens.
   if ($type == 'entity' && !empty($data['entity_type']) && !empty($data['entity']) && !empty($data['token_type'])) {
-    $entity_type = $data['entity_type'];
-
     // The field API does weird stuff to the entity, so let's clone it.
-    /* @var \Drupal\Core\Entity\EntityInterface $entity */
+    /* @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity = clone $data['entity'];
     if (!($entity instanceof ContentEntityInterface)) {
       return $replacements;
@@ -1308,26 +1306,17 @@ function field_tokens($type, $tokens, array $data = array(), array $options = ar
     // inside field_attach_view().
     unset($entity->_field_view_prepared);
 
-    $fields = $entity->getFieldDefinitions();
-
-    foreach (array_keys($fields) as $field_name) {
-      // Do not continue if the field is empty or not a configurable field.
-      if (empty($entity->{$field_name}) || !($fields[$field_name] instanceof FieldConfigInterface)) {
-        continue;
-      }
-
+    foreach ($tokens as $name => $original) {
       // Replace the [entity:field-name] token only if token module added this
       // token.
-      if (isset($tokens[$field_name]) && _token_module($data['token_type'], $field_name) == 'token') {
-        $original = $tokens[$field_name];
+      if ($entity->hasField($name) && _token_module($data['token_type'], $name) == 'token') {
 
-        // Assert that this field was added by token.module.
-        $token_info = token_get_info($data['token_type'], $field_name);
-        if (!isset($token_info['module']) || $token_info['module'] != 'token') {
+        // Do not continue if the field is empty or not a configurable field.
+        if ($entity->get($name)->isEmpty() || !($entity->getFieldDefinition($name) instanceof FieldInstanceConfigInterface)) {
           continue;
         }
 
-        $field_output = $entity->$field_name->view('token');
+        $field_output = $entity->$name->view('token');
         $field_output['#token_options'] = $options;
         $field_output['#pre_render'][] = 'token_pre_render_field_token';
         $replacements[$original] = drupal_render($field_output);
