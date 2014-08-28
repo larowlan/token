@@ -182,7 +182,7 @@ function token_form_alter(&$form, $form_state, $form_id) {
 /**
  * Implements hook_block_view_alter().
  */
-function token_block_view_alter(&$data, \Drupal\block\BlockPluginInterface $block) {
+function token_block_view_alter(&$data, \Drupal\Core\Block\BlockPluginInterface $block) {
   $config = $block->getConfiguration();
   $label = $config['label'];
   if ($label != '<none>') {
