@@ -7,6 +7,7 @@
 
 use Drupal\Component\Utility\String;
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
@@ -182,7 +183,7 @@ function token_form_alter(&$form, $form_state, $form_id) {
 /**
  * Implements hook_block_view_alter().
  */
-function token_block_view_alter(&$data, \Drupal\block\BlockPluginInterface $block) {
+function token_block_view_alter(&$data, BlockPluginInterface $block) {
   $config = $block->getConfiguration();
   $label = $config['label'];
   if ($label != '<none>') {
