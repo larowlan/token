@@ -42,6 +42,6 @@ class TokenURLTestCase extends TokenTestBase {
       // Deprecated tokens.
       'alias' => 'first-node',
     );
-    $this->assertTokens('url', array('route_name' => 'node.view', 'route_parameters' => array('node' => 1)), $tokens);
+    $this->assertTokens('url', array('route_name' => 'entity.node.canonical', 'route_parameters' => array('node' => 1)), $tokens);
   }
 }

@@ -23,25 +23,27 @@ class TokenMenuTestCase extends TokenTestBase {
     ));
     $menu->save();
     // Add a root link.
-    $root_link = entity_create('menu_link', array(
-      'link_path' => 'admin',
-      'link_title' => 'Administration',
+    $root_link = entity_create('menu_link_content', array(
+      'url' => 'admin',
+      'title' => 'Administration',
       'menu_name' => 'main-menu',
+      'bundle' => 'menu_link_content',
     ));
     $root_link->save();
 
     // Add another link with the root link as the parent
-    $parent_link = entity_create('menu_link', array(
-      'link_path' => 'admin/config',
-      'link_title' => 'Configuration',
+    $parent_link = entity_create('menu_link_content', array(
+      'url' => 'admin/config',
+      'title' => 'Configuration',
       'menu_name' => 'main-menu',
-      'plid' => $root_link['mlid'],
+      'parent' => 'menu_link_content:' . $root_link->uuid(),
+      'bundle' => 'menu_link_content',
     ));
     $parent_link->save();
 
     // Test menu link tokens.
     $tokens = array(
-      'mlid' => $parent_link['mlid'],
+      'mlid' => $parent_link->id(),
       'title' => 'Configuration',
       'menu' => 'Main menu',
       'menu:name' => 'Main menu',
@@ -54,17 +56,17 @@ class TokenMenuTestCase extends TokenTestBase {
       'url:relative' => url('admin/config', array('absolute' => FALSE)),
       'url:path' => 'admin/config',
       'url:alias' => 'admin/config',
-      'edit-url' => url("admin/structure/menu/item/{$parent_link['mlid']}/edit", array('absolute' => TRUE)),
+      'edit-url' => url("admin/structure/menu/item/{$parent_link->id()}/edit", array('absolute' => TRUE)),
       'parent' => 'Administration',
-      'parent:mlid' => $root_link['mlid'],
+      'parent:mlid' => $root_link->id(),
       'parent:title' => 'Administration',
       'parent:menu' => 'Main menu',
       'parent:parent' => NULL,
       'parents' => 'Administration',
       'parents:count' => 1,
-      'parents:keys' => $root_link['mlid'],
+      'parents:keys' => $root_link->id(),
       'root' => 'Administration',
-      'root:mlid' => $root_link['mlid'],
+      'root:mlid' => $root_link->id(),
       'root:parent' => NULL,
       'root:root' => NULL,
     );
@@ -77,34 +79,30 @@ class TokenMenuTestCase extends TokenTestBase {
     \Drupal::config('menu.entity.node.' . $node->getType())->set('available_menus', array('main-menu'))->save();
 
     // Add a node menu link
-    $node_link = entity_create('menu_link', array(
-      'enabled' => TRUE,
+    $node_link = entity_create('menu_link_content', array(
       'link_path' => 'node/' . $node->id(),
-      'link_title' => 'Node link',
-      'plid' => $parent_link['mlid'],
-      'customized' => 0,
+      'title' => 'Node link',
+      'parent' => 'menu_link_content:' . $parent_link->uuid(),
       'menu_name' => 'main-menu',
-      'description' => '',
     ));
     $node_link->save();
 
     // Test [node:menu] tokens.
     $tokens = array(
       'menu-link' => 'Node link',
-      'menu-link:mlid' => $node->menu['mlid'],
+      'menu-link:mlid' => $node_link->id(),
       'menu-link:title' => 'Node link',
       'menu-link:menu' => 'Main menu',
       'menu-link:url' => url('node/' . $node->id(), array('absolute' => TRUE)),
       'menu-link:url:path' => 'node/' . $node->id(),
       'menu-link:edit-url' => url("admin/structure/menu/item/{$node_link->id()}/edit", array('absolute' => TRUE)),
       'menu-link:parent' => 'Configuration',
-      'menu-link:parent:mlid' => $node->menu['plid'],
-      'menu-link:parent:mlid' => $parent_link['mlid'],
+      'menu-link:parent:mlid' => $parent_link->id(),
       'menu-link:parents' => 'Administration, Configuration',
       'menu-link:parents:count' => 2,
-      'menu-link:parents:keys' => $root_link['mlid'] . ', ' . $parent_link['mlid'],
+      'menu-link:parents:keys' => $root_link->id() . ', ' . $parent_link->id(),
       'menu-link:root' => 'Administration',
-      'menu-link:root:mlid' => $root_link['mlid'],
+      'menu-link:root:mlid' => $root_link->id(),
     );
     $this->assertTokens('node', array('node' => $node), $tokens);
 
