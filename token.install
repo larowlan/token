@@ -51,7 +51,7 @@ function token_install() {
       continue;
     }
     // Try to find a token view mode for that entity type.
-    $storage = \Drupal::entityManager()->getStorage('view_mode');
+    $storage = \Drupal::entityManager()->getStorage('entity_view_mode');
     // Add a token view mode if it does not already exist.
     if (!$storage->load("$entity_type.token")) {
       $storage->create(array(
