@@ -1,0 +1,6 @@
+{
+  "name": "drupal/token",
+  "description": "Provides a user interface for the Token API and some missing core tokens.",
+  "type": "drupal-module",
+  "license": "GPL-2.0+"
+}
