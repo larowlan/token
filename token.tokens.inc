@@ -628,7 +628,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           $replacements[$original] = $sanitize ? String::checkPlain($link->label()) : $link->label();
           break;
         case 'url':
-          $replacements[$original] = \Drupal::url($link->route_name, $link->route_parameters, !empty($link->localized_options) ? $link->localized_options : array('absolute' => TRUE));
+          $replacements[$original] = \Drupal::url($link->getRouteName(), $link->route_parameters, !empty($link->localized_options) ? $link->localized_options : array('absolute' => TRUE));
           break;
         case 'parent':
           if (!empty($link->plid) && $parent = menu_link_load($link->plid)) {
@@ -695,14 +695,14 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
 
     // @deprecated
     // [current-page:arg] dynamic tokens.
-    // @todo: Replace with tokens for {slug}s?
-    if (FALSE && $arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'arg')) {
+    if ($arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'arg')) {
       $path = \Drupal::request()->attributes->get('_system_path');
       // Make sure its a system path.
       $path = \Drupal::service('path.alias_manager')->getPathByAlias($path);
       foreach ($arg_tokens as $name => $original) {
-        if (is_numeric($name) && ($arg = arg($name, $path)) && isset($arg)) {
-          $replacements[$original] = $sanitize ? String::checkPlain($arg) : $arg;
+        $parts = explode('/', $path);
+        if (is_numeric($name) && isset($parts[$name])) {
+          $replacements[$original] = $sanitize ? String::checkPlain($parts[$name]) : $parts[$name];
         }
       }
     }
@@ -772,21 +772,19 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           $url_options['absolute'] = TRUE;
           $replacements[$original] = \Drupal::url($route, $route_param, array('alias' => TRUE) + $url_options);
           break;
-        // @todo Update this to not use arg()
-        /*case 'args':
+        case 'args':
           $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code) : $path;
-          $replacements[$original] = token_render_array(arg(NULL, $value), $options);
+          $replacements[$original] = token_render_array(explode('/', $value), $options);
           break;
-        */
+
       }
     }
 
     // [url:arg:*] chained tokens.
-    // @todo Update this to not use arg()
-    if (FALSE && $arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'args')) {
+    if ($arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'args')) {
       $value = empty($url_options['alias']) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code) : $path;
       $value = ltrim($value, '/');
-      $replacements += \Drupal::token()->generate('array', $arg_tokens, array('array' => arg(NULL, $value)), $options);
+      $replacements += \Drupal::token()->generate('array', $arg_tokens, array('array' => explode('/', $value)), $options);
     }
 
     // [url:unaliased:*] chained tokens.

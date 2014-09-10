@@ -16,7 +16,7 @@ class TokenNodeTestCase extends TokenTestBase {
   protected $profile = 'standard';
 
   function testNodeTokens() {
-    $source_node = $this->drupalCreateNode(array('log' => $this->randomMachineName(), 'path' => array('alias' => 'content/source-node')));
+    $source_node = $this->drupalCreateNode(array('revision_log' => $this->randomMachineName(), 'path' => array('alias' => 'content/source-node')));
     $tokens = array(
       'source' => NULL,
       'source:nid' => NULL,
