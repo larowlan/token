@@ -6,6 +6,7 @@
  */
 
 use Drupal\Component\Utility\String;
+use Drupal\Component\Utility\Unicode;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Cache\Cache;
@@ -183,12 +184,12 @@ function token_form_alter(&$form, $form_state, $form_id) {
 /**
  * Implements hook_block_view_alter().
  */
-function token_block_view_alter(&$data, BlockPluginInterface $block) {
+function token_block_view_alter(&$build, BlockPluginInterface $block) {
   $config = $block->getConfiguration();
   $label = $config['label'];
   if ($label != '<none>') {
-    //$block->setConfigurationValue('label', \Drupal::token()->replace($label, array(), array('sanitize' => TRUE)));
-    $data['#configuration']['label'] = \Drupal::token()->replace($label, array(), array('sanitize' => TRUE));
+    // The label is automatically escaped, avoid escaping it twice.
+    $build['#configuration']['label'] = \Drupal::token()->replace($label, array(), array('sanitize' => FALSE));
   }
 }
 
@@ -197,7 +198,6 @@ function token_block_view_alter(&$data, BlockPluginInterface $block) {
  */
 function token_form_block_form_alter(&$form, FormStateInterface $form_state) {
   $form['settings']['label']['#description'] = t('This field supports tokens.');
-  // @todo Figure out why this token validation does not seem to be working here.
   $form['settings']['label']['#element_validate'][] = 'token_element_validate';
   $form['settings']['label'] += array('#token_types' => array());
 }
@@ -606,7 +606,7 @@ function token_get_invalid_tokens($type, $tokens) {
 function token_element_validate(&$element, FormStateInterface $form_state) {
   $value = isset($element['#value']) ? $element['#value'] : $element['#default_value'];
 
-  if (!drupal_strlen($value)) {
+  if (!Unicode::strlen($value)) {
     // Empty value needs no further validation since the element should depend
     // on using the '#required' FAPI property.
     return $element;

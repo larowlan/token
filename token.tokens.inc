@@ -13,6 +13,7 @@ use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field\FieldStorageConfigInterface;
 use Drupal\field\FieldInstanceConfigInterface;
 use Drupal\system\Entity\Menu;
+use Drupal\user\UserInterface;
 use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 
 /**
@@ -578,7 +579,9 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
       switch ($name) {
         case 'picture':
           // ToDo: Use render arrays. See https://drupal.org/node/2195739
-          $replacements[$original] = _theme('user_picture', array('account' => $account));
+          if ($account instanceof UserInterface && $account->hasField('user_picture')) {
+            $replacements[$original] = _theme('user_picture', array('account' => $account));
+          }
           break;
 
         case 'roles':
@@ -590,7 +593,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
     }
 
     // Chained token relationships.
-    if (!empty($account->user_picture) && ($picture_tokens = \Drupal::token()->findWithPrefix($tokens, 'picture'))) {
+    if ($account instanceof UserInterface && $account->hasField('user_picture') && ($picture_tokens = \Drupal::token()->findWithPrefix($tokens, 'picture'))) {
       $replacements += \Drupal::token()->generate('file', $picture_tokens, array('file' => $account->user_picture->entity), $options);
     }
     if ($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url')) {

@@ -36,6 +36,7 @@ class TokenCurrentPageTestCase extends TokenTestBase {
     );
     $this->assertPageTokens('', $tokens);
 
+    $this->drupalCreateContentType(array('type' => 'page'));
     $node = $this->drupalCreateNode(array('title' => 'Node title', 'path' => array('alias' => 'node-alias')));
     $tokens = array(
       '[current-page:title]' => 'Node title',

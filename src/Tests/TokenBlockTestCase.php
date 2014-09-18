@@ -52,8 +52,9 @@ class TokenBlockTestCase extends TokenTestBase {
       'label' => '[user:name]',
     ));
     $this->drupalGet($block->getSystemPath());
+    $this->drupalPostForm(NULL, array(), t('Save block'));
     // Ensure token validation is working on the block.
-    $this->assertText('The Block title is using the following invalid tokens: [user:name].');
+    $this->assertText('The Title is using the following invalid tokens: [user:name].');
 
     // Create the block for real now with a valid title.
     $settings = $block->get('settings');
@@ -62,9 +63,10 @@ class TokenBlockTestCase extends TokenTestBase {
     $block->save();
 
     // Ensure that tokens are not double-escaped when output as a block title.
+    $this->drupalCreateContentType(array('type' => 'page'));
     $node = $this->drupalCreateNode(array('title' => "Site's first node"));
     $this->drupalGet('node/' . $node->id());
-    // The apostraphe should only be escaped once via \Drupal\Component\Utility\String::checkPlain().
+    // The apostraphe should only be escaped once.
     $this->assertRaw("Site&#039;s first node block title");
   }
 }
