@@ -51,8 +51,11 @@ class TokenUserTestCase extends TokenTestBase {
     $edit = array('files[user_picture_0]' => drupal_realpath($image->uri));
     $this->drupalPostForm('user/' . $this->account->id() . '/edit', $edit, t('Save'));
 
+    $storage = \Drupal::entityManager()->getStorage('user');
+
     // Load actual user data from database.
-    $this->account = user_load($this->account->id(), TRUE);
+    $storage->resetCache();
+    $this->account = $storage->load($this->account->id());
     $this->assertTrue(!empty($this->account->user_picture->target_id), 'User picture uploaded.');
 
     $user_tokens = array(
@@ -65,12 +68,15 @@ class TokenUserTestCase extends TokenTestBase {
     );
     $this->assertTokens('user', array('user' => $this->account), $user_tokens);
 
-    // Remove the user picture field.
-    FieldStorageConfig::loadByName('user', 'user_picture')->delete();
-
     // Remove the simpletest-created user role.
     $roles = $this->account->getRoles();
     $this->account->removeRole(end($roles));
+    $this->account->save();
+
+    // Remove the user picture field and reload the user.
+    FieldStorageConfig::loadByName('user', 'user_picture')->delete();
+    $storage->resetCache();
+    $this->account = $storage->load($this->account->id());
 
     $user_tokens = array(
       'picture' => NULL,
