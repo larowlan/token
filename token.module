@@ -811,7 +811,7 @@ function token_build_tree($token_type, array $options = array()) {
     else {
       $options['parents'] = array();
       $trees[$tree_cid] = _token_build_tree($token_type, $options);
-      \Drupal::cache('data')->set($tree_cid, $trees[$tree_cid], Cache::PERMANENT, array(Token::TOKEN_INFO_CACHE_TAG => TRUE));
+      \Drupal::cache('data')->set($tree_cid, $trees[$tree_cid], Cache::PERMANENT, array(Token::TOKEN_INFO_CACHE_TAG));
     }
   }
 
