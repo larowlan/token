@@ -95,7 +95,7 @@ function theme_token_tree($variables) {
   $element = array(
     '#cache' => array(
       'cid' => 'tree-rendered:' . hash('sha256', serialize(array('token_types' => $token_types, 'global_types' => NULL) + $variables)),
-      'tags' => array(Token::TOKEN_INFO_CACHE_TAG => TRUE),
+      'tags' => array(Token::TOKEN_INFO_CACHE_TAG),
     ),
   );
   if ($cached_output = token_render_cache_get($element)) {
