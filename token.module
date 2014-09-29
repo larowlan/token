@@ -227,7 +227,7 @@ function token_field_info_alter(&$info) {
     'text_with_summary' => 'text_default',
     'list_integer' => 'list_default',
     'list_float' => 'list_default',
-    'list_text' => 'list_default',
+    'list_string' => 'list_default',
     'list_boolean' => 'list_default',
   );
   foreach ($defaults as $field_type => $default_token_formatter) {
