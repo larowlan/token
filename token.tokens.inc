@@ -9,9 +9,8 @@ use Drupal\Component\Utility\String;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Component\Utility\Xss;
-use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\field\FieldConfigInterface;
 use Drupal\field\FieldStorageConfigInterface;
-use Drupal\field\FieldInstanceConfigInterface;
 use Drupal\system\Entity\Menu;
 use Drupal\user\UserInterface;
 use Symfony\Cmf\Component\Routing\RouteObjectInterface;
@@ -1274,7 +1273,7 @@ function _token_field_label($entity_type, $field_name) {
   // Count the amount of instances per label per field.
   foreach (array_keys(\Drupal::entityManager()->getBundleInfo($entity_type)) as $bundle) {
     $bundle_instances = array_filter(\Drupal::entityManager()->getFieldDefinitions($entity_type, $bundle), function ($field_definition) {
-        return $field_definition instanceof FieldInstanceConfigInterface;
+        return $field_definition instanceof FieldConfigInterface;
       });
     if (isset($bundle_instances[$field_name])) {
       $instance = $bundle_instances[$field_name];
@@ -1319,7 +1318,7 @@ function field_tokens($type, $tokens, array $data = array(), array $options = ar
 
     foreach (array_keys($fields) as $field_name) {
       // Do not continue if the field is empty or not a configurable field.
-      if (empty($entity->{$field_name}) || !($fields[$field_name] instanceof FieldInstanceConfigInterface)) {
+      if (empty($entity->{$field_name}) || !($fields[$field_name] instanceof FieldConfigInterface)) {
         continue;
       }
 
