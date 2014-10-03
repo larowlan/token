@@ -31,7 +31,7 @@ function token_requirements($phase = 'runtime') {
         'title' => t('Tokens'),
         'value' => t('Problems detected'),
         'severity' => REQUIREMENT_WARNING,
-        'description' => '<p>' . implode('</p><p>', $token_problems) . '</p>',
+        'description' => array('#markup' => '<p>' . implode('</p><p>', $token_problems) . '</p>'),
       );
     }
   }
