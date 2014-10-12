@@ -48,7 +48,7 @@ function theme_token_tree_link($variables) {
    );
   $variables['options']['attributes']['class'][] = 'use-ajax';
 
-  return Drupal::l($variables['text'], Url::fromRoute('token.tree'), array(), $variables['options']);
+  return Drupal::l($variables['text'], Url::fromRoute('token.tree')->setOptions($variables['options']));
 }
 
 /**
