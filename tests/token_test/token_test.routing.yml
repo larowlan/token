@@ -1,0 +1,14 @@
+token_test.root:
+  path: '/admin'
+  defaults:
+    _title: 'Administration'
+    _content: '\Drupal\token_test\Controller\TokenTestController::test'
+  requirements:
+    _access: 'TRUE'
+token_test.parent:
+  path: '/admin/config'
+  defaults:
+    _title: 'Configuration'
+    _content: '\Drupal\token_test\Controller\TokenTestController::test'
+  requirements:
+    _access: 'TRUE'

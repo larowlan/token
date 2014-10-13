@@ -1,0 +1,7 @@
+token_test.root:
+  title: 'Root Link'
+  route_name: token_test.root
+token_test.parent:
+  title: 'Parent Link'
+  route_name: token_test.parent
+  parent: token_test.root
