@@ -799,7 +799,7 @@ function token_build_tree($token_type, array $options = array()) {
     $token_type = $entity_token_type;
   }
 
-  $langcode = \Drupal::languageManager()->getCurrentLanguage()->id;
+  $langcode = \Drupal::languageManager()->getCurrentLanguage()->getId();
   $tree_cid = "token_tree:{$token_type}:{$langcode}:{$options['depth']}";
 
   // If we do not have this base tree in the static cache, check the cache
