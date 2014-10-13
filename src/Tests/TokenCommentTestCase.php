@@ -35,9 +35,9 @@ class TokenCommentTestCase extends TokenTestBase {
     $parent_comment_path = ltrim($parent_comment_path, '/');
 
     $tokens = array(
-      'url' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
-      'url:absolute' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
-      'url:relative' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => FALSE)),
+      'url' => \Drupal::url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
+      'url:absolute' => \Drupal::url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
+      'url:relative' => \Drupal::url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => FALSE)),
       'url:path' => $parent_comment_path,
       'parent:url:absolute' => NULL,
     );
@@ -61,11 +61,11 @@ class TokenCommentTestCase extends TokenTestBase {
     $comment_path = ltrim($comment_path, '/');
 
     $tokens = array(
-      'url' => url('comment/' . $comment->id(), array('fragment' => 'comment-' . $comment->id(), 'absolute' => TRUE)),
-      'url:absolute' => url('comment/' . $comment->id(), array('fragment' => 'comment-' . $comment->id(), 'absolute' => TRUE)),
-      'url:relative' => url('comment/' . $comment->id(), array('fragment' => 'comment-' . $comment->id(), 'absolute' => FALSE)),
+      'url' => \Drupal::url('comment/' . $comment->id(), array('fragment' => 'comment-' . $comment->id(), 'absolute' => TRUE)),
+      'url:absolute' => \Drupal::url('comment/' . $comment->id(), array('fragment' => 'comment-' . $comment->id(), 'absolute' => TRUE)),
+      'url:relative' => \Drupal::url('comment/' . $comment->id(), array('fragment' => 'comment-' . $comment->id(), 'absolute' => FALSE)),
       'url:path' => $comment_path,
-      'parent:url:absolute' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
+      'parent:url:absolute' => \Drupal::url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
     );
     $this->assertTokens('comment', array('comment' => $comment), $tokens);
   }

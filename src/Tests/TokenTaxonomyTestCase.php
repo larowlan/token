@@ -38,12 +38,12 @@ class TokenTaxonomyTestCase extends TokenTestBase {
   function testTaxonomyTokens() {
     $root_term = $this->addTerm($this->vocab, array('name' => 'Root term', 'path' => array('alias' => 'root-term')));
     $tokens = array(
-      'url' => url("taxonomy/term/{$root_term->id()}", array('absolute' => TRUE)),
-      'url:absolute' => url("taxonomy/term/{$root_term->id()}", array('absolute' => TRUE)),
-      'url:relative' => url("taxonomy/term/{$root_term->id()}", array('absolute' => FALSE)),
+      'url' => \Drupal::url("taxonomy/term/{$root_term->id()}", array('absolute' => TRUE)),
+      'url:absolute' => \Drupal::url("taxonomy/term/{$root_term->id()}", array('absolute' => TRUE)),
+      'url:relative' => \Drupal::url("taxonomy/term/{$root_term->id()}", array('absolute' => FALSE)),
       'url:path' => 'root-term',
       'url:unaliased:path' => "taxonomy/term/{$root_term->id()}",
-      'edit-url' => url("taxonomy/term/{$root_term->id()}/edit", array('absolute' => TRUE)),
+      'edit-url' => \Drupal::url("taxonomy/term/{$root_term->id()}/edit", array('absolute' => TRUE)),
       'parents' => NULL,
       'parents:count' => NULL,
       'parents:keys' => NULL,
@@ -55,12 +55,12 @@ class TokenTaxonomyTestCase extends TokenTestBase {
 
     $parent_term = $this->addTerm($this->vocab, array('name' => 'Parent term', 'parent' => $root_term->id()));
     $tokens = array(
-      'url' => url("taxonomy/term/{$parent_term->id()}", array('absolute' => TRUE)),
-      'url:absolute' => url("taxonomy/term/{$parent_term->id()}", array('absolute' => TRUE)),
-      'url:relative' => url("taxonomy/term/{$parent_term->id()}", array('absolute' => FALSE)),
+      'url' => \Drupal::url("taxonomy/term/{$parent_term->id()}", array('absolute' => TRUE)),
+      'url:absolute' => \Drupal::url("taxonomy/term/{$parent_term->id()}", array('absolute' => TRUE)),
+      'url:relative' => \Drupal::url("taxonomy/term/{$parent_term->id()}", array('absolute' => FALSE)),
       'url:path' => "taxonomy/term/{$parent_term->id()}",
       'url:unaliased:path' => "taxonomy/term/{$parent_term->id()}",
-      'edit-url' => url("taxonomy/term/{$parent_term->id()}/edit", array('absolute' => TRUE)),
+      'edit-url' => \Drupal::url('entity.taxonomy_term.edit_form', array('taxonomy_term' => $parent_term->id()), array('absolute' => TRUE)),
       'parents' => 'Root term',
       'parents:count' => 1,
       'parents:keys' => $root_term->id(),
@@ -87,7 +87,7 @@ class TokenTaxonomyTestCase extends TokenTestBase {
     $vocabulary = $this->vocab;
     $tokens = array(
       'machine-name' => 'tags',
-      'edit-url' => url("admin/structure/taxonomy/{$vocabulary->id()}/edit", array('absolute' => TRUE)),
+      'edit-url' => \Drupal::url("admin/structure/taxonomy/{$vocabulary->id()}/edit", array('absolute' => TRUE)),
     );
     $this->assertTokens('vocabulary', array('vocabulary' => $vocabulary), $tokens);
   }
