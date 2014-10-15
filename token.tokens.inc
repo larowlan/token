@@ -9,6 +9,7 @@ use Drupal\Component\Utility\String;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\Url;
 use Drupal\field\FieldConfigInterface;
 use Drupal\field\FieldStorageConfigInterface;
 use Drupal\system\Entity\Menu;
@@ -479,7 +480,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           $replacements[$original] = (int) $count;
           break;
         case 'edit-url':
-          $replacements[$original] = url("admin/structure/types/manage/{$node_type->type}", $url_options);
+          $replacements[$original] = \Drupal::url('entity.node_type.edit_form', ['node_type' => $node_type->type], $url_options);
           break;
       }
     }
@@ -493,7 +494,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'edit-url':
-          $replacements[$original] = url("taxonomy/term/{$term->id()}/edit", $url_options);
+          $replacements[$original] = \Drupal::url('entity.taxonomy_term.edit_form', ['taxonomy_term' => $term->id()], $url_options);
           break;
 
         case 'parents':
@@ -542,7 +543,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           $replacements[$original] = $vocabulary->id();
           break;
         case 'edit-url':
-          $replacements[$original] = url("admin/structure/taxonomy/{$vocabulary->id()}/edit", $url_options);
+          $replacements[$original] = \Drupal::url('entity.taxonomy_vocabulary.edit_form', ['taxonomy_vocabulary' => $vocabulary->id()], $url_options);
           break;
       }
     }
@@ -682,7 +683,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           $replacements[$original] = $sanitize ? $title : decode_entities($title);
           break;
         case 'url':
-          $replacements[$original] = url($current_path, $url_options);
+          $replacements[$original] = Url::fromUri(\Drupal::request()->getUri(), $url_options)->toString();
           break;
         case 'page-number':
           if ($page = \Drupal::request()->query->get('page')) {
@@ -808,8 +809,8 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'url':
-          if (_token_module($type, 'url') == 'token' && $uri = $entity->urlInfo()->toArray()) {
-            $replacements[$original] = url($uri['path'], $uri['options']);
+          if (_token_module($type, 'url') == 'token' && $url = $entity->urlInfo()) {
+            $replacements[$original] = $url;
           }
           break;
 
@@ -1157,7 +1158,7 @@ function menu_ui_tokens($type, $tokens, array $data = array(), array $options = 
           }
           break;
         case 'edit-url':
-          $replacements[$original] = url("admin/structure/menu/item/{$link->id()}/edit", $url_options);
+          $replacements[$original] = \Drupal::url('entity.menu_link_content.canonical', ['menu_link_content' => $link->id()], $url_options);
           break;
       }
     }
@@ -1192,7 +1193,7 @@ function menu_ui_tokens($type, $tokens, array $data = array(), array $options = 
           $replacements[$original] = (int) $count;
           break;
         case 'edit-url':
-          $replacements[$original] = url("admin/structure/menu/manage/" . $menu->id(), $url_options);
+          $replacements[$original] = \Drupal::url('entity.menu.edit_form', ['menu' => $menu->id()], $url_options);
           break;
       }
     }
