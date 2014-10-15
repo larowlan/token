@@ -19,13 +19,13 @@ class TokenCurrentPageTestCase extends TokenTestBase {
     $this->drupalGet('user');
     $tokens = array(
       '[current-page:title]' => t('Log in'),
-      '[current-page:url]' => \Drupal::url('user.page', array('absolute' => TRUE)),
-      '[current-page:url:absolute]' => \Drupal::url('user.page', array('absolute' => TRUE)),
-      '[current-page:url:relative]' => \Drupal::url('user.page', array('absolute' => FALSE)),
+      '[current-page:url]' => \Drupal::url('user.page', [], array('absolute' => TRUE)),
+      '[current-page:url:absolute]' => \Drupal::url('user.page', [], array('absolute' => TRUE)),
+      '[current-page:url:relative]' => \Drupal::url('user.page', [], array('absolute' => FALSE)),
       '[current-page:url:path]' => 'user',
       '[current-page:url:args:value:0]' => 'user',
       '[current-page:url:args:value:1]' => NULL,
-      '[current-page:url:unaliased]' => \Drupal::url('user.page', array('absolute' => TRUE, 'alias' => TRUE)),
+      '[current-page:url:unaliased]' => \Drupal::url('user.page', [], array('absolute' => TRUE, 'alias' => TRUE)),
       '[current-page:page-number]' => 1,
       '[current-page:query:foo]' => NULL,
       '[current-page:query:bar]' => NULL,
