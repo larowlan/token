@@ -1312,7 +1312,7 @@ function field_tokens($type, $tokens, array $data = array(), array $options = ar
       if ($entity->hasField($name) && _token_module($data['token_type'], $name) == 'token') {
 
         // Do not continue if the field is empty or not a configurable field.
-        if ($entity->get($name)->isEmpty() || !($entity->getFieldDefinition($name) instanceof FieldInstanceConfigInterface)) {
+        if ($entity->get($name)->isEmpty() || !($entity->getFieldDefinition($name) instanceof FieldConfigInterface)) {
           continue;
         }
 
