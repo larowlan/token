@@ -19,6 +19,7 @@ class TokenCommentTestCase extends TokenTestBase {
     \Drupal::service('comment.manager')->addDefaultField('node', 'page');
     $node = $this->drupalCreateNode();
 
+    /** @var \Drupal\comment\Entity\Comment $parent_comment */
     $parent_comment = entity_create('comment', array(
       'entity_id' => $node->id(),
       'entity_type' => 'node',
@@ -35,14 +36,15 @@ class TokenCommentTestCase extends TokenTestBase {
     $parent_comment_path = ltrim($parent_comment_path, '/');
 
     $tokens = array(
-      'url' => \Drupal::url('entity.comment.canonical', ['comment' => $parent_comment->id()], array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
-      'url:absolute' => \Drupal::url('entity.comment.canonical', ['comment' => $parent_comment->id()], array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
-      'url:relative' => \Drupal::url('entity.comment.canonical', ['comment' => $parent_comment->id()], array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => FALSE)),
+      'url' => $parent_comment->permalink()->setAbsolute()->toString(),
+      'url:absolute' => $parent_comment->permalink()->setAbsolute()->toString(),
+      'url:relative' => $parent_comment->permalink()->toString(),
       'url:path' => $parent_comment_path,
       'parent:url:absolute' => NULL,
     );
     $this->assertTokens('comment', array('comment' => $parent_comment), $tokens);
 
+    /** @var \Drupal\comment\Entity\Comment  $comment */
     $comment = entity_create('comment', array(
       'entity_id' => $node->id(),
       'pid' => $parent_comment->id(),
@@ -61,11 +63,11 @@ class TokenCommentTestCase extends TokenTestBase {
     $comment_path = ltrim($comment_path, '/');
 
     $tokens = array(
-      'url' => \Drupal::url('entity.comment.canonical', ['comment' => $comment->id()], array('fragment' => 'comment-' . $comment->id(), 'absolute' => TRUE)),
-      'url:absolute' => \Drupal::url('entity.comment.canonical', ['comment' => $comment->id()], array('fragment' => 'comment-' . $comment->id(), 'absolute' => TRUE)),
-      'url:relative' => \Drupal::url('entity.comment.canonical', ['comment' => $comment->id()], array('fragment' => 'comment-' . $comment->id(), 'absolute' => FALSE)),
+      'url' => $comment->permalink()->setAbsolute()->toString(),
+      'url:absolute' => $omment->permalink()->setAbsolute()->toString(),
+      'url:relative' => $comment->permalink()->toString(),
       'url:path' => $comment_path,
-      'parent:url:absolute' => \Drupal::url('entity.comment.canonical', ['comment' => $parent_comment->id()], array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
+      'parent:url:absolute' => $parent_comment->permalink()->setAbsolute()->toString(),
     );
     $this->assertTokens('comment', array('comment' => $comment), $tokens);
   }

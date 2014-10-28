@@ -480,7 +480,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           $replacements[$original] = (int) $count;
           break;
         case 'edit-url':
-          $replacements[$original] = \Drupal::url('entity.node_type.edit_form', ['node_type' => $node_type->type], $url_options);
+          $replacements[$original] = $node_type->url('edit-form', $url_options);
           break;
       }
     }
@@ -810,7 +810,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
       switch ($name) {
         case 'url':
           if (_token_module($type, 'url') == 'token' && $url = $entity->urlInfo()) {
-            $replacements[$original] = $url;
+            $replacements[$original] = $url->toString();
           }
           break;
 
