@@ -32,7 +32,7 @@ class TokenCommentTestCase extends TokenTestBase {
     $parent_comment->save();
 
     // Fix http://example.com/index.php/comment/1 fails 'url:path' test.
-    $parent_comment_path = \Drupal::url('entity.comment.canonical', array('comment' => $parent_comment->id()));
+    $parent_comment_path = $parent_comment->url();
     $parent_comment_path = ltrim($parent_comment_path, '/');
 
     $tokens = array(
@@ -64,7 +64,7 @@ class TokenCommentTestCase extends TokenTestBase {
 
     $tokens = array(
       'url' => $comment->permalink()->setAbsolute()->toString(),
-      'url:absolute' => $omment->permalink()->setAbsolute()->toString(),
+      'url:absolute' => $comment->permalink()->setAbsolute()->toString(),
       'url:relative' => $comment->permalink()->toString(),
       'url:path' => $comment_path,
       'parent:url:absolute' => $parent_comment->permalink()->setAbsolute()->toString(),
