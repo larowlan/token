@@ -415,7 +415,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
     // Chained token relationships.
     if (($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url'))) {
       // Add fragment to url options.
-      $replacements += \Drupal::token()->generate('url', $url_tokens, array('url' => $comment->permalink()), $options);
+      $replacements += \Drupal::token()->generate('url', $url_tokens, array('url' => $comment->urlInfo('canonical', ['fragment' => "comment-{$comment->id()}"])), $options);
     }
   }
 
@@ -735,6 +735,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
   if ($type == 'url' && !empty($data['url'])) {
     /** @var \Drupal\Core\Url $url */
     $url = $data['url'];
+    // To retrieve a path without fragment, modify a copy of the Url object.
     $path_url = clone $url;
     $path = $path_url->setOption('fragment', NULL)->toString();
     $path = ltrim($path, '/');

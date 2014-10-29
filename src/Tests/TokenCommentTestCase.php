@@ -36,9 +36,9 @@ class TokenCommentTestCase extends TokenTestBase {
     $parent_comment_path = ltrim($parent_comment_path, '/');
 
     $tokens = array(
-      'url' => $parent_comment->permalink()->setAbsolute()->toString(),
-      'url:absolute' => $parent_comment->permalink()->setAbsolute()->toString(),
-      'url:relative' => $parent_comment->permalink()->toString(),
+      'url' => $parent_comment->urlInfo('canonical', ['fragment' => "comment-{$parent_comment->id()}"])->setAbsolute()->toString(),
+      'url:absolute' => $parent_comment->urlInfo('canonical', ['fragment' => "comment-{$parent_comment->id()}"])->setAbsolute()->toString(),
+      'url:relative' => $parent_comment->urlInfo('canonical', ['fragment' => "comment-{$parent_comment->id()}"])->toString(),
       'url:path' => $parent_comment_path,
       'parent:url:absolute' => NULL,
     );
@@ -63,11 +63,11 @@ class TokenCommentTestCase extends TokenTestBase {
     $comment_path = ltrim($comment_path, '/');
 
     $tokens = array(
-      'url' => $comment->permalink()->setAbsolute()->toString(),
-      'url:absolute' => $comment->permalink()->setAbsolute()->toString(),
-      'url:relative' => $comment->permalink()->toString(),
+      'url' => $comment->urlInfo('canonical', ['fragment' => "comment-{$comment->id()}"])->setAbsolute()->toString(),
+      'url:absolute' => $comment->urlInfo('canonical', ['fragment' => "comment-{$comment->id()}"])->setAbsolute()->toString(),
+      'url:relative' => $comment->urlInfo('canonical', ['fragment' => "comment-{$comment->id()}"])->toString(),
       'url:path' => $comment_path,
-      'parent:url:absolute' => $parent_comment->permalink()->setAbsolute()->toString(),
+      'parent:url:absolute' => $parent_comment->urlInfo('canonical', ['fragment' => "comment-{$parent_comment->id()}"])->setAbsolute()->toString(),
     );
     $this->assertTokens('comment', array('comment' => $comment), $tokens);
   }
