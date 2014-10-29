@@ -629,7 +629,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           $replacements[$original] = $sanitize ? String::checkPlain($link->label()) : $link->label();
           break;
         case 'url':
-          $replacements[$original] = \Drupal::url($link->getRouteName(), $link->route_parameters, !empty($link->localized_options) ? $link->localized_options : array('absolute' => TRUE));
+          $replacements[$original] = $link->getUrlObject()->setAbsolute()->toString();
           break;
         case 'parent':
           if (!empty($link->plid) && $parent = menu_link_load($link->plid)) {
@@ -735,9 +735,9 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
   if ($type == 'url' && !empty($data['url'])) {
     /** @var \Drupal\Core\Url $url */
     $url = $data['url'];
-    // To retrieve a path without fragment, modify a copy of the Url object.
+    // To retrieve the correct path, modify a copy of the Url object.
     $path_url = clone $url;
-    $path = $path_url->setOption('fragment', NULL)->toString();
+    $path = $path_url->setAbsolute(FALSE)->setOption('fragment', NULL)->toString();
     $path = ltrim($path, '/');
 
     foreach ($tokens as $name => $original) {
@@ -771,7 +771,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
       }
     }
 
-    // [url:arg:*] chained tokens.
+    // [url:args:*] chained tokens.
     if ($arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'args')) {
       $value = !($url->getOption('alias')) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code) : $path;
       $value = ltrim($value, '/');
@@ -1142,7 +1142,7 @@ function menu_ui_tokens($type, $tokens, array $data = array(), array $options = 
           }
           break;
         case 'edit-url':
-          $replacements[$original] = \Drupal::url('entity.menu_link_content.canonical', ['menu_link_content' => $link->id()], $url_options);
+          $replacements[$original] = $link->url($url_options);
           break;
       }
     }

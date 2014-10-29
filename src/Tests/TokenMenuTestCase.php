@@ -33,7 +33,7 @@ class TokenMenuTestCase extends TokenTestBase {
 
     // Add another link with the root link as the parent
     $parent_link = entity_create('menu_link_content', array(
-      'url' => 'admin/config',
+      'route_name' => 'system.admin_config',
       'title' => 'Configuration',
       'menu_name' => 'main-menu',
       'parent' => 'menu_link_content:' . $root_link->uuid(),
@@ -93,9 +93,9 @@ class TokenMenuTestCase extends TokenTestBase {
       'menu-link:mlid' => $node_link->id(),
       'menu-link:title' => 'Node link',
       'menu-link:menu' => 'Main menu',
-      'menu-link:url' => \Drupal::url('entity.node.canonical', ['node' => $node->id()], array('absolute' => TRUE)),
+      'menu-link:url' => $node->url('canonical', ['absolute' => TRUE]),
       'menu-link:url:path' => 'node/' . $node->id(),
-      'menu-link:edit-url' => \Drupal::url('entity.menu_link_content.canonical', ['menu_link_content' => $node_link->id()], array('absolute' => TRUE)),
+      'menu-link:edit-url' => $node_link->url('canonical', ['absolute' => TRUE]),
       'menu-link:parent' => 'Configuration',
       'menu-link:parent:mlid' => $parent_link->id(),
       'menu-link:parents' => 'Administration, Configuration',
