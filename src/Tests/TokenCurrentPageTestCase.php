@@ -16,25 +16,26 @@ class TokenCurrentPageTestCase extends TokenTestBase {
   protected static $modules = array('path', 'token', 'token_test', 'node');
 
   function testCurrentPageTokens() {
-    $this->drupalGet('user');
     $tokens = array(
       '[current-page:title]' => t('Log in'),
-      '[current-page:url]' => \Drupal::url('user.page', [], array('absolute' => TRUE)),
-      '[current-page:url:absolute]' => \Drupal::url('user.page', [], array('absolute' => TRUE)),
-      '[current-page:url:relative]' => \Drupal::url('user.page', [], array('absolute' => FALSE)),
-      '[current-page:url:path]' => 'user',
+      '[current-page:url]' => \Drupal::url('user.login', [], array('absolute' => TRUE)),
+      '[current-page:url:absolute]' => \Drupal::url('user.login', [], array('absolute' => TRUE)),
+      '[current-page:url:relative]' => \Drupal::url('user.login'),
+      '[current-page:url:path]' => 'user/login',
       '[current-page:url:args:value:0]' => 'user',
-      '[current-page:url:args:value:1]' => NULL,
-      '[current-page:url:unaliased]' => \Drupal::url('user.page', [], array('absolute' => TRUE, 'alias' => TRUE)),
+      '[current-page:url:args:value:1]' => 'login',
+      '[current-page:url:args:value:2]' => NULL,
+      '[current-page:url:unaliased]' => \Drupal::url('user.login', [], array('absolute' => TRUE, 'alias' => TRUE)),
       '[current-page:page-number]' => 1,
       '[current-page:query:foo]' => NULL,
       '[current-page:query:bar]' => NULL,
-      '[current-page:query:q]' => 'user',
+      '[current-page:query:q]' => 'user/login',
       // Deprecated tokens
       '[current-page:arg:0]' => 'user',
-      '[current-page:arg:1]' => NULL,
+      '[current-page:arg:1]' => 'login',
+      '[current-page:arg:2]' => NULL,
     );
-    $this->assertPageTokens('', $tokens);
+    $this->assertPageTokens('user/login', $tokens);
 
     $this->drupalCreateContentType(array('type' => 'page'));
     $node = $this->drupalCreateNode(array('title' => 'Node title', 'path' => array('alias' => 'node-alias')));
