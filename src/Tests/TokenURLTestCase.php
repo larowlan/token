@@ -5,6 +5,7 @@
  * Contains \Drupal\token\Tests\TokenURLTestCase.
  */
 namespace Drupal\token\Tests;
+use Drupal\Core\Url;
 
 /**
  * Tests url tokens.
@@ -42,6 +43,6 @@ class TokenURLTestCase extends TokenTestBase {
       // Deprecated tokens.
       'alias' => 'first-node',
     );
-    $this->assertTokens('url', array('route_name' => 'entity.node.canonical', 'route_parameters' => array('node' => 1)), $tokens);
+    $this->assertTokens('url', array('url' => new Url('entity.node.canonical', array('node' => 1))), $tokens);
   }
 }

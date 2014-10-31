@@ -19,6 +19,7 @@ class TokenCommentTestCase extends TokenTestBase {
     \Drupal::service('comment.manager')->addDefaultField('node', 'page');
     $node = $this->drupalCreateNode();
 
+    /** @var \Drupal\comment\Entity\Comment $parent_comment */
     $parent_comment = entity_create('comment', array(
       'entity_id' => $node->id(),
       'entity_type' => 'node',
@@ -31,18 +32,19 @@ class TokenCommentTestCase extends TokenTestBase {
     $parent_comment->save();
 
     // Fix http://example.com/index.php/comment/1 fails 'url:path' test.
-    $parent_comment_path = \Drupal::url('entity.comment.canonical', array('comment' => $parent_comment->id()));
+    $parent_comment_path = $parent_comment->url();
     $parent_comment_path = ltrim($parent_comment_path, '/');
 
     $tokens = array(
-      'url' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
-      'url:absolute' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
-      'url:relative' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => FALSE)),
+      'url' => $parent_comment->urlInfo('canonical', ['fragment' => "comment-{$parent_comment->id()}"])->setAbsolute()->toString(),
+      'url:absolute' => $parent_comment->urlInfo('canonical', ['fragment' => "comment-{$parent_comment->id()}"])->setAbsolute()->toString(),
+      'url:relative' => $parent_comment->urlInfo('canonical', ['fragment' => "comment-{$parent_comment->id()}"])->toString(),
       'url:path' => $parent_comment_path,
       'parent:url:absolute' => NULL,
     );
     $this->assertTokens('comment', array('comment' => $parent_comment), $tokens);
 
+    /** @var \Drupal\comment\Entity\Comment  $comment */
     $comment = entity_create('comment', array(
       'entity_id' => $node->id(),
       'pid' => $parent_comment->id(),
@@ -61,11 +63,11 @@ class TokenCommentTestCase extends TokenTestBase {
     $comment_path = ltrim($comment_path, '/');
 
     $tokens = array(
-      'url' => url('comment/' . $comment->id(), array('fragment' => 'comment-' . $comment->id(), 'absolute' => TRUE)),
-      'url:absolute' => url('comment/' . $comment->id(), array('fragment' => 'comment-' . $comment->id(), 'absolute' => TRUE)),
-      'url:relative' => url('comment/' . $comment->id(), array('fragment' => 'comment-' . $comment->id(), 'absolute' => FALSE)),
+      'url' => $comment->urlInfo('canonical', ['fragment' => "comment-{$comment->id()}"])->setAbsolute()->toString(),
+      'url:absolute' => $comment->urlInfo('canonical', ['fragment' => "comment-{$comment->id()}"])->setAbsolute()->toString(),
+      'url:relative' => $comment->urlInfo('canonical', ['fragment' => "comment-{$comment->id()}"])->toString(),
       'url:path' => $comment_path,
-      'parent:url:absolute' => url('comment/' . $parent_comment->id(), array('fragment' => 'comment-' . $parent_comment->id(), 'absolute' => TRUE)),
+      'parent:url:absolute' => $parent_comment->urlInfo('canonical', ['fragment' => "comment-{$parent_comment->id()}"])->setAbsolute()->toString(),
     );
     $this->assertTokens('comment', array('comment' => $comment), $tokens);
   }

@@ -16,37 +16,38 @@ class TokenCurrentPageTestCase extends TokenTestBase {
   protected static $modules = array('path', 'token', 'token_test', 'node');
 
   function testCurrentPageTokens() {
-    $this->drupalGet('user');
     $tokens = array(
       '[current-page:title]' => t('Log in'),
-      '[current-page:url]' => url('user', array('absolute' => TRUE)),
-      '[current-page:url:absolute]' => url('user', array('absolute' => TRUE)),
-      '[current-page:url:relative]' => url('user', array('absolute' => FALSE)),
-      '[current-page:url:path]' => 'user',
+      '[current-page:url]' => \Drupal::url('user.login', [], array('absolute' => TRUE)),
+      '[current-page:url:absolute]' => \Drupal::url('user.login', [], array('absolute' => TRUE)),
+      '[current-page:url:relative]' => \Drupal::url('user.login'),
+      '[current-page:url:path]' => 'user/login',
       '[current-page:url:args:value:0]' => 'user',
-      '[current-page:url:args:value:1]' => NULL,
-      '[current-page:url:unaliased]' => url('user', array('absolute' => TRUE, 'alias' => TRUE)),
+      '[current-page:url:args:value:1]' => 'login',
+      '[current-page:url:args:value:2]' => NULL,
+      '[current-page:url:unaliased]' => \Drupal::url('user.login', [], array('absolute' => TRUE, 'alias' => TRUE)),
       '[current-page:page-number]' => 1,
       '[current-page:query:foo]' => NULL,
       '[current-page:query:bar]' => NULL,
-      '[current-page:query:q]' => 'user',
+      '[current-page:query:q]' => 'user/login',
       // Deprecated tokens
       '[current-page:arg:0]' => 'user',
-      '[current-page:arg:1]' => NULL,
+      '[current-page:arg:1]' => 'login',
+      '[current-page:arg:2]' => NULL,
     );
-    $this->assertPageTokens('', $tokens);
+    $this->assertPageTokens('user/login', $tokens);
 
     $this->drupalCreateContentType(array('type' => 'page'));
     $node = $this->drupalCreateNode(array('title' => 'Node title', 'path' => array('alias' => 'node-alias')));
     $tokens = array(
       '[current-page:title]' => 'Node title',
-      '[current-page:url]' => url("node/{$node->id()}", array('absolute' => TRUE)),
-      '[current-page:url:absolute]' => url("node/{$node->id()}", array('absolute' => TRUE)),
-      '[current-page:url:relative]' => url("node/{$node->id()}", array('absolute' => FALSE)),
+      '[current-page:url]' => $node->url('canonical', array('absolute' => TRUE)),
+      '[current-page:url:absolute]' => $node->url('canonical', array('absolute' => TRUE)),
+      '[current-page:url:relative]' => $node->url(),
       '[current-page:url:alias]' => 'node-alias',
       '[current-page:url:args:value:0]' => 'node-alias',
       '[current-page:url:args:value:1]' => NULL,
-      '[current-page:url:unaliased]' => url("node/{$node->id()}", array('absolute' => TRUE, 'alias' => TRUE)),
+      '[current-page:url:unaliased]' => $node->url('canonical', array('absolute' => TRUE, 'alias' => TRUE)),
       '[current-page:url:unaliased:args:value:0]' => 'node',
       '[current-page:url:unaliased:args:value:1]' => $node->id(),
       '[current-page:url:unaliased:args:value:2]' => NULL,
