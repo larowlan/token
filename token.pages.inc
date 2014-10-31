@@ -5,6 +5,7 @@
  * User page callbacks for the token module.
  */
 use Drupal\Component\Serialization\Json;
+use Drupal\Core\Url;
 use Drupal\Core\Utility\Token;
 
 /**
@@ -47,7 +48,7 @@ function theme_token_tree_link($variables) {
    );
   $variables['options']['attributes']['class'][] = 'use-ajax';
 
-  return Drupal::l($variables['text'], 'token.tree', array(), $variables['options']);
+  return Drupal::l($variables['text'], Url::fromRoute('token.tree', array(), $variables['options']));
 }
 
 /**
