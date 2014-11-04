@@ -6,6 +6,7 @@
  */
 use Drupal\Component\Utility\Crypt;
 use Drupal\Component\Utility\String;
+use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Component\Utility\Xss;
@@ -73,7 +74,7 @@ function token_token_info_alter(&$info) {
     if (!isset($info['tokens'][$token_type]['url'])) {
       $info['tokens'][$token_type]['url'] = array(
         'name' => t('URL'),
-        'description' => t('The URL of the @entity.', array('@entity' => drupal_strtolower($entity_info->getLabel()))),
+        'description' => t('The URL of the @entity.', array('@entity' => Unicode::strtolower($entity_info->getLabel()))),
         'module' => 'token',
         'type' => 'url',
       );
@@ -82,8 +83,8 @@ function token_token_info_alter(&$info) {
     // Add [entity:original] tokens if they do not already exist.
     if (!isset($info['tokens'][$token_type]['original'])) {
       $info['tokens'][$token_type]['original'] = array(
-        'name' => t('Original @entity', array('@entity' => drupal_strtolower($entity_info->getLabel()))),
-        'description' => t('The original @entity data if the @entity is being updated or saved.', array('@entity' => drupal_strtolower($entity_info->getLabel()))),
+        'name' => t('Original @entity', array('@entity' => Unicode::strtolower($entity_info->getLabel()))),
+        'description' => t('The original @entity data if the @entity is being updated or saved.', array('@entity' => Unicode::strtolower($entity_info->getLabel()))),
         'module' => 'token',
         'type' => $token_type,
       );
