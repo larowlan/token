@@ -5,6 +5,7 @@
  * Contains \Drupal\token\Tests\TokenEntityTestCase.
  */
 namespace Drupal\token\Tests;
+use Drupal\Component\Utility\Unicode;
 use Drupal\taxonomy\VocabularyInterface;
 
 /**
@@ -52,7 +53,7 @@ class TokenEntityTestCase extends TokenTestBase {
 
   function addTerm(VocabularyInterface $vocabulary, array $term = array()) {
     $term += array(
-      'name' => drupal_strtolower($this->randomMachineName(5)),
+      'name' => Unicode::strtolower($this->randomMachineName(5)),
       'vid' => $vocabulary->id(),
     );
     $term = entity_create('taxonomy_term', $term);
