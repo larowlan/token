@@ -7,6 +7,7 @@
 
 namespace Drupal\token\Controller;
 
+use Drupal\Component\Utility\Unicode;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -50,7 +51,7 @@ class TokenAutocompleteController implements ContainerInjectionInterface {
 
     $matches = array();
 
-    if (!drupal_strlen($filter)) {
+    if (!Unicode::strlen($filter)) {
       $matches["[{$token_type}:"] = 0;
     }
     else {
