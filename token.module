@@ -38,14 +38,14 @@ function token_help($route_name, RouteMatchInterface $route_match) {
     $output = [];
     $output['#prefix'] = t('List of the currently available tokens on this site');
 
-    $output[] = [
+    $output['content'] = [
       '#theme' => 'token_tree',
       '#token_types' => 'all',
       '#click_insert' => FALSE,
       '#show_restricted' => TRUE,
     ];
 
-    return $output;
+    return drupal_render($output);
   }
 }
 
