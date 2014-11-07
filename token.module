@@ -1048,8 +1048,12 @@ function token_menu_link_load_all_parents($mlid) {
 
   if (!isset($cache[$mlid])) {
     $cache[$mlid] = array();
-    $plid = db_query("SELECT plid FROM {menu_links} WHERE mlid = :mlid", array(':mlid' => $mlid))->fetchField();
-    while ($plid && $parent = menu_link_load($plid)) {
+    /** @var \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager */
+    $menu_link_manager = \Drupal::service('plugin.manager.menu.link');
+    $menu_links = $menu_link_manager->getParentIds($mlid);
+    $plid = $menu_links[0];
+//    $plid = db_query("SELECT plid FROM {menu_links} WHERE mlid = :mlid", array(':mlid' => $mlid))->fetchField();
+    while ($plid && $parent = $menu_link_manager->createInstance($plid)) {
       $cache[$mlid] = array($plid => $parent->label()) + $cache[$mlid];
       $plid = $parent->plid;
     }
@@ -1094,7 +1098,7 @@ function token_taxonomy_term_load_all_parents($tid) {
  * @see menu_node_prepare()
  * @see token_menu_link_load()
  */
-function token_node_menu_link_load($node) {
+function token_node_menu_link_load(\Drupal\node\NodeInterface $node) {
   $cache = &drupal_static(__FUNCTION__, array());
 
   if (!isset($cache[$node->id()])) {
@@ -1105,7 +1109,7 @@ function token_node_menu_link_load($node) {
       // We need to clone the node as menu_node_prepare() may cause data loss.
       // @see http://drupal.org/node/1317926
       $menu_node = clone $node;
-      $form_state = array();
+      $form_state = new \Drupal\Core\Form\FormState();
       menu_ui_node_prepare_form($menu_node, NULL, $form_state);
       $mlid = !empty($menu_node->menu['mlid']) ? $menu_node->menu['mlid'] : FALSE;
     }
