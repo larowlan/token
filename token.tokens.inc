@@ -678,7 +678,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           $request = \Drupal::request();
           $route = $request->attributes->get(RouteObjectInterface::ROUTE_OBJECT);
           $title = \Drupal::service('title_resolver')->getTitle($request, $route);
-          $replacements[$original] = $sanitize ? $title : decode_entities($title);
+          $replacements[$original] = $sanitize ? $title : String::decodeEntities($title);
           break;
         case 'url':
           // Strip the query string from the result of Request::getUri().
