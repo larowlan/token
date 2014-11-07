@@ -619,31 +619,36 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
 
   // Menu link tokens.
   if ($type == 'menu-link' && !empty($data['menu-link'])) {
+    /** @var \Drupal\Core\Menu\MenuLinkInterface $link */
     $link = $data['menu-link'];
+    /** @var \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager */
+    $menu_link_manager = \Drupal::service('plugin.manager.menu.link');
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'mlid':
-          $replacements[$original] = $link->id();
+          $replacements[$original] = $link->getPluginId();
           break;
         case 'title':
-          $replacements[$original] = $sanitize ? String::checkPlain($link->label()) : $link->label();
+          $replacements[$original] = $sanitize ? String::checkPlain($link->getTitle()) : $link->getTitle();
           break;
         case 'url':
           $replacements[$original] = $link->getUrlObject()->setAbsolute()->toString();
           break;
         case 'parent':
-          if (!empty($link->plid) && $parent = menu_link_load($link->plid)) {
-            $replacements[$original] = $sanitize ? String::checkPlain($parent->label()) : $parent->label();
+
+          /** @var \Drupal\Core\Menu\MenuLinkInterface $parent */
+          if (!empty($link->plid) && $parent = $menu_link_manager->createInstance($link->getParent())) {
+            $replacements[$original] = $sanitize ? String::checkPlain($parent->getTitle()) : $parent->getTitle();
           }
           break;
         case 'parents':
-          if ($parents = token_menu_link_load_all_parents($link->id())) {
+          if ($parents = token_menu_link_load_all_parents($link->getPluginId())) {
             $replacements[$original] = token_render_array($parents, $options);
           }
           break;
         case 'root';
-          if (!empty($link->p1) && $link->p1 != $link->id() && $root = menu_link_load($link->p1)) {
+          if (!empty($link->p1) && $link->p1 != $link->getPluginId() && $root = $menu_link_manager->createInstance($link->p1)) {
             $replacements[$original] = $sanitize ? String::checkPlain($root->label()) : $root->label();
           }
           break;
@@ -651,20 +656,21 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
     }
 
     // Chained token relationships.
-    if (!empty($link->plid) && ($source_tokens = \Drupal::token()->findWithPrefix($tokens, 'parent')) && $parent = menu_link_load($link->plid)) {
+    /** @var \Drupal\Core\Menu\MenuLinkInterface $parent */
+    if (!empty($link->plid) && ($source_tokens = \Drupal::token()->findWithPrefix($tokens, 'parent')) && $parent = $menu_link_manager->createInstance($link->getParent())) {
       $replacements += \Drupal::token()->generate('menu-link', $source_tokens, array('menu-link' => $parent), $options);
     }
     // [menu-link:parents:*] chained tokens.
     if ($parents_tokens = \Drupal::token()->findWithPrefix($tokens, 'parents')) {
-      if ($parents = token_menu_link_load_all_parents($link->id())) {
+      if ($parents = token_menu_link_load_all_parents($link->getPluginId())) {
         $replacements += \Drupal::token()->generate('array', $parents_tokens, array('array' => $parents), $options);
       }
     }
-    if (!empty($link->p1) && $link->p1 != $link->id() && ($root_tokens = \Drupal::token()->findWithPrefix($tokens, 'root')) && $root = menu_link_load($link->p1)) {
+    if (!empty($link->p1) && $link->p1 != $link->getPluginId() && ($root_tokens = \Drupal::token()->findWithPrefix($tokens, 'root')) && $root = $menu_link_manager->createInstance($link->p1)) {
       $replacements += \Drupal::token()->generate('menu-link', $root_tokens, array('menu-link' => $root), $options);
     }
     if ($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url')) {
-      $url = new Url($link->route_name, $link->route_parameters);
+      $url = new Url($link->getRouteName(), $link->getRouteParameters());
       $replacements += \Drupal::token()->generate('url', $url_tokens, array('url' => $url), $options);
     }
 

@@ -5,6 +5,7 @@
  * Contains \Drupal\token\Tests\TokenMenuTestCase.
  */
 namespace Drupal\token\Tests;
+use Drupal\node\Entity\Node;
 
 /**
  * Tests menu tokens.
@@ -107,7 +108,7 @@ class TokenMenuTestCase extends TokenTestBase {
     $this->assertTokens('node', array('node' => $node), $tokens);
 
     // Reload the node which will not have $node->menu defined and re-test.
-    $loaded_node = node_load($node->id());
+    $loaded_node = Node::load($node->id());
     $this->assertTokens('node', array('node' => $loaded_node), $tokens);
 
     // Regression test for http://drupal.org/node/1317926 to ensure the
