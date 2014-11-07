@@ -76,9 +76,11 @@ function theme_tree_table($variables) {
 /**
  * Provide a 'tree' display of nested tokens.
  *
+ * Default template: token_tree.twig.html
+ *
  * @ingroup themeable
  */
-function theme_token_tree($variables) {
+function template_preprocess_token_tree(&$variables) {
   if (!empty($variables['dialog'])) {
     return _theme('token_tree_link', $variables);
   }
@@ -157,9 +159,8 @@ function theme_token_tree($variables) {
     $element['#attributes']['class'][] = 'token-click-insert';
   }
 
-  $output = drupal_render($element);
-  token_render_cache_set($output, $element);
-  return $output;
+  $variables['element'] = $element;
+
 }
 
 /**
