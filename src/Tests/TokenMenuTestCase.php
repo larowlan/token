@@ -5,6 +5,7 @@
  * Contains \Drupal\token\Tests\TokenMenuTestCase.
  */
 namespace Drupal\token\Tests;
+use Drupal\menu_link_content\Plugin\Menu\MenuLinkContent;
 use Drupal\node\Entity\Node;
 
 /**
@@ -24,6 +25,7 @@ class TokenMenuTestCase extends TokenTestBase {
     ));
     $menu->save();
     // Add a root link.
+    /** @var \Drupal\menu_link_content\Plugin\Menu\MenuLinkContent $root_link */
     $root_link = entity_create('menu_link_content', array(
       'url' => 'admin',
       'title' => 'Administration',
@@ -32,19 +34,20 @@ class TokenMenuTestCase extends TokenTestBase {
     ));
     $root_link->save();
 
-    // Add another link with the root link as the parent
+    // Add another link with the root link as the parent.
+    /** @var \Drupal\menu_link_content\Plugin\Menu\MenuLinkContent $parent_link */
     $parent_link = entity_create('menu_link_content', array(
       'route_name' => 'system.admin_config',
       'title' => 'Configuration',
       'menu_name' => 'main-menu',
-      'parent' => 'menu_link_content:' . $root_link->uuid(),
+      'parent' => $root_link->getPluginId(),
       'bundle' => 'menu_link_content',
     ));
     $parent_link->save();
 
     // Test menu link tokens.
     $tokens = array(
-      'mlid' => $parent_link->id(),
+      'mlid' => $parent_link->getPluginId(),
       'title' => 'Configuration',
       'menu' => 'Main menu',
       'menu:name' => 'Main menu',
@@ -57,17 +60,17 @@ class TokenMenuTestCase extends TokenTestBase {
       'url:relative' => \Drupal::url('system.admin_config', [], array('absolute' => FALSE)),
       'url:path' => 'admin/config',
       'url:alias' => 'admin/config',
-      'edit-url' => \Drupal::url('entity.menu_link_content.canonical', ['menu_link_content' => $parent_link->id()], array('absolute' => TRUE)),
+      'edit-url' => \Drupal::url('entity.menu_link_content.canonical', ['menu_link_content' => $parent_link->getPluginId()], array('absolute' => TRUE)),
       'parent' => 'Administration',
-      'parent:mlid' => $root_link->id(),
+      'parent:mlid' => $root_link->getPluginId(),
       'parent:title' => 'Administration',
       'parent:menu' => 'Main menu',
       'parent:parent' => NULL,
       'parents' => 'Administration',
       'parents:count' => 1,
-      'parents:keys' => $root_link->id(),
+      'parents:keys' => $root_link->getPluginId(),
       'root' => 'Administration',
-      'root:mlid' => $root_link->id(),
+      'root:mlid' => $root_link->getPluginId(),
       'root:parent' => NULL,
       'root:root' => NULL,
     );
@@ -79,11 +82,12 @@ class TokenMenuTestCase extends TokenTestBase {
     // Allow main menu for this node type.
     \Drupal::config('menu.entity.node.' . $node->getType())->set('available_menus', array('main-menu'))->save();
 
-    // Add a node menu link
+    // Add a node menu link.
+    /** @var \Drupal\menu_link_content\Plugin\Menu\MenuLinkContent $node_link */
     $node_link = entity_create('menu_link_content', array(
       'link_path' => 'node/' . $node->id(),
       'title' => 'Node link',
-      'parent' => 'menu_link_content:' . $parent_link->uuid(),
+      'parent' => $parent_link->getPluginId(),
       'menu_name' => 'main-menu',
     ));
     $node_link->save();
@@ -91,19 +95,19 @@ class TokenMenuTestCase extends TokenTestBase {
     // Test [node:menu] tokens.
     $tokens = array(
       'menu-link' => 'Node link',
-      'menu-link:mlid' => $node_link->id(),
+      'menu-link:mlid' => $node_link->getPluginId(),
       'menu-link:title' => 'Node link',
       'menu-link:menu' => 'Main menu',
       'menu-link:url' => $node->url('canonical', ['absolute' => TRUE]),
       'menu-link:url:path' => 'node/' . $node->id(),
-      'menu-link:edit-url' => $node_link->url('canonical', ['absolute' => TRUE]),
+      'menu-link:edit-url' => $node->url('edit-form', ['absolute' => TRUE]),
       'menu-link:parent' => 'Configuration',
-      'menu-link:parent:mlid' => $parent_link->id(),
+      'menu-link:parent:mlid' => $parent_link->getPluginId(),
       'menu-link:parents' => 'Administration, Configuration',
       'menu-link:parents:count' => 2,
-      'menu-link:parents:keys' => $root_link->id() . ', ' . $parent_link->id(),
+      'menu-link:parents:keys' => $root_link->getPluginId() . ', ' . $parent_link->getPluginId(),
       'menu-link:root' => 'Administration',
-      'menu-link:root:mlid' => $root_link->id(),
+      'menu-link:root:mlid' => $root_link->getPluginId(),
     );
     $this->assertTokens('node', array('node' => $node), $tokens);
 
