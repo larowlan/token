@@ -1114,7 +1114,7 @@ function token_taxonomy_term_load_all_parents($tid) {
 
   if (!isset($cache[$tid])) {
     $cache[$tid] = array();
-    $parents = taxonomy_term_load_parents_all($tid);
+    $parents = \Drupal::entityManager()->getStorage('taxonomy_term')->loadParentsAll($tid);
     array_shift($parents); // Remove this term from the array.
     $parents = array_reverse($parents);
     foreach ($parents as $term) {

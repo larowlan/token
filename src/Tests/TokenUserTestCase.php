@@ -58,9 +58,13 @@ class TokenUserTestCase extends TokenTestBase {
     $this->account = $storage->load($this->account->id());
     $this->assertTrue(!empty($this->account->user_picture->target_id), 'User picture uploaded.');
 
+    $user_picture = array(
+      '#type' => 'user_picture',
+      '#account' => $this->account,
+    );
     $user_tokens = array(
       // ToDo: Use render arrays. See https://drupal.org/node/2195739
-      'picture' => _theme('user_picture', array('account' => $this->account)),
+      'picture' => drupal_render($user_picture),
       'picture:fid' => $this->account->user_picture->target_id,
       'picture:size-raw' => 125,
       'ip-address' => NULL,
