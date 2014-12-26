@@ -9,6 +9,7 @@ namespace Drupal\token\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Url;
 use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -40,7 +41,8 @@ class TokenCacheController extends ControllerBase implements ContainerInjectionI
   }
 
   public function flush(Request $request) {
-    if (!$request->query->has('token') || ! $this->csrfToken->validate($request->query->get('token'), current_path())) {
+    $current_url = Url::fromRoute('<current>');
+    if (!$request->query->has('token') || ! $this->csrfToken->validate($request->query->get('token'), $current_url->toString())) {
       return MENU_NOT_FOUND;
     }
 
