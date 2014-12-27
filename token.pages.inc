@@ -56,7 +56,7 @@ function theme_token_tree_link($variables) {
  *
  * @ingroup themeable
  */
-function theme_tree_table($variables) {
+function template_preprocess_tree_table(&$variables) {
   foreach ($variables['rows'] as &$row) {
     $row += array('class' => array());
     if (!empty($row['parent'])) {
@@ -64,24 +64,27 @@ function theme_tree_table($variables) {
       unset($row['parent']);
     }
   }
-  $attached['#attached']['library'][] = 'token/token';
+  $variables['#attached']['library'][] = 'token/token';
   if (!empty($variables['rows'])) {
-    $attached['#attached']['library'][] = 'token/jquery.treeTable';
+    $variables['#attached']['library'][] = 'token/jquery.treeTable';
   }
-  drupal_render($attached);
-  // ToDo: Use render arrays. See https://drupal.org/node/2195739
-  return _theme('table', $variables);
+
+  $variables['content'] = [
+    '#theme' => 'table',
+    '#headers' => $variables['headers'],
+    '#rows' => $variables['rows'],
+  ];
+
 }
 
 /**
  * Provide a 'tree' display of nested tokens.
  *
+ * Default template: token_tree.twig.html
+ *
  * @ingroup themeable
  */
-function theme_token_tree($variables) {
-  if (!empty($variables['dialog'])) {
-    return _theme('token_tree_link', $variables);
-  }
+function template_preprocess_token_tree(&$variables) {
 
   $token_types = $variables['token_types'];
   $info = token_get_info();
@@ -137,7 +140,7 @@ function theme_token_tree($variables) {
   }
 
   $element += array(
-    '#theme' => 'tree_table',
+    '#theme' => 'table',
     '#header' => array(
       t('Name'),
       t('Token'),
@@ -157,9 +160,8 @@ function theme_token_tree($variables) {
     $element['#attributes']['class'][] = 'token-click-insert';
   }
 
-  $output = drupal_render($element);
-  token_render_cache_set($output, $element);
-  return $output;
+  $variables['content'] = $element;
+
 }
 
 /**

@@ -37,12 +37,17 @@ function token_help($route_name, RouteMatchInterface $route_match) {
       // return a TRUE value if this is not actually the help page.
       return TRUE;
     }
-    $output = '<dl>';
-    $output .= '<dt>' . t('List of the currently available tokens on this site') . '</dt>';
-    // ToDo: Use render arrays. See https://drupal.org/node/2195739
-    $output .= '<dd>' . _theme('token_tree', array('token_types' => 'all', 'click_insert' => FALSE, 'show_restricted' => TRUE)) . '</dd>';
-    $output .= '</dl>';
-    return $output;
+    $output = [];
+    $output['#prefix'] = t('List of the currently available tokens on this site');
+
+    $output['content'] = [
+      '#theme' => 'token_tree',
+      '#token_types' => 'all',
+      '#click_insert' => FALSE,
+      '#show_restricted' => TRUE,
+    ];
+
+    return drupal_render($output);
   }
 }
 
