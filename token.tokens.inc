@@ -627,31 +627,36 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
 
   // Menu link tokens.
   if ($type == 'menu-link' && !empty($data['menu-link'])) {
+    /** @var \Drupal\Core\Menu\MenuLinkInterface $link */
     $link = $data['menu-link'];
+    /** @var \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager */
+    $menu_link_manager = \Drupal::service('plugin.manager.menu.link');
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'mlid':
-          $replacements[$original] = $link->id();
+          $replacements[$original] = $link->getPluginId();
           break;
         case 'title':
-          $replacements[$original] = $sanitize ? String::checkPlain($link->label()) : $link->label();
+          $replacements[$original] = $sanitize ? String::checkPlain($link->getTitle()) : $link->getTitle();
           break;
         case 'url':
           $replacements[$original] = $link->getUrlObject()->setAbsolute()->toString();
           break;
         case 'parent':
-          if (!empty($link->plid) && $parent = menu_link_load($link->plid)) {
-            $replacements[$original] = $sanitize ? String::checkPlain($parent->label()) : $parent->label();
+
+          /** @var \Drupal\Core\Menu\MenuLinkInterface $parent */
+          if (!empty($link->plid) && $parent = $menu_link_manager->createInstance($link->getParent())) {
+            $replacements[$original] = $sanitize ? String::checkPlain($parent->getTitle()) : $parent->getTitle();
           }
           break;
         case 'parents':
-          if ($parents = token_menu_link_load_all_parents($link->id())) {
+          if ($parents = token_menu_link_load_all_parents($link->getPluginId())) {
             $replacements[$original] = token_render_array($parents, $options);
           }
           break;
         case 'root';
-          if (!empty($link->p1) && $link->p1 != $link->id() && $root = menu_link_load($link->p1)) {
+          if (!empty($link->p1) && $link->p1 != $link->getPluginId() && $root = $menu_link_manager->createInstance($link->p1)) {
             $replacements[$original] = $sanitize ? String::checkPlain($root->label()) : $root->label();
           }
           break;
@@ -659,20 +664,21 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
     }
 
     // Chained token relationships.
-    if (!empty($link->plid) && ($source_tokens = \Drupal::token()->findWithPrefix($tokens, 'parent')) && $parent = menu_link_load($link->plid)) {
+    /** @var \Drupal\Core\Menu\MenuLinkInterface $parent */
+    if (!empty($link->plid) && ($source_tokens = \Drupal::token()->findWithPrefix($tokens, 'parent')) && $parent = $menu_link_manager->createInstance($link->getParent())) {
       $replacements += \Drupal::token()->generate('menu-link', $source_tokens, array('menu-link' => $parent), $options);
     }
     // [menu-link:parents:*] chained tokens.
     if ($parents_tokens = \Drupal::token()->findWithPrefix($tokens, 'parents')) {
-      if ($parents = token_menu_link_load_all_parents($link->id())) {
+      if ($parents = token_menu_link_load_all_parents($link->getPluginId())) {
         $replacements += \Drupal::token()->generate('array', $parents_tokens, array('array' => $parents), $options);
       }
     }
-    if (!empty($link->p1) && $link->p1 != $link->id() && ($root_tokens = \Drupal::token()->findWithPrefix($tokens, 'root')) && $root = menu_link_load($link->p1)) {
+    if (!empty($link->p1) && $link->p1 != $link->getPluginId() && ($root_tokens = \Drupal::token()->findWithPrefix($tokens, 'root')) && $root = $menu_link_manager->createInstance($link->p1)) {
       $replacements += \Drupal::token()->generate('menu-link', $root_tokens, array('menu-link' => $root), $options);
     }
     if ($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url')) {
-      $url = new Url($link->route_name, $link->route_parameters);
+      $url = new Url($link->getRouteName(), $link->getRouteParameters());
       $replacements += \Drupal::token()->generate('url', $url_tokens, array('url' => $url), $options);
     }
 
@@ -1106,6 +1112,9 @@ function menu_ui_token_info() {
 function menu_ui_tokens($type, $tokens, array $data = array(), array $options = array()) {
   $replacements = array();
 
+  /** @var \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager */
+  $menu_link_manager = \Drupal::service('plugin.manager.menu.link');
+
   $url_options = array('absolute' => TRUE);
   if (isset($options['language'])) {
     $url_options['language'] = $options['language'];
@@ -1119,12 +1128,13 @@ function menu_ui_tokens($type, $tokens, array $data = array(), array $options = 
 
   // Node tokens.
   if ($type == 'node' && !empty($data['node'])) {
+    /** @var \Drupal\node\NodeInterface $node */
     $node = $data['node'];
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'menu-link':
-          if ($link = token_node_menu_link_load($node)) {
+          if ($link = $menu_link_manager->loadLinksByRoute('entity.node.canonical', [$node->id()])) {
             $replacements[$original] = $sanitize ? String::checkPlain($link->label()) : $link->label();
           }
           break;
@@ -1132,7 +1142,7 @@ function menu_ui_tokens($type, $tokens, array $data = array(), array $options = 
 
       // Chained token relationships.
       if ($menu_tokens = \Drupal::token()->findWithPrefix($tokens, 'menu-link')) {
-        if ($link = token_node_menu_link_load($node)) {
+        if ($link = $menu_link_manager->loadLinksByRoute('entity.node.canonical', [$node->id()])) {
           $replacements += \Drupal::token()->generate('menu-link', $menu_tokens, array('menu-link' => $link), $options);
         }
       }
@@ -1141,29 +1151,32 @@ function menu_ui_tokens($type, $tokens, array $data = array(), array $options = 
 
   // Menu link tokens.
   if ($type == 'menu-link' && !empty($data['menu-link'])) {
+    /** @var \Drupal\menu_link_content\MenuLinkContentInterface $link */
     $link = $data['menu-link'];
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'menu':
-          if ($menu = Menu::load($link->bundle())) {
+          if ($menu = Menu::load($link->getMenuName())) {
             $replacements[$original] = $sanitize ? String::checkPlain($menu->label()) : $menu->label();
           }
           break;
+
         case 'edit-url':
-          $replacements[$original] = $link->url($url_options);
+          $replacements[$original] = $link->url('edit-form', $url_options);
           break;
       }
     }
 
     // Chained token relationships.
-    if (($menu_tokens = \Drupal::token()->findWithPrefix($tokens, 'menu')) && $menu = Menu::load($link->bundle())) {
+    if (($menu_tokens = \Drupal::token()->findWithPrefix($tokens, 'menu')) && $menu = Menu::load($link->getMenuName())) {
       $replacements += \Drupal::token()->generate('menu', $menu_tokens, array('menu' => $menu), $options);
     }
   }
 
   // Menu tokens.
   if ($type == 'menu' && !empty($data['menu'])) {
+    /** @var \Drupal\system\MenuInterface $menu */
     $menu = $data['menu'];
 
     foreach ($tokens as $name => $original) {
@@ -1171,20 +1184,20 @@ function menu_ui_tokens($type, $tokens, array $data = array(), array $options = 
         case 'name':
           $replacements[$original] = $sanitize ? String::checkPlain($menu->label()) : $menu->label();
           break;
+
         case 'machine-name':
           // This is a machine name so does not ever need to be sanitized.
           $replacements[$original] = $menu->id();
           break;
+
         case 'description':
-          $replacements[$original] = $sanitize ? Xss::filter($menu->description) : $menu->description;
+          $replacements[$original] = $sanitize ? Xss::filter($menu->getDescription()) : $menu->getDescription();
           break;
+
         case 'menu-link-count':
-          $query = db_select('menu_links');
-          $query->condition('menu_name', $menu->id());
-          $query->addTag('menu_menu_link_count');
-          $count = $query->countQuery()->execute()->fetchField();
-          $replacements[$original] = (int) $count;
+          $replacements[$original] = $menu_link_manager->countMenuLinks($menu->id());
           break;
+
         case 'edit-url':
           $replacements[$original] = \Drupal::url('entity.menu.edit_form', ['menu' => $menu->id()], $url_options);
           break;

@@ -5,6 +5,8 @@
  * Contains \Drupal\token\Tests\TokenMenuTestCase.
  */
 namespace Drupal\token\Tests;
+use Drupal\menu_link_content\Plugin\Menu\MenuLinkContent;
+use Drupal\node\Entity\Node;
 
 /**
  * Tests menu tokens.
@@ -23,6 +25,7 @@ class TokenMenuTestCase extends TokenTestBase {
     ));
     $menu->save();
     // Add a root link.
+    /** @var \Drupal\menu_link_content\Plugin\Menu\MenuLinkContent $root_link */
     $root_link = entity_create('menu_link_content', array(
       'url' => 'admin',
       'title' => 'Administration',
@@ -31,23 +34,24 @@ class TokenMenuTestCase extends TokenTestBase {
     ));
     $root_link->save();
 
-    // Add another link with the root link as the parent
+    // Add another link with the root link as the parent.
+    /** @var \Drupal\menu_link_content\Plugin\Menu\MenuLinkContent $parent_link */
     $parent_link = entity_create('menu_link_content', array(
       'route_name' => 'system.admin_config',
       'title' => 'Configuration',
       'menu_name' => 'main-menu',
-      'parent' => 'menu_link_content:' . $root_link->uuid(),
+      'parent' => $root_link->getPluginId(),
       'bundle' => 'menu_link_content',
     ));
     $parent_link->save();
 
     // Test menu link tokens.
     $tokens = array(
-      'mlid' => $parent_link->id(),
+      'mlid' => $parent_link->getPluginId(),
       'title' => 'Configuration',
       'menu' => 'Main menu',
       'menu:name' => 'Main menu',
-      'menu:machine-name' => 'main-menu',
+      'menu:machine-name' => $menu->id(),
       'menu:description' => 'The <em>Main</em> menu is used on many sites to show the major sections of the site, often in a top navigation bar.',
       'menu:menu-link-count' => 2,
       'menu:edit-url' => \Drupal::url('entity.menu.edit_form', ['menu' => 'main-menu'], array('absolute' => TRUE)),
@@ -78,11 +82,12 @@ class TokenMenuTestCase extends TokenTestBase {
     // Allow main menu for this node type.
     \Drupal::config('menu.entity.node.' . $node->getType())->set('available_menus', array('main-menu'))->save();
 
-    // Add a node menu link
+    // Add a node menu link.
+    /** @var \Drupal\menu_link_content\Plugin\Menu\MenuLinkContent $node_link */
     $node_link = entity_create('menu_link_content', array(
       'link_path' => 'node/' . $node->id(),
       'title' => 'Node link',
-      'parent' => 'menu_link_content:' . $parent_link->uuid(),
+      'parent' => $parent_link->getPluginId(),
       'menu_name' => 'main-menu',
     ));
     $node_link->save();
@@ -93,9 +98,9 @@ class TokenMenuTestCase extends TokenTestBase {
       'menu-link:mlid' => $node_link->id(),
       'menu-link:title' => 'Node link',
       'menu-link:menu' => 'Main menu',
-      'menu-link:url' => $node->url('canonical', ['absolute' => TRUE]),
+      'menu-link:url' => $node_link->url('canonical', ['absolute' => TRUE]),
       'menu-link:url:path' => 'node/' . $node->id(),
-      'menu-link:edit-url' => $node_link->url('canonical', ['absolute' => TRUE]),
+      'menu-link:edit-url' => $node_link->url('edit-form', ['absolute' => TRUE]),
       'menu-link:parent' => 'Configuration',
       'menu-link:parent:mlid' => $parent_link->id(),
       'menu-link:parents' => 'Administration, Configuration',
@@ -107,7 +112,7 @@ class TokenMenuTestCase extends TokenTestBase {
     $this->assertTokens('node', array('node' => $node), $tokens);
 
     // Reload the node which will not have $node->menu defined and re-test.
-    $loaded_node = node_load($node->id());
+    $loaded_node = Node::load($node->id());
     $this->assertTokens('node', array('node' => $loaded_node), $tokens);
 
     // Regression test for http://drupal.org/node/1317926 to ensure the
