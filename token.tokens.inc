@@ -577,9 +577,14 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'picture':
-          // ToDo: Use render arrays. See https://drupal.org/node/2195739
           if ($account instanceof UserInterface && $account->hasField('user_picture')) {
-            $replacements[$original] = _theme('user_picture', array('account' => $account));
+            /** @var \Drupal\Core\Render\RendererInterface $renderer */
+            $renderer = \Drupal::service('renderer');
+            $output = [
+              '#theme' => 'user_picture',
+              '#account' => $account,
+            ];
+            $replacements[$original] = $renderer->render($output);
           }
           break;
 

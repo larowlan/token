@@ -16,6 +16,12 @@ use Drupal\field\Entity\FieldStorageConfig;
  * @group token
  */
 class TokenUserTestCase extends TokenTestBase {
+
+  /**
+   * The user account.
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
   protected $account = NULL;
 
   /**
@@ -58,9 +64,14 @@ class TokenUserTestCase extends TokenTestBase {
     $this->account = $storage->load($this->account->id());
     $this->assertTrue(!empty($this->account->user_picture->target_id), 'User picture uploaded.');
 
+    $picture = [
+      '#theme' => 'user_picture',
+      '#account' => $this->account,
+    ];
+    /** @var \Drupal\Core\Render\RendererInterface $renderer */
+    $renderer = \Drupal::service('renderer');
     $user_tokens = array(
-      // ToDo: Use render arrays. See https://drupal.org/node/2195739
-      'picture' => _theme('user_picture', array('account' => $this->account)),
+      'picture' => $renderer->render($picture),
       'picture:fid' => $this->account->user_picture->target_id,
       'picture:size-raw' => 125,
       'ip-address' => NULL,
