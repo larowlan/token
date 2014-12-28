@@ -64,13 +64,16 @@ function theme_tree_table($variables) {
       unset($row['parent']);
     }
   }
-  $attached['#attached']['library'][] = 'token/token';
+  $output = [];
+  $output['#attached']['library'][] = 'token/token';
   if (!empty($variables['rows'])) {
-    $attached['#attached']['library'][] = 'token/jquery.treeTable';
+    $output['#attached']['library'][] = 'token/jquery.treeTable';
   }
-  drupal_render($attached);
-  // ToDo: Use render arrays. See https://drupal.org/node/2195739
-  return _theme('table', $variables);
+  $output['#type'] = 'table';
+  $output['#variables'] = $variables;
+  /** @var \Drupal\Core\Render\RendererInterface $renderer */
+  $renderer = \Drupal::service('renderer');
+  return $renderer->render($output);
 }
 
 /**
@@ -80,7 +83,13 @@ function theme_tree_table($variables) {
  */
 function theme_token_tree($variables) {
   if (!empty($variables['dialog'])) {
-    return _theme('token_tree_link', $variables);
+    $output = [
+      '#theme' => 'token_tree_link',
+      '#variables' => $variables,
+    ];
+    /** @var \Drupal\Core\Render\RendererInterface $renderer */
+    $renderer = \Drupal::service('renderer');
+    return $renderer->render($output);
   }
 
   $token_types = $variables['token_types'];
