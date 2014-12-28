@@ -490,6 +490,9 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
     /* @var \Drupal\taxonomy\TermInterface $term */
     $term = $data['term'];
 
+    /** @var \Drupal\taxonomy\TermStorageInterface $term_storage */
+    $term_storage = \Drupal::entityManager()->getStorage('taxonomy_term');
+
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'edit-url':
@@ -503,7 +506,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           break;
 
         case 'root':
-          $parents = taxonomy_term_load_parents_all($term->id());
+          $parents = $term_storage->loadAllParents($term->id());
           $root_term = end($parents);
           if ($root_term->id() != $term->id()) {
             $replacements[$original] = $sanitize ? String::checkPlain($root_term->label()) : $root_term->label();
@@ -523,7 +526,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
       }
     }
     if ($root_tokens = \Drupal::token()->findWithPrefix($tokens, 'root')) {
-      $parents = taxonomy_term_load_parents_all($term->id());
+      $parents = $term_storage->loadAllParents($term->id());
       $root_term = end($parents);
       if ($root_term->tid != $term->id()) {
         $replacements += \Drupal::token()->generate('term', $root_tokens, array('term' => $root_term), $options);
