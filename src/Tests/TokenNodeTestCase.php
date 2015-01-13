@@ -13,7 +13,30 @@ namespace Drupal\token\Tests;
  * @group token
  */
 class TokenNodeTestCase extends TokenTestBase {
-  protected $profile = 'standard';
+
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
+  public static $modules = ['node'];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+    $this->drupalCreateContentType([
+      'type' => 'page',
+      'name' => 'Basic page',
+      'description' => "Use <em>basic pages</em> for your static content, such as an 'About us' page.",
+    ]);
+    $this->drupalCreateContentType([
+      'type' => 'article',
+      'name' => 'Article',
+      'description' => "Use <em>articles</em> for time-sensitive content like news, press releases or blog posts.",
+    ]);
+  }
 
   function testNodeTokens() {
     $source_node = $this->drupalCreateNode(array('revision_log' => $this->randomMachineName(), 'path' => array('alias' => 'content/source-node')));
@@ -38,10 +61,8 @@ class TokenNodeTestCase extends TokenTestBase {
     );
     $this->assertTokens('node', array('node' => $source_node), $tokens);
 
-    $translated_node = $this->drupalCreateNode(array('tnid' => $source_node->id(), 'type' => 'article'));
+    $translated_node = $this->drupalCreateNode(array('type' => 'article'));
     $tokens = array(
-      'source' => $source_node->label(),
-      'source:nid' => $source_node->id(),
       'log' => '',
       'url:path' => "node/{$translated_node->id()}",
       'url:absolute' => \Drupal::url('entity.node.canonical', ['node' => $translated_node->id()], array('absolute' => TRUE)),
