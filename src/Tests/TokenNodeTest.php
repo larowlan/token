@@ -2,52 +2,60 @@
 
 /**
  * @file
- * Contains \Drupal\token\Tests\TokenNodeTestCase.
+ * Contains \Drupal\token\Tests\TokenNodeTest.
  */
 
 namespace Drupal\token\Tests;
+
+use Drupal\node\Entity\NodeType;
+use Drupal\node\Entity\Node;
 
 /**
  * Test the node and content type tokens.
  *
  * @group token
  */
-class TokenNodeTestCase extends TokenTestBase {
+class TokenNodeTest extends TokenKernelTestBase {
 
   /**
    * Modules to enable.
    *
    * @var array
    */
-  public static $modules = ['node'];
+  public static $modules = ['node', 'field', 'text'];
 
   /**
    * {@inheritdoc}
    */
   protected function setUp() {
     parent::setUp();
-    $this->drupalCreateContentType([
+
+    $this->installEntitySchema('user');
+    $this->installEntitySchema('node');
+
+    $node_type = NodeType::create([
       'type' => 'page',
       'name' => 'Basic page',
       'description' => "Use <em>basic pages</em> for your static content, such as an 'About us' page.",
     ]);
-    $this->drupalCreateContentType([
+    $node_type->save();
+    $node_type = NodeType::create([
       'type' => 'article',
       'name' => 'Article',
       'description' => "Use <em>articles</em> for time-sensitive content like news, press releases or blog posts.",
     ]);
+    $node_type->save();
   }
 
   function testNodeTokens() {
-    $source_node = $this->drupalCreateNode(array('revision_log' => $this->randomMachineName(), 'path' => array('alias' => 'content/source-node')));
+    $page = Node::create(['type' => 'page', 'revision_log' => $this->randomMachineName(), 'path' => array('alias' => 'content/source-node')]);
+    $page->save();
     $tokens = array(
-      'source' => NULL,
-      'source:nid' => NULL,
-      'log' => $source_node->revision_log->value,
+      'log' => $page->revision_log->value,
       'url:path' => 'content/source-node',
-      'url:absolute' => \Drupal::url('entity.node.canonical', ['node' => $source_node->id()], array('absolute' => TRUE)),
-      'url:relative' => \Drupal::url('entity.node.canonical', ['node' => $source_node->id()], array('absolute' => FALSE)),
-      'url:unaliased:path' => "node/{$source_node->id()}",
+      'url:absolute' => \Drupal::url('entity.node.canonical', ['node' => $page->id()], array('absolute' => TRUE)),
+      'url:relative' => \Drupal::url('entity.node.canonical', ['node' => $page->id()], array('absolute' => FALSE)),
+      'url:unaliased:path' => "node/{$page->id()}",
       'content-type' => 'Basic page',
       'content-type:name' => 'Basic page',
       'content-type:machine-name' => 'page',
@@ -59,15 +67,16 @@ class TokenNodeTestCase extends TokenTestBase {
       'type-name' => 'Basic page',
       'url:alias' => 'content/source-node',
     );
-    $this->assertTokens('node', array('node' => $source_node), $tokens);
+    $this->assertTokens('node', array('node' => $page), $tokens);
 
-    $translated_node = $this->drupalCreateNode(array('type' => 'article'));
+    $article = Node::create(['type' => 'article']);
+    $article->save();
     $tokens = array(
       'log' => '',
-      'url:path' => "node/{$translated_node->id()}",
-      'url:absolute' => \Drupal::url('entity.node.canonical', ['node' => $translated_node->id()], array('absolute' => TRUE)),
-      'url:relative' => \Drupal::url('entity.node.canonical', ['node' => $translated_node->id()], array('absolute' => FALSE)),
-      'url:unaliased:path' => "node/{$translated_node->id()}",
+      'url:path' => "node/{$article->id()}",
+      'url:absolute' => \Drupal::url('entity.node.canonical', ['node' => $article->id()], array('absolute' => TRUE)),
+      'url:relative' => \Drupal::url('entity.node.canonical', ['node' => $article->id()], array('absolute' => FALSE)),
+      'url:unaliased:path' => "node/{$article->id()}",
       'content-type' => 'Article',
       'content-type:name' => 'Article',
       'content-type:machine-name' => 'article',
@@ -77,8 +86,8 @@ class TokenNodeTestCase extends TokenTestBase {
       // Deprecated tokens.
       'type' => 'article',
       'type-name' => 'Article',
-      'url:alias' => "node/{$translated_node->id()}",
+      'url:alias' => "node/{$article->id()}",
     );
-    $this->assertTokens('node', array('node' => $translated_node), $tokens);
+    $this->assertTokens('node', array('node' => $article), $tokens);
   }
 }

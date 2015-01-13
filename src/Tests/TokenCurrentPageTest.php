@@ -2,8 +2,9 @@
 
 /**
  * @file
- * Contains \Drupal\token\Tests\TokenCurrentPageTestCase.
+ * Contains \Drupal\token\Tests\TokenCurrentPageTest.
  */
+
 namespace Drupal\token\Tests;
 
 /**
@@ -11,9 +12,14 @@ namespace Drupal\token\Tests;
  *
  * @group token
  */
-class TokenCurrentPageTestCase extends TokenTestBase {
+class TokenCurrentPageTest extends TokenTestBase {
 
-  protected static $modules = array('path', 'token', 'token_test', 'node');
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
+  public static $modules = array('node');
 
   function testCurrentPageTokens() {
     $tokens = array(

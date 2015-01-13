@@ -2,25 +2,52 @@
 
 /**
  * @file
- * Contains \Drupal\token\Tests\TokenCommentTestCase.
+ * Contains \Drupal\token\Tests\TokenCommentTest.
  */
+
 namespace Drupal\token\Tests;
+
+use Drupal\node\Entity\NodeType;
+use Drupal\node\Entity\Node;
+use Drupal\comment\Entity\Comment;
 
 /**
  * Tests comment tokens.
  *
  * @group token
  */
-class TokenCommentTestCase extends TokenTestBase {
-  protected static $modules = array('path', 'token', 'token_test', 'node', 'comment');
+class TokenCommentTest extends TokenKernelTestBase {
+
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
+  public static $modules = array('path', 'token', 'token_test', 'node', 'comment', 'user', 'field', 'text', 'entity_reference', 'system');
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+
+    $this->installEntitySchema('node');
+    $this->installEntitySchema('user');
+    $this->installEntitySchema('comment');
+
+    $node_type = NodeType::create(['type' => 'page', 'name' => t('Page')]);
+    $node_type->save();
+
+    $this->installConfig(['comment']);
+
+    \Drupal::service('comment.manager')->addDefaultField('node', 'page');
+  }
 
   function testCommentTokens() {
-    $this->drupalCreateContentType(array('type' => 'page', 'name' => t('Page')));
-    \Drupal::service('comment.manager')->addDefaultField('node', 'page');
-    $node = $this->drupalCreateNode();
+    $node = Node::create(['type' => 'page']);
+    $node->save();
 
-    /** @var \Drupal\comment\Entity\Comment $parent_comment */
-    $parent_comment = entity_create('comment', array(
+    $parent_comment = Comment::create([
       'entity_id' => $node->id(),
       'entity_type' => 'node',
       'field_name' => 'comment',
@@ -28,7 +55,7 @@ class TokenCommentTestCase extends TokenTestBase {
       'mail' => 'anonymous@example.com',
       'subject' => $this->randomMachineName(),
       'body' => $this->randomMachineName(),
-    ));
+    ]);
     $parent_comment->save();
 
     // Fix http://example.com/index.php/comment/1 fails 'url:path' test.
@@ -44,8 +71,7 @@ class TokenCommentTestCase extends TokenTestBase {
     );
     $this->assertTokens('comment', array('comment' => $parent_comment), $tokens);
 
-    /** @var \Drupal\comment\Entity\Comment  $comment */
-    $comment = entity_create('comment', array(
+    $comment = Comment::create([
       'entity_id' => $node->id(),
       'pid' => $parent_comment->id(),
       'entity_type' => 'node',
@@ -55,7 +81,7 @@ class TokenCommentTestCase extends TokenTestBase {
       'mail' => 'anonymous@example.com',
       'subject' => $this->randomMachineName(),
       'body' => $this->randomMachineName(),
-    ));
+    ]);
     $comment->save();
 
     // Fix http://example.com/index.php/comment/1 fails 'url:path' test.

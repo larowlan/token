@@ -2,9 +2,11 @@
 
 /**
  * @file
- * Contains \Drupal\token\Tests\TokenURLTestCase.
+ * Contains \Drupal\token\Tests\TokenURLTest.
  */
+
 namespace Drupal\token\Tests;
+
 use Drupal\Core\Url;
 
 /**
@@ -12,8 +14,14 @@ use Drupal\Core\Url;
  *
  * @group token
  */
-class TokenURLTestCase extends TokenTestBase {
-  protected static $modules = array('path', 'token', 'token_test', 'node');
+class TokenURLTest extends TokenTestBase {
+
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
+  public static $modules = array('node');
 
   /**
    * {@inheritdoc}

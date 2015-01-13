@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\token\Tests\TokenArrayTestCase
+ * Contains \Drupal\token\Tests\TokenArrayTest
  */
 namespace Drupal\token\Tests;
 
@@ -11,7 +11,7 @@ namespace Drupal\token\Tests;
  *
  * @group token
  */
-class TokenArrayTestCase extends TokenTestBase {
+class TokenArrayTest extends TokenKernelTestBase {
 
   function testArrayTokens() {
     // Test a simple array.

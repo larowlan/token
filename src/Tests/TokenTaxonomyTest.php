@@ -2,21 +2,29 @@
 
 /**
  * @file
- * Contains \Drupal\token\Tests\TokenTaxonomyTestCase.
+ * Contains \Drupal\token\Tests\TokenTaxonomyTest.
  */
+
 namespace Drupal\token\Tests;
+
 use Drupal\Component\Utility\String;
 use Drupal\Component\Utility\Unicode;
+use Drupal\taxonomy\Entity\Vocabulary;
 
 /**
  * Tests taxonomy tokens.
  *
  * @group token
  */
-class TokenTaxonomyTestCase extends TokenTestBase {
+class TokenTaxonomyTest extends TokenKernelTestBase {
   protected $vocab;
 
-  protected static $modules = array('path', 'token', 'token_test', 'taxonomy');
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
+  public static $modules = array('taxonomy', 'text');
 
   /**
    * {@inheritdoc}
@@ -24,11 +32,13 @@ class TokenTaxonomyTestCase extends TokenTestBase {
   public function setUp() {
     parent::setUp();
 
+    $this->installEntitySchema('taxonomy_term');
+
     // Create the default tags vocabulary.
-    $vocabulary = entity_create('taxonomy_vocabulary', array(
+    $vocabulary = Vocabulary::create([
       'name' => 'Tags',
       'vid' => 'tags',
-    ));
+    ]);
     $vocabulary->save();
     $this->vocab = $vocabulary;
   }
