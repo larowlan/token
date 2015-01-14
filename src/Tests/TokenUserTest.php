@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\token\Tests\TokenUserTestCase.
+ * Contains \Drupal\token\Tests\TokenUserTest.
  */
 
 namespace Drupal\token\Tests;
@@ -15,7 +15,7 @@ use Drupal\field\Entity\FieldStorageConfig;
  *
  * @group token
  */
-class TokenUserTestCase extends TokenTestBase {
+class TokenUserTest extends TokenTestBase {
 
   /**
    * The user account.
@@ -29,7 +29,7 @@ class TokenUserTestCase extends TokenTestBase {
    *
    * @var array
    */
-  protected static $modules = array('token_user_picture');
+  public static $modules = array('token_user_picture');
 
   /**
    * {@inheritdoc}

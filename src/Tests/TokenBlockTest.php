@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\token\Tests\TokenBlockTestCase.
+ * Contains \Drupal\token\Tests\TokenBlockTest.
  */
 namespace Drupal\token\Tests;
 use Drupal\block_content\Entity\BlockContent;
@@ -13,14 +13,14 @@ use Drupal\block_content\Entity\BlockContentType;
  *
  * @group token
  */
-class TokenBlockTestCase extends TokenTestBase {
+class TokenBlockTest extends TokenTestBase {
 
   /**
    * Modules to enable.
    *
    * @var array
    */
-  protected static $modules = array('path', 'token', 'token_test', 'block', 'node', 'views', 'block_content');
+  public static $modules = array('path', 'token', 'token_test', 'block', 'node', 'views', 'block_content');
 
   /**
    * {@inheritdoc}

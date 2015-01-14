@@ -2,10 +2,14 @@
 
 /**
  * @file
- * Contains \Drupal\token\Tests\TokenEntityTestCase.
+ * Contains \Drupal\token\Tests\TokenEntityTest.
  */
+
 namespace Drupal\token\Tests;
+
 use Drupal\Component\Utility\Unicode;
+use Drupal\node\Entity\Node;
+use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\taxonomy\VocabularyInterface;
 
 /**
@@ -13,21 +17,32 @@ use Drupal\taxonomy\VocabularyInterface;
  *
  * @group Token
  */
-class TokenEntityTestCase extends TokenTestBase {
-  protected static $modules = array('path', 'token', 'token_test', 'node', 'taxonomy');
+class TokenEntityTest extends TokenKernelTestBase {
+
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
+  public static $modules = array('path', 'token', 'token_test', 'node', 'taxonomy', 'text');
 
   /**
    * {@inheritdoc}
    */
-  public function setUp($modules = array()) {
+  public function setUp() {
     parent::setUp();
 
     // Create the default tags vocabulary.
-    $vocabulary = entity_create('taxonomy_vocabulary', array(
+    $vocabulary = Vocabulary::create([
       'name' => 'Tags',
       'vid' => 'tags',
-    ));
+    ]);
     $vocabulary->save();
+
+    $this->installEntitySchema('taxonomy_term');
+    $this->installEntitySchema('user');
+    $this->installEntitySchema('node');
+
     $this->vocab = $vocabulary;
   }
 
@@ -65,7 +80,8 @@ class TokenEntityTestCase extends TokenTestBase {
    * Test the [entity:original:*] tokens.
    */
   function testEntityOriginal() {
-    $node = $this->drupalCreateNode(array('title' => 'Original title'));
+    $node = Node::create(['type' => 'page', 'title' => 'Original title']);
+    $node->save();
 
     $tokens = array(
       'nid' => $node->id(),

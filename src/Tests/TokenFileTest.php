@@ -2,17 +2,32 @@
 
 /**
  * @file
- * Contains \Drupal\token\Tests\TokenFileTestCase.
+ * Contains \Drupal\token\Tests\TokenFileTest.
  */
 namespace Drupal\token\Tests;
+use Drupal\taxonomy\Entity\Vocabulary;
 
 /**
  * Tests file tokens.
  *
  * @group token
  */
-class TokenFileTestCase extends TokenTestBase {
-  protected static $modules = array('path', 'token', 'token_test', 'file');
+class TokenFileTest extends TokenKernelTestBase {
+
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
+  public static $modules = array('file');
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
+    parent::setUp();
+    $this->installEntitySchema('file');
+  }
 
   function testFileTokens() {
     // Create a test file object.

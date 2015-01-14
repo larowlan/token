@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\token\Tests\TokenUnitTestCase.
+ * Contains \Drupal\token\Tests\TokenUnitTest.
  */
 namespace Drupal\token\Tests;
 
@@ -11,8 +11,14 @@ namespace Drupal\token\Tests;
  *
  * @group token
  */
-class TokenUnitTestCase extends TokenTestBase {
-  protected static $modules = array('path', 'token', 'token_test', 'file', 'node');
+class TokenUnitTest extends TokenKernelTestBase {
+
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
+  public static $modules = array('file', 'node');
 
   /**
    * Test token_get_invalid_tokens() and token_get_invalid_tokens_by_context().

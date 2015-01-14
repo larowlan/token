@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\token\Tests\TokenRandomTestCase.
+ * Contains \Drupal\token\Tests\TokenRandomTest.
  */
 namespace Drupal\token\Tests;
 
@@ -11,7 +11,7 @@ namespace Drupal\token\Tests;
  *
  * @group token
  */
-class TokenRandomTestCase extends TokenTestBase {
+class TokenRandomTest extends TokenKernelTestBase {
 
   function testRandomTokens() {
     $tokens = array(

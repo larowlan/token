@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\token\Tests\TokenMenuTestCase.
+ * Contains \Drupal\token\Tests\TokenMenuTest.
  */
 namespace Drupal\token\Tests;
 
@@ -11,8 +11,14 @@ namespace Drupal\token\Tests;
  *
  * @group token
  */
-class TokenMenuTestCase extends TokenTestBase {
-  protected static $modules = array('path', 'token', 'token_test', 'menu_ui', 'node');
+class TokenMenuTest extends TokenTestBase {
+
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
+  public static $modules = array('path', 'token', 'token_test', 'menu_ui', 'node');
 
   function testMenuTokens() {
     // Add a menu.

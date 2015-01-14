@@ -427,12 +427,6 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
-        case 'source':
-          if (!empty($node->tnid) && $source_node = node_load($node->tnid)) {
-            $title = $source_node->label();
-            $replacements[$original] = $sanitize ? Xss::filter($title) : $title;
-          }
-          break;
         case 'log':
           $replacements[$original] = $sanitize ? Xss::filter($node->revision_log->value) : $node->revision_log->value;
           break;
@@ -457,25 +451,26 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
 
   // Content type tokens.
   if ($type == 'content-type' && !empty($data['node_type'])) {
+    /* @var \Drupal\node\NodeTypeInterface $node_type */
     $node_type = $data['node_type'];
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'name':
-          $replacements[$original] = $sanitize ? String::checkPlain($node_type->name) : $node_type->name;
+          $replacements[$original] = $sanitize ? String::checkPlain($node_type->label()) : $node_type->label();
           break;
         case 'machine-name':
           // This is a machine name so does not ever need to be sanitized.
-          $replacements[$original] = $node_type->type;
+          $replacements[$original] = $node_type->id();
           break;
         case 'description':
-          $replacements[$original] = $sanitize ? Xss::filter($node_type->description) : $node_type->description;
+          $replacements[$original] = $sanitize ? Xss::filter($node_type->getDescription()) : $node_type->getDescription();
           break;
         case 'node-count':
-          $query = db_select('node');
-          $query->condition('type', $node_type->type);
-          $query->addTag('node_type_node_count');
-          $count = $query->countQuery()->execute()->fetchField();
+          $count = \Drupal::entityQueryAggregate('node')
+            ->aggregate('nid', 'COUNT')
+            ->condition('type', $node_type->id())
+            ->execute();
           $replacements[$original] = (int) $count;
           break;
         case 'edit-url':
