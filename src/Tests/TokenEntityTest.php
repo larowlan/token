@@ -15,7 +15,7 @@ use Drupal\taxonomy\VocabularyInterface;
 /**
  * Tests entity tokens.
  *
- * @group Token
+ * @group token
  */
 class TokenEntityTest extends TokenKernelTestBase {
 
