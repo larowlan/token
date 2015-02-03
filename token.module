@@ -342,8 +342,10 @@ function token_module_implements_alter(&$implementations, $hook) {
     }
     // Move token.module to get included first since it is responsible for
     // other modules.
-    unset($implementations['token']);
-    $implementations = array_merge(array('token' => 'tokens'), $implementations);
+    if (isset($implementations['token'])) {
+      unset($implementations['token']);
+      $implementations = array_merge(array('token' => 'tokens'), $implementations);
+    }
   }
 }
 
