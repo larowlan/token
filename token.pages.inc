@@ -5,6 +5,7 @@
  * User page callbacks for the token module.
  */
 use Drupal\Component\Serialization\Json;
+use Drupal\Component\Utility\DiffArray;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\Token;
 
@@ -25,7 +26,7 @@ function theme_token_tree_link($variables) {
 
   $info = token_theme();
   $tree_variables = array_intersect_key($variables, $info['token_tree']['variables']);
-  $tree_variables = drupal_array_diff_assoc_recursive($tree_variables, $info['token_tree']['variables']);
+  $tree_variables = DiffArray::diffAssocRecursive($tree_variables, $info['token_tree']['variables']);
   if (!isset($variables['options']['query']['options'])) {
     $variables['options']['query']['options'] = array();
   }
