@@ -11,12 +11,16 @@ token.autocomplete:
     _controller: '\Drupal\token\Controller\TokenAutocompleteController::autocomplete'
   requirements:
     _access: 'TRUE'
+
 token.flush_cache:
   path: '/token/flush-cache'
   defaults:
     _controller: '\Drupal\token\Controller\TokenCacheController::flush'
   requirements:
     _permission: 'flush caches'
+    _csrf_token: 'TRUE'
+    _module_dependencies: 'admin_menu'
+
 token.devel_node_token:
   path: '/node/{node}/devel/token'
   defaults:

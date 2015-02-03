@@ -8,30 +8,14 @@
 namespace Drupal\token\Controller;
 
 use Drupal\Component\Utility\Unicode;
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Returns autocomplete responses for tokens.
  */
-class TokenAutocompleteController implements ContainerInjectionInterface {
-
-  /**
-   * Constructs a new TokenAutocompleteController.
-   */
-  public function __construct() {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-
-    );
-  }
+class TokenAutocompleteController extends ControllerBase {
 
   /**
    * Retrieves suggestions for block category autocompletion.
