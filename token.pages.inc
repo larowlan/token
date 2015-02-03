@@ -277,48 +277,4 @@ function token_devel_token_object($entity_type, $entity, $token_type = NULL) {
   return $build;
 }
 
-function token_autocomplete() {
-  $args = func_get_args();
-  $string = implode('/', $args);
-
-  $token_info = \Drupal::token()->getInfo();
-
-  preg_match_all('/\[([^\s\]:]*):?([^\s\]]*)?\]?/', $string, $matches);
-  $types = $matches[1];
-  $tokens = $matches[2];
-
-  foreach ($types as $index => $type) {
-    if (!empty($tokens[$index]) || isset($token_info['types'][$type])) {
-      token_autocomplete_token($type, $tokens[$index]);
-    }
-    else {
-      token_autocomplete_type($type);
-    }
-  }
-
-}
-
-function token_autocomplete_type($string = '') {
-  $token_info = \Drupal::token()->getInfo();
-  $types = $token_info['types'];
-  $matches = array();
-
-  foreach ($types as $type => $info) {
-    if (!$string || strpos($type, $string) === 0) {
-      $type_key = "[{$type}:";
-      $matches[$type_key] = levenshtein($type, $string);
-    }
-  }
-
-  if ($string) {
-    asort($matches);
-  }
-  else {
-    ksort($matches);
-  }
-
-  $keys = array_keys($matches);
-  $matches = array_combine($keys, $keys);
-  drupal_json_output($matches);
-}
 
