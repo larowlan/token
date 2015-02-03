@@ -76,7 +76,9 @@ function theme_tree_table($variables) {
     $output['#attached']['library'][] = 'token/jquery.treeTable';
   }
   $output['#type'] = 'table';
-  $output['#variables'] = $variables;
+  foreach ($variables as $key => $value) {
+    $output['#' . $key] = $value;
+  }
   /** @var \Drupal\Core\Render\RendererInterface $renderer */
   $renderer = \Drupal::service('renderer');
   return $renderer->render($output);
@@ -114,9 +116,11 @@ function theme_token_tree($variables) {
       'tags' => array(Token::TOKEN_INFO_CACHE_TAG),
     ),
   );
-  if ($cached_output = token_render_cache_get($element)) {
+
+  // @todo Find a way to use the render cache for this.
+  /*if ($cached_output = token_render_cache_get($element)) {
     return $cached_output;
-  }
+  }*/
 
   $options = array(
     'flat' => TRUE,
@@ -173,7 +177,7 @@ function theme_token_tree($variables) {
   }
 
   $output = drupal_render($element);
-  token_render_cache_set($output, $element);
+  //token_render_cache_set($output, $element);
   return $output;
 }
 
