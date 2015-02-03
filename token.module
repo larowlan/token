@@ -106,7 +106,7 @@ function token_theme() {
       'text' => NULL,
       'options' => array(),
       'dialog' => TRUE,
-    ),
+    ) + $info['token_tree']['variables'],
     'function' => 'theme_token_tree_link',
     'file' => 'token.pages.inc',
   );
@@ -163,7 +163,8 @@ function token_form_block_form_alter(&$form, FormStateInterface $form_state) {
  */
 function token_field_widget_form_alter(&$element, FormStateInterface $form_state, $context) {
   if (!empty($element['#description']) && is_string($element['#description'])) {
-    $element['#description'] = Xss::filterAdmin(\Drupal::token()->replace($element['#description']));
+    /* @var \Drupal\Core\Field\FieldItemListInterface $context['items'] */
+    $element['#description'] = Xss::filterAdmin(\Drupal::token()->replace($context['items']->getFieldDefinition()->getFieldDescription()));
   }
 }
 
