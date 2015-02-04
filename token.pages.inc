@@ -5,6 +5,7 @@
  * User page callbacks for the token module.
  */
 use Drupal\Component\Serialization\Json;
+use Drupal\Component\Utility\DiffArray;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\Token;
 
@@ -24,7 +25,12 @@ function theme_token_tree_link($variables) {
   }
 
   $info = token_theme();
-  $variables['options']['query']['options'] = array_intersect_key($variables, $info['token_tree']['variables']);
+  $tree_variables = array_intersect_key($variables, $info['token_tree']['variables']);
+  $tree_variables = DiffArray::diffAssocRecursive($tree_variables, $info['token_tree']['variables']);
+  if (!isset($variables['options']['query']['options'])) {
+    $variables['options']['query']['options'] = array();
+  }
+  $variables['options']['query']['options'] += $tree_variables;
 
   // We should never pass the dialog option to theme_token_tree(). It is only
   // used for this function.
@@ -70,7 +76,9 @@ function theme_tree_table($variables) {
     $output['#attached']['library'][] = 'token/jquery.treeTable';
   }
   $output['#type'] = 'table';
-  $output['#variables'] = $variables;
+  foreach ($variables as $key => $value) {
+    $output['#' . $key] = $value;
+  }
   /** @var \Drupal\Core\Render\RendererInterface $renderer */
   $renderer = \Drupal::service('renderer');
   return $renderer->render($output);
@@ -108,9 +116,11 @@ function theme_token_tree($variables) {
       'tags' => array(Token::TOKEN_INFO_CACHE_TAG),
     ),
   );
-  if ($cached_output = token_render_cache_get($element)) {
+
+  // @todo Find a way to use the render cache for this.
+  /*if ($cached_output = token_render_cache_get($element)) {
     return $cached_output;
-  }
+  }*/
 
   $options = array(
     'flat' => TRUE,
@@ -167,7 +177,7 @@ function theme_token_tree($variables) {
   }
 
   $output = drupal_render($element);
-  token_render_cache_set($output, $element);
+  //token_render_cache_set($output, $element);
   return $output;
 }
 
@@ -272,48 +282,4 @@ function token_devel_token_object($entity_type, $entity, $token_type = NULL) {
   return $build;
 }
 
-function token_autocomplete() {
-  $args = func_get_args();
-  $string = implode('/', $args);
-
-  $token_info = \Drupal::token()->getInfo();
-
-  preg_match_all('/\[([^\s\]:]*):?([^\s\]]*)?\]?/', $string, $matches);
-  $types = $matches[1];
-  $tokens = $matches[2];
-
-  foreach ($types as $index => $type) {
-    if (!empty($tokens[$index]) || isset($token_info['types'][$type])) {
-      token_autocomplete_token($type, $tokens[$index]);
-    }
-    else {
-      token_autocomplete_type($type);
-    }
-  }
-
-}
-
-function token_autocomplete_type($string = '') {
-  $token_info = \Drupal::token()->getInfo();
-  $types = $token_info['types'];
-  $matches = array();
-
-  foreach ($types as $type => $info) {
-    if (!$string || strpos($type, $string) === 0) {
-      $type_key = "[{$type}:";
-      $matches[$type_key] = levenshtein($type, $string);
-    }
-  }
-
-  if ($string) {
-    asort($matches);
-  }
-  else {
-    ksort($matches);
-  }
-
-  $keys = array_keys($matches);
-  $matches = array_combine($keys, $keys);
-  drupal_json_output($matches);
-}
 

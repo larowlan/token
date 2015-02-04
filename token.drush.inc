@@ -9,9 +9,7 @@
  * Implements hook_drush_cache_clear().
  */
 function token_drush_cache_clear(&$types) {
-  if (function_exists('module_exists') && module_exists('token')) {
-    $types['token'] = 'drush_token_cache_clear_token_info';
-  }
+  $types['token'] = 'drush_token_cache_clear_token_info';
 }
 
 /**

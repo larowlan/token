@@ -57,62 +57,6 @@ function _token_core_supported_modules() {
 }
 
 /**
- * Implements hook_menu().
- */
-function token_menu() {
-
-  // Devel token pages.
-  if (\Drupal::moduleHandler()->moduleExists('devel')) {
-    $items['node/%node/devel/token'] = array(
-      'title' => 'Tokens',
-      'page callback' => 'token_devel_token_object',
-      'page arguments' => array('node', 1),
-      'access arguments' => array('access devel information'),
-      'type' => MENU_LOCAL_TASK,
-      'file' => 'token.pages.inc',
-      'weight' => 5,
-    );
-    $items['comment/%comment/devel/token'] = array(
-      'title' => 'Tokens',
-      'page callback' => 'token_devel_token_object',
-      'page arguments' => array('comment', 1),
-      'access arguments' => array('access devel information'),
-      'type' => MENU_LOCAL_TASK,
-      'file' => 'token.pages.inc',
-      'weight' => 5,
-    );
-    $items['taxonomy/term/%taxonomy_term/devel/token'] = array(
-      'title' => 'Tokens',
-      'page callback' => 'token_devel_token_object',
-      'page arguments' => array('taxonomy_term', 2),
-      'access arguments' => array('access devel information'),
-      'type' => MENU_LOCAL_TASK,
-      'file' => 'token.pages.inc',
-      'weight' => 5,
-    );
-    $items['user/%user/devel/token'] = array(
-      'title' => 'Tokens',
-      'page callback' => 'token_devel_token_object',
-      'page arguments' => array('user', 1),
-      'access arguments' => array('access devel information'),
-      'type' => MENU_LOCAL_TASK,
-      'file' => 'token.pages.inc',
-      'weight' => 5,
-    );
-  }
-
-  // Admin menu callback to clear token caches.
-  $items['token/flush-cache'] = array(
-    'page callback' => 'token_flush_cache_callback',
-    'access arguments' => array('flush caches'),
-    'type' => MENU_CALLBACK,
-    'file' => 'token.pages.inc',
-  );
-
-  return $items;
-}
-
-/**
  * Implements hook_admin_menu_output_alter().
  */
 function token_admin_menu_output_alter(&$content) {
@@ -142,6 +86,7 @@ function token_theme() {
       'empty' => '',
       'caption' => '',
     ),
+    'function' => 'theme_tree_table',
     'file' => 'token.pages.inc',
   );
   $info['token_tree'] = array(
@@ -153,6 +98,7 @@ function token_theme() {
       'recursion_limit' => 3,
       'dialog' => FALSE,
     ),
+    'function' => 'theme_token_tree',
     'file' => 'token.pages.inc',
   );
   $info['token_tree_link'] = array(
@@ -160,7 +106,8 @@ function token_theme() {
       'text' => NULL,
       'options' => array(),
       'dialog' => TRUE,
-    ),
+    ) + $info['token_tree']['variables'],
+    'function' => 'theme_token_tree_link',
     'file' => 'token.pages.inc',
   );
 
@@ -216,7 +163,8 @@ function token_form_block_form_alter(&$form, FormStateInterface $form_state) {
  */
 function token_field_widget_form_alter(&$element, FormStateInterface $form_state, $context) {
   if (!empty($element['#description']) && is_string($element['#description'])) {
-    $element['#description'] = Xss::filterAdmin(\Drupal::token()->replace($element['#description']));
+    /* @var \Drupal\Core\Field\FieldItemListInterface $context['items'] */
+    $element['#description'] = Xss::filterAdmin(\Drupal::token()->replace($context['items']->getFieldDefinition()->getDescription()));
   }
 }
 
@@ -394,8 +342,10 @@ function token_module_implements_alter(&$implementations, $hook) {
     }
     // Move token.module to get included first since it is responsible for
     // other modules.
-    unset($implementations['token']);
-    $implementations = array_merge(array('token' => 'tokens'), $implementations);
+    if (isset($implementations['token'])) {
+      unset($implementations['token']);
+      $implementations = array_merge(array('token' => 'tokens'), $implementations);
+    }
   }
 }
 
