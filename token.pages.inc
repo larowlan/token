@@ -165,10 +165,6 @@ function theme_token_tree($variables) {
     '#rows' => $rows,
     '#attributes' => array('class' => array('token-tree')),
     '#empty' => t('No tokens available'),
-    '#attached' => array(
-      'css' => array(drupal_get_path('module', 'token') . '/css/token.css'),
-      'library' => array('token/token', 'token/jquery.treeTable'),
-    ),
   );
 
   if ($variables['click_insert']) {
