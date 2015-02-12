@@ -7,6 +7,7 @@
 
 namespace Drupal\token\Tests;
 
+use Drupal\comment\Tests\CommentTestTrait;
 use Drupal\node\Entity\NodeType;
 use Drupal\node\Entity\Node;
 use Drupal\comment\Entity\Comment;
@@ -17,6 +18,8 @@ use Drupal\comment\Entity\Comment;
  * @group token
  */
 class TokenCommentTest extends TokenKernelTestBase {
+
+  use CommentTestTrait;
 
   /**
    * Modules to enable.
@@ -40,7 +43,7 @@ class TokenCommentTest extends TokenKernelTestBase {
 
     $this->installConfig(['comment']);
 
-    \Drupal::service('comment.manager')->addDefaultField('node', 'page');
+    $this->addDefaultCommentField('node', 'page');
   }
 
   function testCommentTokens() {
