@@ -1039,23 +1039,23 @@ function token_render_cache_set(&$markup, $elements) {
   \Drupal::request()->server->set('REQUEST_METHOD', $original_method);
 }
 
-function token_menu_link_load_all_parents($mlid) {
+function token_menu_link_load_all_parents($plugin_id) {
   $cache = &drupal_static(__FUNCTION__, array());
 
-  if (!is_numeric($mlid)) {
-    return array();
-  }
-
-  if (!isset($cache[$mlid])) {
-    $cache[$mlid] = array();
-    $plid = db_query("SELECT plid FROM {menu_links} WHERE mlid = :mlid", array(':mlid' => $mlid))->fetchField();
-    while ($plid && $parent = menu_link_load($plid)) {
-      $cache[$mlid] = array($plid => $parent->label()) + $cache[$mlid];
-      $plid = $parent->plid;
+  if (!isset($cache[$plugin_id])) {
+    $cache[$plugin_id] = array();
+    /** @var \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager */
+    $menu_link_manager = \Drupal::service('plugin.manager.menu.link');
+    $parent_ids = $menu_link_manager->getParentIds($plugin_id);
+    // Remove the current plugin ID from the parents.
+    unset($parent_ids[$plugin_id]);
+    foreach ($parent_ids as $parent_id) {
+      $parent = $menu_link_manager->createInstance($parent_id);
+      $cache[$plugin_id] = array($parent_id => $parent->getTitle()) + $cache[$plugin_id];
     }
   }
 
-  return $cache[$mlid];
+  return $cache[$plugin_id];
 }
 
 function token_taxonomy_term_load_all_parents($tid) {
@@ -1079,44 +1079,6 @@ function token_taxonomy_term_load_all_parents($tid) {
   }
 
   return $cache[$tid];
-}
-
-/**
- * Load the preferred menu link associated with a node.
- *
- * @param $node
- *   A node object.
- *
- * @return
- *   A menu link array from token_menu_link_load() or FALSE if a menu link was
- *   not found.
- *
- * @see menu_node_prepare()
- * @see token_menu_link_load()
- */
-function token_node_menu_link_load($node) {
-  $cache = &drupal_static(__FUNCTION__, array());
-
-  if (!isset($cache[$node->id()])) {
-    $mlid = FALSE;
-
-    // Nodes do not have their menu links loaded via menu_node_load().
-    if (!isset($node->menu)) {
-      // We need to clone the node as menu_node_prepare() may cause data loss.
-      // @see http://drupal.org/node/1317926
-      $menu_node = clone $node;
-      $form_state = array();
-      menu_ui_node_prepare_form($menu_node, NULL, $form_state);
-      $mlid = !empty($menu_node->menu['mlid']) ? $menu_node->menu['mlid'] : FALSE;
-    }
-    else {
-      $mlid = !empty($node->menu['mlid']) ? $node->menu['mlid'] : FALSE;
-    }
-
-    $cache[$node->id()] = $mlid;
-  }
-
-  return $cache[$node->id()] ? menu_link_load($cache[$node->id()]) : FALSE;
 }
 
 function token_element_children(&$elements, $sort = FALSE) {

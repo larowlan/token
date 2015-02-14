@@ -73,8 +73,7 @@ script:
   - cd $TRAVIS_BUILD_DIR/../drupal
   - ls -la $TRAVIS_BUILD_DIR/../drupal/sites/default
   # Run the tests
-  - php core/scripts/run-tests.sh --verbose --color --concurrency 4 --php `which php` --url http://localhost "token" | tee /tmp/test.txt
-  - TEST_EXIT=${PIPESTATUS[0]}
+  - php core/scripts/run-tests.sh --verbose --color --concurrency 4 --php `which php` --url http://localhost "token" | tee /tmp/test.txt; TEST_EXIT=${PIPESTATUS[0]}
   - echo $TEST_EXIT
   # Check if we had fails in the run-tests.sh script
   # Exit with the inverted value, because if there are no fails found, it will exit with 1 and for us that\
@@ -84,8 +83,7 @@ script:
   - TEST_OUTPUT=$(! egrep -i "([0-9]+ fails)|(PHP Fatal error)|([0-9]+ exceptions)" /tmp/test.txt > /dev/null)$?
   - echo $TEST_OUTPUT
   - cd $TRAVIS_BUILD_DIR/../drupal/core
-  - ./vendor/bin/phpunit --verbose --debug ../modules/token/
-  - TEST_PHPUNIT=$?
+  - ./vendor/bin/phpunit --verbose --debug ../modules/token/; TEST_PHPUNIT=$?
   - echo $TEST_PHPUNIT
   # if the TEST_EXIT status is 0 AND the TEST_OUTPUT status is also 0 it means we succeeded, in all other cases we
   # failed.
@@ -93,6 +91,6 @@ script:
   #- /home/travis/.composer/vendor/bin/phpcs --standard=/home/travis/.composer/vendor/drupal/coder/coder_sniffer/Drupal --extensions=php,inc,test,module,install --ignore=css/ $TRAVIS_BUILD_DIR/../drupal/modules/search_api
   - php -i | grep 'php.ini'
   - sudo cat /var/log/apache2/error.log
-  - sudo cat /var/log/syslog | grep 'php'
+  - sudo cat /var/log/syslog | grep 'php' | cat # Suppress grep exit status 1
   # Exit the build
   - if [ $TEST_EXIT -eq 0 ] && [ $TEST_OUTPUT -eq 0 ] && [ $TEST_PHPUNIT -eq 0 ]; then exit 0; else exit 1; fi
