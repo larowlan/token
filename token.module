@@ -1039,27 +1039,23 @@ function token_render_cache_set(&$markup, $elements) {
   \Drupal::request()->server->set('REQUEST_METHOD', $original_method);
 }
 
-function token_menu_link_load_all_parents($mlid) {
+function token_menu_link_load_all_parents($plugin_id) {
   $cache = &drupal_static(__FUNCTION__, array());
 
-  if (!is_numeric($mlid)) {
-    return array();
-  }
-
-  if (!isset($cache[$mlid])) {
-    $cache[$mlid] = array();
+  if (!isset($cache[$plugin_id])) {
+    $cache[$plugin_id] = array();
     /** @var \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager */
     $menu_link_manager = \Drupal::service('plugin.manager.menu.link');
-    $menu_links = $menu_link_manager->getParentIds($mlid);
-    $plid = $menu_links[0];
-//    $plid = db_query("SELECT plid FROM {menu_links} WHERE mlid = :mlid", array(':mlid' => $mlid))->fetchField();
-    while ($plid && $parent = $menu_link_manager->createInstance($plid)) {
-      $cache[$mlid] = array($plid => $parent->label()) + $cache[$mlid];
-      $plid = $parent->plid;
+    $parent_ids = $menu_link_manager->getParentIds($plugin_id);
+    // Remove the current plugin ID from the parents.
+    unset($parent_ids[$plugin_id]);
+    foreach ($parent_ids as $parent_id) {
+      $parent = $menu_link_manager->createInstance($parent_id);
+      $cache[$plugin_id] = array($parent_id => $parent->getTitle()) + $cache[$plugin_id];
     }
   }
 
-  return $cache[$mlid];
+  return $cache[$plugin_id];
 }
 
 function token_taxonomy_term_load_all_parents($tid) {
