@@ -6,9 +6,9 @@
  */
 
 /**
- * Implements hook_page_alter().
+ * Implements hook_page_attachments().
  */
-function token_test_page_alter() {
+function token_test_page_attachments() {
   if ($debug = \Drupal::state()->get('token_page_tokens', array())) {
     $debug += array('tokens' => array(), 'data' => array(), 'options' => array());
     foreach (array_keys($debug['tokens']) as $token) {
