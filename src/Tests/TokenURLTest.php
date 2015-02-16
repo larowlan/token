@@ -32,19 +32,19 @@ class TokenURLTest extends TokenTestBase {
   }
 
   function testURLTokens() {
-    $host = \Drupal::request()->getHttpHost();
+    $url = new Url('entity.node.canonical', array('node' => 1));
     $tokens = array(
-      'absolute' => "http://{$host}/first-node",
-      'relative' => base_path() . 'first-node',
+      'absolute' => $url->setAbsolute()->toString(),
+      'relative' => $url->setAbsolute(FALSE)->toString(),
       'path' => 'first-node',
-      'brief' => "{$host}/first-node",
+      'brief' => preg_replace(array('!^https?://!', '!/$!'), '', $url->setAbsolute()->toString()),
       'args:value:0' => 'first-node',
       'args:value:1' => NULL,
       'args:value:N' => NULL,
-      'unaliased' => "http://{$host}/node/1",
-      'unaliased:relative' => base_path() . 'node/1',
+      'unaliased' => $url->setAbsolute()->setOption('alias', TRUE)->toString(),
+      'unaliased:relative' => $url->setAbsolute(FALSE)->setOption('alias', TRUE)->toString(),
       'unaliased:path' => 'node/1',
-      'unaliased:brief' => "{$host}/node/1",
+      'unaliased:brief' => preg_replace(array('!^https?://!', '!/$!'), '', $url->setAbsolute()->setOption('alias', TRUE)->toString()),
       'unaliased:args:value:0' => 'node',
       'unaliased:args:value:1' => '1',
       'unaliased:args:value:2' => NULL,

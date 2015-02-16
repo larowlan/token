@@ -754,8 +754,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
     $url = $data['url'];
     // To retrieve the correct path, modify a copy of the Url object.
     $path_url = clone $url;
-    $path = $path_url->setAbsolute(FALSE)->setOption('fragment', NULL)->toString();
-    $path = ltrim($path, '/');
+    $path = $path_url->setAbsolute(FALSE)->setOption('fragment', NULL)->getInternalPath();
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
@@ -778,7 +777,8 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           $replacements[$original] = preg_replace(array('!^https?://!', '!/$!'), '', $url->setAbsolute()->toString());
           break;
         case 'unaliased':
-          $replacements[$original] = $url->setAbsolute()->setOption('alias', TRUE)->toString();
+          $unaliased = clone $url;
+          $replacements[$original] = $unaliased->setAbsolute()->setOption('alias', TRUE)->toString();
           break;
         case 'args':
           $value = !($url->getOption('alias')) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code) : $path;
@@ -791,7 +791,6 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
     // [url:args:*] chained tokens.
     if ($arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'args')) {
       $value = !($url->getOption('alias')) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code) : $path;
-      $value = ltrim($value, '/');
       $replacements += \Drupal::token()->generate('array', $arg_tokens, array('array' => explode('/', $value)), $options);
     }
 
