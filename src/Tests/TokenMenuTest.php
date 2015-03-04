@@ -34,7 +34,7 @@ class TokenMenuTest extends TokenTestBase {
     // Add a root link.
     /** @var \Drupal\menu_link_content\Plugin\Menu\MenuLinkContent $root_link */
     $root_link = entity_create('menu_link_content', array(
-      'link' => ['uri' => 'user-path:/admin'],
+      'link' => ['uri' => 'internal:/admin'],
       'title' => 'Administration',
       'menu_name' => 'main-menu',
     ));
@@ -43,7 +43,7 @@ class TokenMenuTest extends TokenTestBase {
     // Add another link with the root link as the parent.
     /** @var \Drupal\menu_link_content\Plugin\Menu\MenuLinkContent $parent_link */
     $parent_link = entity_create('menu_link_content', array(
-      'link' => ['uri' => 'user-path:/admin/config'],
+      'link' => ['uri' => 'internal:/admin/config'],
       'title' => 'Configuration',
       'menu_name' => 'main-menu',
       'parent' => $root_link->getPluginId(),

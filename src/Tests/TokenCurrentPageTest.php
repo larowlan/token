@@ -35,7 +35,6 @@ class TokenCurrentPageTest extends TokenTestBase {
       '[current-page:page-number]' => 1,
       '[current-page:query:foo]' => NULL,
       '[current-page:query:bar]' => NULL,
-      '[current-page:query:q]' => 'user/login',
       // Deprecated tokens
       '[current-page:arg:0]' => 'user',
       '[current-page:arg:1]' => 'login',
@@ -60,7 +59,6 @@ class TokenCurrentPageTest extends TokenTestBase {
       '[current-page:page-number]' => 1,
       '[current-page:query:foo]' => 'bar',
       '[current-page:query:bar]' => NULL,
-      '[current-page:query:q]' => 'node/1',
       // Deprecated tokens
       '[current-page:arg:0]' => 'node',
       '[current-page:arg:1]' => 1,

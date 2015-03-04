@@ -381,12 +381,12 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
   $replacements = array();
 
   $url_options = array('absolute' => TRUE);
-  if (isset($options['language'])) {
-    $url_options['language'] = $options['language'];
-    $language_code = $options['language']->language;
+  if (isset($options['langcode'])) {
+    $url_options['language'] = language_load($options['langcode']);
+    $langcode = $options['langcode'];
   }
   else {
-    $language_code = NULL;
+    $langcode = NULL;
   }
 
   $sanitize = !empty($options['sanitize']);
@@ -399,7 +399,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
     $date_format_types = \Drupal::entityManager()->getStorage('date_format')->loadMultiple();
     foreach ($tokens as $name => $original) {
       if (isset($date_format_types[$name]) && _token_module('date', $name) == 'token') {
-        $replacements[$original] = format_date($date, $name, '', NULL, $language_code);
+        $replacements[$original] = format_date($date, $name, '', NULL, $langcode);
       }
     }
   }
@@ -697,9 +697,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           $replacements[$original] = $sanitize ? $title : String::decodeEntities($title);
           break;
         case 'url':
-          // Strip the query string from the result of Request::getUri().
-          list($uri) = explode('?', \Drupal::request()->getUri());
-          $replacements[$original] = Url::fromUri($uri, $url_options)->toString();
+          $replacements[$original] = Url::fromRoute('<current>', [], $url_options)->toString();
           break;
         case 'page-number':
           if ($page = \Drupal::request()->query->get('page')) {
@@ -715,7 +713,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
     // @deprecated
     // [current-page:arg] dynamic tokens.
     if ($arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'arg')) {
-      $path = \Drupal::request()->attributes->get('_system_path');
+      $path = ltrim(\Drupal::service('path.current')->getPath(), '/');
       // Make sure its a system path.
       $path = \Drupal::service('path.alias_manager')->getPathByAlias($path);
       foreach ($arg_tokens as $name => $original) {
@@ -734,16 +732,12 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           $value = \Drupal::request()->query->get($name);
           $replacements[$original] = $sanitize ? String::checkPlain($value) : $value;
         }
-        elseif ($name == 'q') {
-          $replacements[$original] = \Drupal::request()->attributes->get('_system_path');
-        }
       }
     }
 
     // Chained token relationships.
     if ($url_tokens = \Drupal::token()->findWithPrefix($tokens, 'url')) {
-      $request = \Drupal::request();
-      $url = new Url($request->attributes->get(RouteObjectInterface::ROUTE_OBJECT), $request->attributes->get('_raw_variables')->all());
+      $url = Url::fromRoute('<current>');
       $replacements += \Drupal::token()->generate('url', $url_tokens, array('url' => $url), $options);
     }
   }
@@ -759,12 +753,12 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'path':
-          $value = !($url->getOption('alias')) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code) : $path;
+          $value = !($url->getOption('alias')) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $langcode) : $path;
           $replacements[$original] = $sanitize ? String::checkPlain($value) : $value;
           break;
         case 'alias':
           // @deprecated
-          $alias = \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code);
+          $alias = \Drupal::service('path.alias_manager')->getAliasByPath($path, $langcode);
           $replacements[$original] = $sanitize ? String::checkPlain($alias) : $alias;
           break;
         case 'absolute':
@@ -781,7 +775,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
           $replacements[$original] = $unaliased->setAbsolute()->setOption('alias', TRUE)->toString();
           break;
         case 'args':
-          $value = !($url->getOption('alias')) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code) : $path;
+          $value = !($url->getOption('alias')) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $langcode) : $path;
           $replacements[$original] = token_render_array(explode('/', $value), $options);
           break;
 
@@ -790,7 +784,7 @@ function token_tokens($type, array $tokens, array $data = array(), array $option
 
     // [url:args:*] chained tokens.
     if ($arg_tokens = \Drupal::token()->findWithPrefix($tokens, 'args')) {
-      $value = !($url->getOption('alias')) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $language_code) : $path;
+      $value = !($url->getOption('alias')) ? \Drupal::service('path.alias_manager')->getAliasByPath($path, $langcode) : $path;
       $replacements += \Drupal::token()->generate('array', $arg_tokens, array('array' => explode('/', $value)), $options);
     }
 
@@ -1052,12 +1046,12 @@ function menu_ui_tokens($type, $tokens, array $data = array(), array $options = 
   $menu_link_manager = \Drupal::service('plugin.manager.menu.link');
 
   $url_options = array('absolute' => TRUE);
-  if (isset($options['language'])) {
-    $url_options['language'] = $options['language'];
-    $language_code = $options['language']->getId();
+  if (isset($options['langcode'])) {
+    $url_options['language'] = language_load($options['langcode']);
+    $langcode = $options['langcode'];
   }
   else {
-    $language_code = NULL;
+    $langcode = NULL;
   }
 
   $sanitize = !empty($options['sanitize']);
@@ -1248,7 +1242,7 @@ function _token_field_label($entity_type, $field_name) {
 function field_tokens($type, $tokens, array $data = array(), array $options = array()) {
   $replacements = array();
   $sanitize = !empty($options['sanitize']);
-  $langcode = isset($options['language']) ? $options['language']->language : NULL;
+  $langcode = isset($options['langcode']) ? $options['langcode'] : NULL;
 
   // Entity tokens.
   if ($type == 'entity' && !empty($data['entity_type']) && !empty($data['entity']) && !empty($data['token_type'])) {
